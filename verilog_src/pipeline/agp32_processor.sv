@@ -216,69 +216,6 @@ module SetUp_Opc (instr,opc);
     end
 endmodule
 
-/* unused modules
-module SetUp_data_addr (write_mem,write_mem_byte,read_mem,dataA,dataB,addr);
-    input write_mem, write_mem_byte,read_mem;
-    input [`WORD_SIZE_INDEX:0] dataA, dataB;
-
-    output logic [`WORD_SIZE_INDEX:0] addr;
-
-    always_comb begin
-        if (write_mem || write_mem_byte) begin
-            addr = dataB;
-        end
-        else if (read_mem) begin
-            addr = dataA;
-        end
-    end  
-endmodule
-
-module SetUp_data_wdata_wstrb (write_mem,write_mem_byte,dataA,dataB,wdata,wstrb);
-    input write_mem, write_mem_byte;
-    input [`WORD_SIZE_INDEX:0] dataA, dataB;
-
-    output logic [`WORD_SIZE_INDEX:0] wdata;
-    output logic [3:0] wstrb;
-
-    always_comb begin
-        if (write_mem) begin
-            wdata = dataA;
-            wstrb = 4'd15;
-        end
-        else if (write_mem_byte) begin
-            case (dataB[1:0])
-            2'd0 : wdata[7:0] = dataA[7:0];
-            2'd1 : wdata[15:8] = dataA[7:0];
-            2'd2 : wdata[23:16] = dataA[7:0];
-            2'd3 : wdata[31:24] = dataA[7:0];
-            endcase
-            wstrb = (4'd1 << 4'({dataB[1:0]}));
-        end
-    end  
-endmodule
-*/
-
-module SetUp_acc (state,opc,aV,isAcc_flag,acc_arg,acc_arg_ready);
-    input [2:0] state;
-    input [5:0] opc;
-    input [`WORD_SIZE_INDEX:0] aV;
-
-    output logic [`WORD_SIZE_INDEX:0] acc_arg;
-    output logic isAcc_flag = 0,acc_arg_ready;
-
-    always_comb begin
-        if (opc == 6'd8) begin
-            acc_arg = aV;
-            acc_arg_ready = 1;
-            isAcc_flag = 1;
-        end
-        
-        if (state == 3'd2) begin
-            acc_arg_ready = 0;
-        end
-    end
-endmodule
-
 // Register unit in the decode stage
 module REG_Unit (clk,addressA,addressB,rd_addressD,wr_addressD,DataA,DataB,input_DataD,output_DataD,UpperFlag,regWrite);
     input clk,UpperFlag,regWrite;
@@ -287,18 +224,18 @@ module REG_Unit (clk,addressA,addressB,rd_addressD,wr_addressD,DataA,DataB,input
 
     output logic [`WORD_SIZE_INDEX:0] DataA,DataB,output_DataD;
 
-    logic [63:0] [`WORD_SIZE_INDEX:0] REG  = 0;
+    logic [63:0] [`WORD_SIZE_INDEX:0] R  = 0;
 
-    assign DataA = REG[addressA];
-    assign DataB = REG[addressB];
-    assign output_DataD = REG[rd_addressD];
+    assign DataA = R[addressA];
+    assign DataB = R[addressB];
+    assign output_DataD = R[rd_addressD];
     
     always_ff @(posedge clk) begin
         if (regWrite == 1 && UpperFlag == 0) begin
-            REG[wr_addressD] = input_DataD;
+            R[wr_addressD] = input_DataD;
         end
         else if (regWrite == 1 && UpperFlag == 1) begin
-            REG[wr_addressD][31:23] = input_DataD[8:0];
+            R[wr_addressD][31:23] = input_DataD[8:0];
         end
     end
 endmodule
@@ -350,6 +287,10 @@ module EX_Ctrl_Unit (opc,interrupt_flag,MemRead,write_enable);
                MemRead = (opc == 6'd4 || opc == 6'd5);
                interrupt_flag = (opc == 6'd12);
            end
+           
+           else
+               interrupt_flag = 0;
+              
         /*   else begin
                MemRead = 0;
                interrupt_flag = 1;
@@ -359,22 +300,24 @@ module EX_Ctrl_Unit (opc,interrupt_flag,MemRead,write_enable);
 endmodule
 
 
-module MEM_SetUp (opc,write_mem,write_mem_byte,write_reg,write_enable);
+module MEM_SetUp (opc,isAcc_flag,write_mem,write_mem_byte,write_reg,write_enable);
     input [5:0] opc;
     input write_enable;
 
-    output logic write_mem, write_mem_byte, write_reg;
+    output logic write_mem, write_mem_byte, write_reg, isAcc_flag;
 
     always_comb begin
         if (write_enable) begin
             write_mem = (opc == 6'd2); // StoreMem
             write_mem_byte = (opc == 6'd3); // StoreMemByte
             write_reg = (opc == 6'd0 || opc == 6'd1 || opc == 6'd4 || opc == 6'd5 || opc == 6'd6 || opc == 6'd7 || opc == 6'd8 || opc == 6'd9 || opc == 6'd13 || opc == 6'd14) ? 1 : 0;
+            isAcc_flag = (opc == 6'd8);
         end
         else begin
             write_mem = 0;
             write_mem_byte = 0;
             write_reg = 0;
+            isAcc_flag = 0;
         end     
     end
 endmodule
@@ -389,23 +332,23 @@ module WB_Setup (opc,data_sel,isOut_flag,isLoadUpper_flag,write_enable);
     always_comb begin
         if (write_enable) begin
             if (opc == 6'd0 || opc == 6'd6)
-                data_sel = 0; // Normal and Out, choose ALU_res
+                data_sel = 3'd0; // Normal and Out, choose ALU_res
             else if (opc == 6'd1)
-                data_sel = 1; //Shift, shiftLL/shiftLR/shiftAR/shiftRor
+                data_sel = 3'd1; //Shift, shiftLL/shiftLR/shiftAR/shiftRor
             else if (opc == 6'd7)
-                data_sel = 2; //In, data_in
+                data_sel = 3'd2; //In, data_in
             else if (opc == 6'd9) 
-                data_sel = 3; //Jump, PC+4w
+                data_sel = 3'd3; //Jump, PC+4w
             else if (opc == 6'd13 || opc == 6'd14)
-                data_sel = 4; //LoadConstant and LoadUpperConstant, imm
+                data_sel = 3'd4; //LoadConstant and LoadUpperConstant, imm
             else if (opc == 6'd4) 
-                data_sel = 5; //LoadMEM, read_data
+                data_sel = 3'd5; //LoadMEM, read_data
             else if (opc == 6'd5)  
-                data_sel = 6; //LoadMEMByte, read_data_byte
+                data_sel = 3'd6; //LoadMEMByte, read_data_byte
             else if (opc == 6'd8)
-                data_sel = 7; //Accelerator, acc_res
+                data_sel = 3'd7; //Accelerator, acc_res
             else
-                data_sel = 0; //Default
+                data_sel = 3'd0; //Default
 
             // wr_reg_flag = (opc == 6'd0 || opc == 6'd1 || opc == 6'd4 || opc == 6'd5 || opc == 6'd6 || opc == 6'd7 || opc == 6'd8 || opc == 6'd9 || opc == 6'd13 || opc == 6'd14) ? 1 : 0;
             isOut_flag = (opc == 6'd6) ? 1 : 0;
@@ -443,7 +386,7 @@ module Com_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addr
         always_ff @(posedge clk) begin
             output_write_enable = input_write_enable;
         
-            if (input_write_enable) begin 
+            if (output_write_enable) begin 
                 output_PC = input_PC;
                 output_opc = input_opc;
                 output_func = input_func;
@@ -459,7 +402,7 @@ module ID_Pipeline (clk, input_instr, input_PC, output_instr, output_PC, write_e
     input [`WORD_SIZE_INDEX:0] input_instr, input_PC;
     input write_enable, flush_flag;
 
-    output logic [`WORD_SIZE_INDEX:0] output_instr = 32'b00000000000000000000000000111111, output_PC = 0;
+    output logic [`WORD_SIZE_INDEX:0] output_instr = 32'h0000003F, output_PC = 0;
 
     always_ff @(posedge clk) begin
         if (write_enable) begin
@@ -468,7 +411,7 @@ module ID_Pipeline (clk, input_instr, input_PC, output_instr, output_PC, write_e
         end
 
         if (flush_flag) begin
-            output_instr = 32'b00000000000000000000000000111111; // an invalid instruction
+            output_instr = 32'h0000003F; // an invalid instruction
             //output_PC = 0;
         end   
     end
@@ -509,14 +452,14 @@ module EX_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addre
 endmodule
 
 module MEM_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addressB,input_addressD,input_imm,input_ALUres,input_shift_res,input_readdataA,input_readdataB,input_rd_mem,input_write_enable,
-                     output_rd_mem,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_imm,output_ALUres,output_shift_res,output_readdataA,output_readdataB,output_write_enable);
+                     isAcc_flag,output_rd_mem,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_imm,output_ALUres,output_shift_res,output_readdataA,output_readdataB,output_write_enable);
     input clk,input_rd_mem,input_write_enable;
     input [5:0] input_opc;
     input [3:0] input_func;
     input [5:0] input_addressA,input_addressB,input_addressD;
     input [`WORD_SIZE_INDEX:0] input_PC,input_imm,input_readdataA,input_readdataB,input_ALUres,input_shift_res;
 
-    output logic output_rd_mem = 0, output_wr_mem, output_wr_mem_byte, output_wr_reg, output_write_enable;
+    output logic output_rd_mem = 0, output_wr_mem, output_wr_mem_byte, output_wr_reg, output_write_enable, isAcc_flag;
     output logic [5:0] output_opc;
     output logic [3:0] output_func;
     output logic [5:0] output_addressA,output_addressB,output_addressD;
@@ -525,7 +468,7 @@ module MEM_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addr
 
     Com_Pipeline com_pipeline_mem(clk,input_PC,input_opc,input_func,input_addressA,input_addressB,input_addressD,input_write_enable,
                                      output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_write_enable);
-    MEM_SetUp mem_setup(output_opc,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_write_enable);
+    MEM_SetUp mem_setup(output_opc,isAcc_flag,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_write_enable);
 
     always_ff @(posedge clk) begin
         if (output_write_enable) begin 
@@ -595,14 +538,14 @@ module Hazard_Ctrl_Unit (ID_opc,PC_disable_flag,state,PC_wr_flag,ID_wr_flag,ID_f
             EX_wr_flag = 0;
             WB_flag = 0;
         end
-        else if (state == 3'd6 || state == 3'd2) begin // waiting for loading memory state
+        else if (state == 3'd6 || state == 3'd2) begin // waiting for loading memory or acc
             PC_wr_flag = 0;
             ID_wr_flag = 0;
             ID_flush_flag = 0;
             EX_wr_flag = 0;
             WB_flag = 0;
         end
-        else if (state == 3'd1) begin  // fetching new instr state
+        else if (state == 3'd1) begin  // fetching new instr state or waiting for acc_res
             PC_wr_flag = 0;
             ID_wr_flag = 0;
             ID_flush_flag = 1;
@@ -632,7 +575,7 @@ module Hazard_Ctrl_Unit (ID_opc,PC_disable_flag,state,PC_wr_flag,ID_wr_flag,ID_f
             EX_wr_flag = 0;
         end
         */
-         else if (PC_disable_flag == 0 && (ID_opc == 6'd4 || ID_opc == 6'd5)) begin
+         else if (PC_disable_flag == 0 && (ID_opc == 6'd4 || ID_opc == 6'd5 || ID_opc == 6'd8)) begin
             PC_wr_flag = 0;
             ID_wr_flag = 0;
             ID_flush_flag = 0;
@@ -671,31 +614,39 @@ module Forward_Ctrl_Unit (EX_addrA,EX_addrB,EX_EN_addrA,EX_EN_addrB,MEM_addrD,WB
                          (opc == 6'd10) || (opc == 6'd11)) ? 1 : 0;
 
    always_comb begin
-       if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd5 && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 5;
+       if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && EX_EN_addrA == 0 && check_addrA)
+           forwardA <= 3'd7;
+       else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrA == 0 && check_addrA)
+           forwardA <= 3'd6;
+       else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd5 && EX_EN_addrA == 0 && check_addrA)
+           forwardA <= 3'd5;
        else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd4 && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 4;
+           forwardA <= 3'd4;
        else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd1 && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 3;
+           forwardA <= 3'd3;
        else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd0 && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 2;
+           forwardA <= 3'd2;
        else if (EX_addrA == WB_addrD && WB_wrReg == 1 && EX_EN_addrA == 0 && check_addrA) 
-           forwardA <= 1;
+           forwardA <= 3'd1;
        else
-           forwardA <= 0;
+           forwardA <= 3'd0;
     
-       if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd5 && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 5;
+       if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && EX_EN_addrB == 0 && check_addrB)
+           forwardB <= 3'd7;
+       else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrB == 0 && check_addrB)
+           forwardB <= 3'd6;
+       else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd5 && EX_EN_addrB == 0 && check_addrB)
+           forwardB <= 3'd5;
        else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd4 && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 4;
+           forwardB <= 3'd4;
        else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd1 && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 3;
+           forwardB <= 3'd3;
        else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd0 && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 2;
+           forwardB <= 3'd2;
        else if (EX_addrB == WB_addrD && WB_wrReg == 1 && EX_EN_addrB == 0 && check_addrB) 
-           forwardB <= 1;
+           forwardB <= 3'd1;
        else
-           forwardB <= 0;
+           forwardB <= 3'd0;
    end
 endmodule
 
@@ -717,6 +668,7 @@ module agp32_processor(
     input logic interrupt_ack);
 
    logic [2:0] state = 3'd3;
+   logic do_interrupt = 0;
 
    /* additional wires for pipeline */
    wire [`WORD_SIZE_INDEX:0] IF_PC_input,IF_PC_output,IF_instr;
@@ -727,8 +679,8 @@ module agp32_processor(
 
    wire IF_PC_write_enable;
    wire ID_ID_write_enable, ID_EX_write_enable, ID_flush_flag, ID_EN_addra, ID_EN_addrb;
-   wire EX_write_enable, EX_isInterrupt, EX_isAcc, EX_MemRead, EX_EN_addra, EX_EN_addrb;
-   wire MEM_write_enable, MEM_read_mem, MEM_wr_mem, MEM_wr_mem_byte, MEM_wr_reg;
+   wire EX_write_enable, EX_isInterrupt, EX_MemRead, EX_EN_addra, EX_EN_addrb;
+   wire MEM_write_enable, MEM_read_mem, MEM_wr_mem, MEM_wr_mem_byte, MEM_wr_reg, MEM_isAcc;
    wire WB_write_enable, WB_wr_reg, WB_isOut, WB_isLoadUpper, WB_state_flag;
 
    wire [1:0] PC_sel;
@@ -787,17 +739,16 @@ module agp32_processor(
    EX_Pipeline ex_pipeline(clk,ID_PC,ID_opc,ID_func,ID_Ra,ID_Rb,ID_Rw,ID_imm,ID_DataA,ID_DataB,ID_DataW,ID_EN_addra,ID_EN_addrb,ID_EX_write_enable,
                            EX_isInterrupt,EX_MemRead,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_DataA,EX_DataB,EX_DataW,EX_PC_sel,EX_EN_addra,EX_EN_addrb,EX_write_enable);
    //assign interrupt_req = EX_isInterrupt? EX_isInterrupt : interrupt_req;
-   MUX_81 update_aV_forward(EX_DataA,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,32'd0,32'd0,EX_ForwardA,EX_DataA_Updated); 
-   MUX_81 update_bV_forward(EX_DataB,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,32'd0,32'd0,EX_ForwardB,EX_DataB_Updated);
+   MUX_81 update_aV_forward(EX_DataA,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_PC + 32'd4,MEM_imm,EX_ForwardA,EX_DataA_Updated); 
+   MUX_81 update_bV_forward(EX_DataB,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_PC + 32'd4,MEM_imm,EX_ForwardB,EX_DataB_Updated);
    MUX_21 set_alu_input1(EX_DataA_Updated,EX_PC,1'({EX_opc == 6'd9}),EX_ALU_input1);
    MUX_21 set_alu_input2(EX_DataB_Updated,EX_DataA_Updated,1'({EX_opc == 6'd9}),EX_ALU_input2);
    ALU_Unit compute_alu_res(EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);
    SHIFT_Unit compute_shift_res(EX_func,EX_DataA_Updated,EX_DataB_Updated,EX_SHIFT_res);
-   SetUp_acc setup_acc(state,EX_opc,EX_DataA_Updated,EX_isAcc,acc_arg,acc_arg_ready);
-
+   
    // MEM
    MEM_Pipeline mem_pipeline(clk,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_ALU_res,EX_SHIFT_res,EX_DataA_Updated,EX_DataB_Updated,EX_MemRead,EX_write_enable,
-                             MEM_read_mem,MEM_wr_mem,MEM_wr_mem_byte,MEM_wr_reg,MEM_PC,MEM_opc,MEM_func,MEM_Ra,MEM_Rb,MEM_Rw,MEM_imm,MEM_ALU_res,MEM_SHIFT_res,MEM_DataA,MEM_DataB,MEM_write_enable);
+                             MEM_isAcc,MEM_read_mem,MEM_wr_mem,MEM_wr_mem_byte,MEM_wr_reg,MEM_PC,MEM_opc,MEM_func,MEM_Ra,MEM_Rb,MEM_Rw,MEM_imm,MEM_ALU_res,MEM_SHIFT_res,MEM_DataA,MEM_DataB,MEM_write_enable);
    MUX_41 generate_read_data_byte(32'({MEM_read_data[7:0]}),32'({MEM_read_data[15:8]}),32'({MEM_read_data[23:16]}),32'({MEM_read_data[31:24]}),2'({MEM_DataA[1:0]}),MEM_read_data_byte);
 
    // WB
@@ -813,17 +764,19 @@ module agp32_processor(
                    command <= 3'd1; 
                    state = 3'd1;
                end
-               
-               else if (EX_isAcc) begin
-                   command <= 3'd1;
-                   state = 3'd2;
-               end
 
                else if (EX_isInterrupt) begin
                    command <= 3'd4;
                    state = 3'd1;
-                   interrupt_req <= 1;
+                   do_interrupt = 1;
                    data_addr <= 32'd0;
+               end
+               
+               else if (MEM_isAcc) begin
+                   command <= 3'd1;
+                   state = 3'd2;
+                   acc_arg = MEM_DataA;
+                   acc_arg_ready <= 1;
                end
 
                else if (MEM_read_mem) begin
@@ -852,30 +805,31 @@ module agp32_processor(
                end
                
                PC_disable_flag = 0;
-               //state = (EX_isAcc ? 3'd2 : (EX_MemRead ? 3'd6 : 3'd1));
            end
            3'd1: begin
                if (ready && (command == 3'd0)) begin
-                   state = 3'd0;
-               end
-               
-               if (interrupt_req) begin
-                   state = 3'd4;
+                   if (do_interrupt) begin
+                      state = 3'd4; 
+                      do_interrupt = 0;
+                      interrupt_req <= 1;
+                   end
+                   else state = 3'd0;
                end
                
                if (WB_isOut) begin
-                   data_out = WB_ALU_res[9:0];
+                   data_out <= WB_ALU_res[9:0];
                end
                
                command <= 3'd0;
                PC_disable_flag = 1;
            end
            3'd2: begin 
-               if (acc_res_ready && (!acc_arg_ready)) begin 
-               command <= 3'd1;
-               state = 3'd1; 
+               if (acc_res_ready && (!acc_arg_ready)) begin
+               state = 3'd0; 
                end 
                PC_disable_flag = 1;
+               acc_arg_ready <= 0;
+               command <= 3'd0;
            end
            3'd3: begin 
                if (mem_start_ready) begin
@@ -885,7 +839,7 @@ module agp32_processor(
            end
            3'd4: begin 
                if (interrupt_ack) begin
-               state = 3'd1;
+               state = 3'd0;
                interrupt_req <= 0;
                end
                PC_disable_flag = 1; 

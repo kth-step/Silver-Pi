@@ -11,7 +11,7 @@
 // test: pipeline disabled so far
 
 `timescale 1ns / 1ps
-`define WORD_SIZE 32 // 32 bits
+`define WORD_SIZE 32
 `define WORD_SIZE_INDEX 31
 
 // MUX: multiplexer
@@ -52,34 +52,34 @@ module MUX_81 (input0, input1, input2, input3, input4, input5, input6, input7, s
 endmodule
 
 // ALU: arithmetic logic unit
-module ALU_Unit (func,input1,input2,alu_res,CarryFlag, OverflowFlag);
+module ALU_Unit (func,input1,input2,alu_res);
     input [3:0] func;
     input [`WORD_SIZE_INDEX:0] input1,input2;
     output logic [`WORD_SIZE_INDEX:0] alu_res;
-    output logic CarryFlag, OverflowFlag;
     
-    logic [32:0] alu_sum;
+    logic CarryFlag,OverflowFlag;
+    logic [`WORD_SIZE:0] alu_sum;
     logic [`WORD_SIZE_INDEX:0] alu_sub;
     logic [63:0] alu_prod;
 
     always_comb begin 
         alu_sum = (33'({input1}) + 33'({input2})) + ((func == 4'd1) ? 33'({CarryFlag}) : 33'd0);
-        alu_prod = 64'({input1}) * 64'({input2});
-        alu_sub = input1 - input2;
+        alu_prod = 64'({input1}) * 64'({input2}); 
         case (func)
             //fAdd
             4'd0: begin
-                alu_res = alu_sum[31:0];
-                CarryFlag = alu_sum[32];
-                OverflowFlag = (input1[31] == input2[31]) && (alu_sum[31] != input1[31]);
+               alu_res = alu_sum[31:0];
+               CarryFlag = alu_sum[32];
+               OverflowFlag = (input1[31] == input2[31]) && (alu_sum[31] != input1[31]);
             end
             //fAddWithCarry
             4'd1: begin
-                alu_res = alu_sum[31:0];
-                CarryFlag = alu_sum[32];
+               alu_res = alu_sum[31:0];
+               CarryFlag = alu_sum[32];
             end
             //fSub
             4'd2: begin
+               alu_sub = input1 - input2;
                OverflowFlag = (input1[31] != input2[31]) && (alu_sub[31] != input1[31]);
                alu_res = alu_sub;
             end
@@ -176,7 +176,7 @@ module PC_Unit(clk, PC_input, PC_output, write_enable);
 
     always_ff @(posedge clk) begin
         if (write_enable)
-           PC_output <= PC_input; 
+           PC_output = PC_input; 
     end  
 endmodule
 
@@ -223,7 +223,7 @@ module REG_Unit (clk,addressA,addressB,rd_addressD,wr_addressD,DataA,DataB,input
 
     output logic [`WORD_SIZE_INDEX:0] DataA,DataB,output_DataD;
 
-    logic [63:0] [`WORD_SIZE_INDEX:0] R  = 0;
+    logic [63:0] [`WORD_SIZE_INDEX:0] R = 0;
 
     assign DataA = R[addressA];
     assign DataB = R[addressB];
@@ -327,7 +327,7 @@ module WB_Setup (opc,data_sel,isOut_flag,isLoadUpper_flag,write_enable);
             if (opc == 6'd0 || opc == 6'd6)
                 data_sel = 3'd0; // Normal and Out, choose ALU_res
             else if (opc == 6'd1)
-                data_sel = 3'd1; //Shift, shiftLL/shiftLR/shiftAR/shiftRor
+                data_sel = 3'd1; //Shift, shift_res
             else if (opc == 6'd7)
                 data_sel = 3'd2; //In, data_in
             else if (opc == 6'd9) 
@@ -437,7 +437,7 @@ module EX_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addre
                 output_dataD = input_dataD;
                 output_en_addra = input_en_addra;
                 output_en_addrb = input_en_addrb;
-                output_PC_sel <= (input_opc == 6'd9 ? 2'b01 : //Jump
+                output_PC_sel = (input_opc == 6'd9 ? 2'b01 : //Jump
                                  (input_opc == 6'd10 ? 2'b10 : //JumpIfZero
                                  (input_opc == 6'd11 ? 2'b11 : 2'b00))); //JumpIfNotZero : Normal case
             end
@@ -470,10 +470,10 @@ module MEM_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addr
             output_shift_res = input_shift_res;
             output_readdataA = input_readdataA;
             output_readdataB = input_readdataB;
-            output_rd_mem <= input_rd_mem;
+            output_rd_mem = input_rd_mem;
         end
         else begin
-            output_rd_mem <= 0;
+            output_rd_mem = 0;
         end
     end 
 endmodule
@@ -505,25 +505,25 @@ module WB_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addre
             output_read_data_byte = input_read_data_byte;
             output_ALUres = input_ALUres;
             output_shift_res = input_shift_res;
-            wr_reg_flag <= input_wr_reg;
+            wr_reg_flag = input_wr_reg;
         end
-        else wr_reg_flag <= 0;
+        else wr_reg_flag = 0;
     end
 endmodule
 
 // handle hazards
-module Hazard_Ctrl_Unit (ID_opc,PC_disable_flag,state,PC_wr_flag,ID_wr_flag,ID_flush_flag,EX_wr_flag,WB_flag,PCSel);
+module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_flush_flag,EX_wr_flag,WB_flag,PCSel);
     //input [5:0] ID_addrA, ID_addrB, EX_addrD,ID_opc;
     //input rd_mem_flag;
     input [5:0] ID_opc;
-    input PC_disable_flag;
+    input PC_enable_flag;
     input [1:0] PCSel;
     input [2:0] state;
 
     output logic PC_wr_flag, ID_wr_flag, ID_flush_flag , EX_wr_flag, WB_flag;
 
     always_comb begin
-        if (state == 3'd5 || state == 3'd4 || state == 3'd3)  // stuck/interrupt/initial states
+        if (state == 3'd5 || state == 3'd4 || state == 3'd3 || state == 3'd7)  // stuck/interrupt/initial states
         begin
             PC_wr_flag = 0;
             ID_wr_flag = 0;
@@ -538,6 +538,15 @@ module Hazard_Ctrl_Unit (ID_opc,PC_disable_flag,state,PC_wr_flag,ID_wr_flag,ID_f
             EX_wr_flag = 0;
             WB_flag = 0;
         end
+        /*
+        else if (state == 3'd7) begin
+            PC_wr_flag = 0;
+            ID_wr_flag = 0;
+            ID_flush_flag = 1;
+            EX_wr_flag = 0;
+            WB_flag = 0;
+        end
+        */
         else if (state == 3'd1) begin  // fetching new instr state
             PC_wr_flag = 0;
             ID_wr_flag = 0;
@@ -554,7 +563,7 @@ module Hazard_Ctrl_Unit (ID_opc,PC_disable_flag,state,PC_wr_flag,ID_wr_flag,ID_f
             WB_flag = 0;
         end
 
-        else if (PC_disable_flag == 0 && (ID_opc == 6'd4 || ID_opc == 6'd5 || ID_opc == 6'd8)) begin
+        else if (PC_enable_flag == 0 && (ID_opc == 6'd4 || ID_opc == 6'd5 || ID_opc == 6'd8)) begin
             PC_wr_flag = 0;
             ID_wr_flag = 0;
             ID_flush_flag = 0;
@@ -562,7 +571,7 @@ module Hazard_Ctrl_Unit (ID_opc,PC_disable_flag,state,PC_wr_flag,ID_wr_flag,ID_f
             WB_flag = 1;
         end
 
-        else if (PC_disable_flag == 0) begin
+        else if (PC_enable_flag == 0) begin
             PC_wr_flag = 0;
             ID_wr_flag = 0;
             ID_flush_flag = 1;
@@ -596,38 +605,38 @@ module Forward_Ctrl_Unit (EX_addrA,EX_addrB,EX_EN_addrA,EX_EN_addrB,MEM_addrD,WB
 
    always_comb begin
        if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 3'd7;
+           forwardA = 3'd7;
        else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 3'd6;
+           forwardA = 3'd6;
        else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd5 && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 3'd5;
+           forwardA = 3'd5;
        else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd4 && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 3'd4;
+           forwardA = 3'd4;
        else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd1 && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 3'd3;
+           forwardA = 3'd3;
        else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd0 || MEM_opc == 6'd6) && EX_EN_addrA == 0 && check_addrA)
-           forwardA <= 3'd2;
+           forwardA = 3'd2;
        else if (EX_addrA == WB_addrD && WB_wrReg == 1 && EX_EN_addrA == 0 && check_addrA) 
-           forwardA <= 3'd1;
+           forwardA = 3'd1;
        else
-           forwardA <= 3'd0;
+           forwardA = 3'd0;
     
        if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 3'd7;
+           forwardB = 3'd7;
        else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 3'd6;
+           forwardB = 3'd6;
        else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd5 && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 3'd5;
+           forwardB = 3'd5;
        else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd4 && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 3'd4;
+           forwardB = 3'd4;
        else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd1 && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 3'd3;
+           forwardB = 3'd3;
        else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd0 || MEM_opc == 6'd6) && EX_EN_addrB == 0 && check_addrB)
-           forwardB <= 3'd2;
+           forwardB = 3'd2;
        else if (EX_addrB == WB_addrD && WB_wrReg == 1 && EX_EN_addrB == 0 && check_addrB) 
-           forwardB <= 3'd1;
+           forwardB = 3'd1;
        else
-           forwardB <= 3'd0;
+           forwardB = 3'd0;
    end
 endmodule
 
@@ -650,13 +659,12 @@ module agp32_processor(
 
    logic [2:0] state = 3'd3;
    logic do_interrupt = 0;
-   logic CarryFlag, OverflowFlag;
 
    /* additional wires for pipeline */
    wire [`WORD_SIZE_INDEX:0] IF_PC_input,IF_PC_output,IF_instr;
    wire [`WORD_SIZE_INDEX:0] ID_PC,ID_instr,ID_readDataA,ID_readDataB,ID_readDataW,ID_DataA,ID_DataB,ID_DataW,ID_imm,ID_immaV,ID_immbV,ID_immwV;
    wire [`WORD_SIZE_INDEX:0] EX_PC,EX_DataA,EX_DataB,EX_DataW,EX_imm,EX_ALU_res,EX_ALU_input1,EX_ALU_input2,EX_SHIFT_res,EX_DataA_Updated,EX_DataB_Updated;
-   wire [`WORD_SIZE_INDEX:0] MEM_PC,MEM_DataA,MEM_DataB,MEM_DataW,MEM_imm,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte;
+   wire [`WORD_SIZE_INDEX:0] MEM_PC,MEM_DataA,MEM_DataB,MEM_imm,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte;
    wire [`WORD_SIZE_INDEX:0] WB_PC,WB_read_data,WB_read_data_byte,WB_imm,WB_ALU_res,WB_SHIFT_res,WB_write_data;
 
    wire IF_PC_write_enable;
@@ -683,8 +691,10 @@ module agp32_processor(
    reg acc_arg_ready, acc_res_ready;
    
    // additional flags to work with the hardware memory
-   reg PC_disable_flag;
+   reg PC_enable_flag;
+   logic force_wr_reg = 0, enable_wb = 0;
 
+   // assign
    assign PC = IF_PC_output;
    assign IF_instr = inst_rdata;
    assign MEM_read_data = data_rdata;
@@ -693,11 +703,11 @@ module agp32_processor(
    /* additional units: (1) hazard_unit, handle hazards.
                         (2) forward_unit, pipeline forwarding.
    */
-   Hazard_Ctrl_Unit hazard_ctrl_unit(ID_opc,PC_disable_flag,state,IF_PC_write_enable,ID_ID_write_enable,ID_flush_flag,ID_EX_write_enable,WB_state_flag,PC_sel);
+   Hazard_Ctrl_Unit hazard_ctrl_unit(ID_opc,PC_enable_flag,state,IF_PC_write_enable,ID_ID_write_enable,ID_flush_flag,ID_EX_write_enable,WB_state_flag,PC_sel);
    Forward_Ctrl_Unit forward_ctrl_unit(EX_Ra,EX_Rb,EX_EN_addra,EX_EN_addrb,MEM_Rw,WB_Rw,EX_opc,MEM_opc,MEM_wr_reg,WB_wr_reg,EX_ForwardA,EX_ForwardB);
 
    // IF 
-   MUX_41 PC_Update (IF_PC_output + `WORD_SIZE'd4, EX_ALU_res, EX_PC + EX_DataW, EX_PC + EX_DataW, PC_sel, IF_PC_input);
+   MUX_41 PC_Update (IF_PC_output + 32'd4, EX_ALU_res, EX_PC + EX_DataW, EX_PC + EX_DataW, PC_sel, IF_PC_input);
    PC_Unit pc(clk, IF_PC_input, IF_PC_output, IF_PC_write_enable); 
 
    // ID
@@ -711,7 +721,7 @@ module agp32_processor(
    SetUp_Opc ID_setup_opc(ID_instr,ID_opc);
    // assign func
    assign ID_func = ((ID_opc == 6'd0) || (ID_opc == 6'd1) || ((ID_opc == 6'd6) || ((ID_opc == 6'd9) || ((ID_opc == 6'd10) || (ID_opc == 6'd11))))) ? ID_instr[9:6] : 4'd9;
-   REG_Unit register(clk,ID_Ra,ID_Rb,ID_Rw,WB_Rw,ID_readDataA,ID_readDataB,WB_write_data,ID_readDataW,WB_isLoadUpper,(WB_wr_reg && WB_state_flag));
+   REG_Unit register(clk,ID_Ra,ID_Rb,ID_Rw,WB_Rw,ID_readDataA,ID_readDataB,WB_write_data,ID_readDataW,WB_isLoadUpper,((WB_wr_reg && WB_state_flag) || force_wr_reg));
    Imm_Sel imm_sel(ID_instr,ID_imm,ID_immaV,ID_immbV,ID_immwV);
    MUX_21 aV_sel(ID_readDataA,ID_immaV,ID_instr[23],ID_DataA);
    MUX_21 bV_sel(ID_readDataB,ID_immbV,ID_instr[16],ID_DataB);
@@ -724,7 +734,7 @@ module agp32_processor(
    MUX_81 update_bV_forward(EX_DataB,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_PC + 32'd4,MEM_imm,EX_ForwardB,EX_DataB_Updated);
    MUX_21 set_alu_input1(EX_DataA_Updated,EX_PC,1'({EX_opc == 6'd9}),EX_ALU_input1);
    MUX_21 set_alu_input2(EX_DataB_Updated,EX_DataA_Updated,1'({EX_opc == 6'd9}),EX_ALU_input2);
-   ALU_Unit compute_alu_res(EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res,CarryFlag, OverflowFlag);
+   ALU_Unit compute_alu_res(EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);
    SHIFT_Unit compute_shift_res(EX_func,EX_DataA_Updated,EX_DataB_Updated,EX_SHIFT_res);
    
    // MEM
@@ -733,7 +743,7 @@ module agp32_processor(
    MUX_41 generate_read_data_byte(32'({MEM_read_data[7:0]}),32'({MEM_read_data[15:8]}),32'({MEM_read_data[23:16]}),32'({MEM_read_data[31:24]}),2'({MEM_DataA[1:0]}),MEM_read_data_byte);
 
    // WB
-   WB_Pipeline wb_pipeline(clk,MEM_PC,MEM_opc,MEM_func,MEM_Ra,MEM_Rb,MEM_Rw,MEM_imm,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_wr_reg,(MEM_write_enable && WB_state_flag),
+   WB_Pipeline wb_pipeline(clk,MEM_PC,MEM_opc,MEM_func,MEM_Ra,MEM_Rb,MEM_Rw,MEM_imm,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_wr_reg,((MEM_write_enable && WB_state_flag) || enable_wb),
                            WB_data_sel,WB_wr_reg,WB_isOut,WB_isLoadUpper,WB_PC,WB_opc,WB_func,WB_Ra,WB_Rb,WB_Rw,WB_imm,WB_ALU_res,WB_SHIFT_res,WB_read_data,WB_read_data_byte,WB_write_enable);
    MUX_81 mux_wb_write_data(WB_ALU_res,WB_SHIFT_res,32'({data_in}),WB_PC + 32'd4,WB_imm,WB_read_data,WB_read_data_byte,acc_res,WB_data_sel,WB_write_data);
 
@@ -747,7 +757,7 @@ module agp32_processor(
                end
 
                else if (EX_isInterrupt) begin
-                   command <= 3'd4;
+                   command <= 3'd1;
                    state = 3'd1;
                    do_interrupt = 1;
                    data_addr <= 32'd0;
@@ -771,21 +781,21 @@ module agp32_processor(
                    state = 3'd1;
                    data_addr <= MEM_DataB;
                    if (MEM_wr_mem) begin
-                       data_wdata = MEM_DataA;
-                       data_wstrb = 4'd15;
+                       data_wdata <= MEM_DataA;
+                       data_wstrb <= 4'd15;
                    end
                    else begin 
                        case (MEM_DataB[1:0]) 
-                       2'd0 : data_wdata[7:0] = MEM_DataA[7:0];
-                       2'd1 : data_wdata[15:8] = MEM_DataA[7:0];
-                       2'd2 : data_wdata[23:16] = MEM_DataA[7:0];
-                       2'd3 : data_wdata[31:24] = MEM_DataA[7:0];
+                       2'd0 : data_wdata[7:0] <= MEM_DataA[7:0];
+                       2'd1 : data_wdata[15:8] <= MEM_DataA[7:0];
+                       2'd2 : data_wdata[23:16] <= MEM_DataA[7:0];
+                       2'd3 : data_wdata[31:24] <= MEM_DataA[7:0];
                        endcase
-                       data_wstrb = (4'd1 << 4'({MEM_DataB[1:0]}));
+                       data_wstrb <= (4'd1 << 4'({MEM_DataB[1:0]}));
                     end
                end
                
-               PC_disable_flag = 0;
+               PC_enable_flag = 0;
            end
            3'd1: begin
                if (ready && (command == 3'd0)) begin
@@ -802,13 +812,13 @@ module agp32_processor(
                end
                
                command <= 3'd0;
-               PC_disable_flag = 1;
+               PC_enable_flag = 1;
            end
            3'd2: begin 
                if (acc_res_ready && (!acc_arg_ready)) begin
                state = 3'd0; 
                end 
-               PC_disable_flag = 1;
+               PC_enable_flag = 1;
                acc_arg_ready <= 0;
                command <= 3'd0;
            end
@@ -823,14 +833,29 @@ module agp32_processor(
                state = 3'd0;
                interrupt_req <= 0;
                end
-               PC_disable_flag = 1; 
+               PC_enable_flag = 1; 
            end
            3'd6: begin
                if (ready && (command == 3'd0)) begin
-               state = 3'd0;
+               state = 3'd7;
+               enable_wb = 1;
                end
                command <= 3'd0;
-               PC_disable_flag = 1;
+               PC_enable_flag = 1;
+           end
+           3'd7: begin
+               if (enable_wb && force_wr_reg == 0) begin
+               force_wr_reg = 1;
+               end
+               else if (enable_wb && force_wr_reg) begin
+               enable_wb = 0;
+               end
+               else if (enable_wb == 0 && force_wr_reg) begin
+               force_wr_reg = 0;
+               end
+               else if (enable_wb == 0 && force_wr_reg == 0) begin
+               state = 3'd0;
+               end
            end 
        endcase
        end

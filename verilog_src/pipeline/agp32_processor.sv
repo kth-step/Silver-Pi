@@ -8,7 +8,7 @@
    WB: write results back to registers.
 */
 
-// test: pipeline disabled so far
+// notice: pipeline disabled so far
 
 `timescale 1ns / 1ps
 `define WORD_SIZE 32
@@ -180,7 +180,7 @@ module PC_Unit(clk, PC_input, PC_output, write_enable);
     end  
 endmodule
 
-// SetUp_X: set up the corrent value for X.
+// SetUp_Opc: set up the corrent instr value (opc).
 module SetUp_Opc (instr,opc);
     input [`WORD_SIZE_INDEX:0] instr;
     
@@ -349,13 +349,13 @@ module WB_Setup (opc,data_sel,isOut_flag,isLoadUpper_flag,write_enable);
         end
 
 
-        /*
+        
         else begin
-            data_sel = 0;
-            isOut_flag = 0;
+            //data_sel = 0;
+            //isOut_flag = 0;
             isLoadUpper_flag = 0;
         end
-        */
+        
     end
 endmodule
 
@@ -559,8 +559,8 @@ module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_fl
             PC_wr_flag = 1;
             ID_wr_flag = 0;
             ID_flush_flag = 1;
-            EX_wr_flag = 0;
-            WB_flag = 0;
+            EX_wr_flag = 1;
+            WB_flag = 1;
         end
 
         else if (PC_enable_flag == 0 && (ID_opc == 6'd4 || ID_opc == 6'd5 || ID_opc == 6'd8)) begin

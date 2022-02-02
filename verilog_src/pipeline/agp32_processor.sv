@@ -349,13 +349,13 @@ module WB_Setup (opc,data_sel,isOut_flag,isLoadUpper_flag,write_enable);
         end
 
 
-        
+        /*
         else begin
-            //data_sel = 0;
-            //isOut_flag = 0;
+            data_sel = 0;
+            isOut_flag = 0;
             isLoadUpper_flag = 0;
         end
-        
+        */
     end
 endmodule
 
@@ -677,7 +677,7 @@ module agp32_processor(
    wire [5:0] ID_Ra, ID_Rb, ID_Rw;
    wire [5:0] EX_Ra, EX_Rb, EX_Rw;
    wire [1:0] EX_PC_sel;
-   wire [2:0] EX_ForwardA, EX_ForwardB;
+   //wire [2:0] EX_ForwardA, EX_ForwardB;
    wire [5:0] MEM_Ra, MEM_Rb, MEM_Rw;
    wire [5:0] WB_Ra, WB_Rb, WB_Rw;
    wire [2:0] WB_data_sel;
@@ -704,7 +704,7 @@ module agp32_processor(
                         (2) forward_unit, pipeline forwarding.
    */
    Hazard_Ctrl_Unit hazard_ctrl_unit(ID_opc,PC_enable_flag,state,IF_PC_write_enable,ID_ID_write_enable,ID_flush_flag,ID_EX_write_enable,WB_state_flag,PC_sel);
-   Forward_Ctrl_Unit forward_ctrl_unit(EX_Ra,EX_Rb,EX_EN_addra,EX_EN_addrb,MEM_Rw,WB_Rw,EX_opc,MEM_opc,MEM_wr_reg,WB_wr_reg,EX_ForwardA,EX_ForwardB);
+   //Forward_Ctrl_Unit forward_ctrl_unit(EX_Ra,EX_Rb,EX_EN_addra,EX_EN_addrb,MEM_Rw,WB_Rw,EX_opc,MEM_opc,MEM_wr_reg,WB_wr_reg,EX_ForwardA,EX_ForwardB);
 
    // IF 
    MUX_41 PC_Update (IF_PC_output + 32'd4, EX_ALU_res, EX_PC + EX_DataW, EX_PC + EX_DataW, PC_sel, IF_PC_input);
@@ -729,9 +729,9 @@ module agp32_processor(
 
    // EX
    EX_Pipeline ex_pipeline(clk,ID_PC,ID_opc,ID_func,ID_Ra,ID_Rb,ID_Rw,ID_imm,ID_DataA,ID_DataB,ID_DataW,ID_EN_addra,ID_EN_addrb,ID_EX_write_enable,
-                           EX_isInterrupt,EX_MemRead,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_DataA,EX_DataB,EX_DataW,EX_PC_sel,EX_EN_addra,EX_EN_addrb,EX_write_enable);
-   MUX_81 update_aV_forward(EX_DataA,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_PC + 32'd4,MEM_imm,EX_ForwardA,EX_DataA_Updated); 
-   MUX_81 update_bV_forward(EX_DataB,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_PC + 32'd4,MEM_imm,EX_ForwardB,EX_DataB_Updated);
+                           EX_isInterrupt,EX_MemRead,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_DataA_Updated,EX_DataB_Updated,EX_DataW,EX_PC_sel,EX_EN_addra,EX_EN_addrb,EX_write_enable);
+   //MUX_81 update_aV_forward(EX_DataA,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_PC + 32'd4,MEM_imm,EX_ForwardA,EX_DataA_Updated); 
+   //MUX_81 update_bV_forward(EX_DataB,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_PC + 32'd4,MEM_imm,EX_ForwardB,EX_DataB_Updated);
    MUX_21 set_alu_input1(EX_DataA_Updated,EX_PC,1'({EX_opc == 6'd9}),EX_ALU_input1);
    MUX_21 set_alu_input2(EX_DataB_Updated,EX_DataA_Updated,1'({EX_opc == 6'd9}),EX_ALU_input2);
    ALU_Unit compute_alu_res(EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);

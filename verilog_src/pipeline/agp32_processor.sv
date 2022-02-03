@@ -8,8 +8,6 @@
    WB: write results back to registers.
 */
 
-// notice: pipeline disabled so far
-
 `timescale 1ns / 1ps
 `define WORD_SIZE 32
 `define WORD_SIZE_INDEX 31
@@ -20,8 +18,8 @@ module MUX_21(input0, input1, sel, output0);
     input sel;
 
     output [`WORD_SIZE_INDEX:0] output0;
-
-	assign output0 = (sel == 0 ? input0 : input1);
+    
+    assign output0 = (sel == 0 ? input0 : input1);
 endmodule
 
 module MUX_41(input0, input1, input2, input3, sel, output0);
@@ -347,15 +345,6 @@ module WB_Setup (opc,data_sel,isOut_flag,isLoadUpper_flag,write_enable);
             isOut_flag = (opc == 6'd6) ? 1 : 0;
             isLoadUpper_flag = (opc == 6'd14) ? 1 : 0;
         end
-
-
-        /*
-        else begin
-            data_sel = 0;
-            isOut_flag = 0;
-            isLoadUpper_flag = 0;
-        end
-        */
     end
 endmodule
 
@@ -405,7 +394,6 @@ module ID_Pipeline (clk, input_instr, input_PC, output_instr, output_PC, write_e
 
         if (flush_flag) begin
             output_instr = 32'h0000003F; // an invalid instruction
-            //output_PC = 0;
         end   
     end
 endmodule
@@ -513,8 +501,6 @@ endmodule
 
 // handle hazards
 module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_flush_flag,EX_wr_flag,WB_flag,PCSel);
-    //input [5:0] ID_addrA, ID_addrB, EX_addrD,ID_opc;
-    //input rd_mem_flag;
     input [5:0] ID_opc;
     input PC_enable_flag;
     input [1:0] PCSel;
@@ -523,7 +509,7 @@ module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_fl
     output logic PC_wr_flag, ID_wr_flag, ID_flush_flag , EX_wr_flag, WB_flag;
 
     always_comb begin
-        if (state == 3'd5 || state == 3'd4 || state == 3'd3 || state == 3'd7)  // stuck/interrupt/initial states
+        if (state == 3'd5 || state == 3'd4 || state == 3'd3 || state == 3'd7)  // special states
         begin
             PC_wr_flag = 0;
             ID_wr_flag = 0;
@@ -531,6 +517,7 @@ module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_fl
             EX_wr_flag = 0;
             WB_flag = 0;
         end
+        
         else if (state == 3'd6 || state == 3'd2) begin // waiting for loading memory or acc
             PC_wr_flag = 0;
             ID_wr_flag = 0;
@@ -538,15 +525,7 @@ module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_fl
             EX_wr_flag = 0;
             WB_flag = 0;
         end
-        /*
-        else if (state == 3'd7) begin
-            PC_wr_flag = 0;
-            ID_wr_flag = 0;
-            ID_flush_flag = 1;
-            EX_wr_flag = 0;
-            WB_flag = 0;
-        end
-        */
+        
         else if (state == 3'd1) begin  // fetching new instr state
             PC_wr_flag = 0;
             ID_wr_flag = 0;
@@ -599,18 +578,14 @@ module Forward_Ctrl_Unit (EX_addrA,EX_addrB,EX_EN_addrA,EX_EN_addrB,MEM_addrD,WB
 
    wire check_addrA, check_addrB;
 
-   assign check_addrA = ((opc == 6'd7) || (opc == 6'd12) || (opc == 6'd13) || (opc == 6'd14)) ? 0 : 1;
+   assign check_addrA = ((opc == 6'd7) || (opc == 6'd12) || (opc == 6'd13) || (opc == 6'd14) || (opc == 6'd15)) ? 0 : 1;
    assign check_addrB = ((opc == 6'd0) || (opc == 6'd1) || (opc == 6'd2) || (opc == 6'd3) || (opc == 6'd6) ||
                          (opc == 6'd10) || (opc == 6'd11)) ? 1 : 0;
 
    always_comb begin
        if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && EX_EN_addrA == 0 && check_addrA)
-           forwardA = 3'd7;
-       else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrA == 0 && check_addrA)
-           forwardA = 3'd6;
-       else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd5 && EX_EN_addrA == 0 && check_addrA)
            forwardA = 3'd5;
-       else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd4 && EX_EN_addrA == 0 && check_addrA)
+       else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrA == 0 && check_addrA)
            forwardA = 3'd4;
        else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd1 && EX_EN_addrA == 0 && check_addrA)
            forwardA = 3'd3;
@@ -622,12 +597,8 @@ module Forward_Ctrl_Unit (EX_addrA,EX_addrB,EX_EN_addrA,EX_EN_addrB,MEM_addrD,WB
            forwardA = 3'd0;
     
        if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && EX_EN_addrB == 0 && check_addrB)
-           forwardB = 3'd7;
-       else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrB == 0 && check_addrB)
-           forwardB = 3'd6;
-       else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd5 && EX_EN_addrB == 0 && check_addrB)
            forwardB = 3'd5;
-       else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd4 && EX_EN_addrB == 0 && check_addrB)
+       else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrB == 0 && check_addrB)
            forwardB = 3'd4;
        else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd1 && EX_EN_addrB == 0 && check_addrB)
            forwardB = 3'd3;
@@ -677,7 +648,7 @@ module agp32_processor(
    wire [5:0] ID_Ra, ID_Rb, ID_Rw;
    wire [5:0] EX_Ra, EX_Rb, EX_Rw;
    wire [1:0] EX_PC_sel;
-   //wire [2:0] EX_ForwardA, EX_ForwardB;
+   wire [2:0] EX_ForwardA, EX_ForwardB;
    wire [5:0] MEM_Ra, MEM_Rb, MEM_Rw;
    wire [5:0] WB_Ra, WB_Rb, WB_Rw;
    wire [2:0] WB_data_sel;
@@ -704,7 +675,7 @@ module agp32_processor(
                         (2) forward_unit, pipeline forwarding.
    */
    Hazard_Ctrl_Unit hazard_ctrl_unit(ID_opc,PC_enable_flag,state,IF_PC_write_enable,ID_ID_write_enable,ID_flush_flag,ID_EX_write_enable,WB_state_flag,PC_sel);
-   //Forward_Ctrl_Unit forward_ctrl_unit(EX_Ra,EX_Rb,EX_EN_addra,EX_EN_addrb,MEM_Rw,WB_Rw,EX_opc,MEM_opc,MEM_wr_reg,WB_wr_reg,EX_ForwardA,EX_ForwardB);
+   Forward_Ctrl_Unit forward_ctrl_unit(EX_Ra,EX_Rb,EX_EN_addra,EX_EN_addrb,MEM_Rw,WB_Rw,EX_opc,MEM_opc,MEM_wr_reg,(WB_wr_reg && WB_state_flag),EX_ForwardA,EX_ForwardB);
 
    // IF 
    MUX_41 PC_Update (IF_PC_output + 32'd4, EX_ALU_res, EX_PC + EX_DataW, EX_PC + EX_DataW, PC_sel, IF_PC_input);
@@ -729,9 +700,9 @@ module agp32_processor(
 
    // EX
    EX_Pipeline ex_pipeline(clk,ID_PC,ID_opc,ID_func,ID_Ra,ID_Rb,ID_Rw,ID_imm,ID_DataA,ID_DataB,ID_DataW,ID_EN_addra,ID_EN_addrb,ID_EX_write_enable,
-                           EX_isInterrupt,EX_MemRead,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_DataA_Updated,EX_DataB_Updated,EX_DataW,EX_PC_sel,EX_EN_addra,EX_EN_addrb,EX_write_enable);
-   //MUX_81 update_aV_forward(EX_DataA,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_PC + 32'd4,MEM_imm,EX_ForwardA,EX_DataA_Updated); 
-   //MUX_81 update_bV_forward(EX_DataB,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_read_data,MEM_read_data_byte,MEM_PC + 32'd4,MEM_imm,EX_ForwardB,EX_DataB_Updated);
+                           EX_isInterrupt,EX_MemRead,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_DataA,EX_DataB,EX_DataW,EX_PC_sel,EX_EN_addra,EX_EN_addrb,EX_write_enable);
+   MUX_81 update_aV_forward(EX_DataA,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_PC + 32'd4,MEM_imm,32'd0,32'd0,EX_ForwardA,EX_DataA_Updated); 
+   MUX_81 update_bV_forward(EX_DataB,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_PC + 32'd4,MEM_imm,32'd0,32'd0,EX_ForwardB,EX_DataB_Updated);
    MUX_21 set_alu_input1(EX_DataA_Updated,EX_PC,1'({EX_opc == 6'd9}),EX_ALU_input1);
    MUX_21 set_alu_input2(EX_DataB_Updated,EX_DataA_Updated,1'({EX_opc == 6'd9}),EX_ALU_input2);
    ALU_Unit compute_alu_res(EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);

@@ -1,7 +1,11 @@
 `timescale 1ns / 1ps
 
-// Inefficient, at least space-wise, but simple...
-// Two lowest bits in addresses are assumed to be 0...
+/* Notable changes compared to the previous version:
+   1. Only keep the instruction cache, data cache removed.
+   2. Data memory operations (load and store) are directly sent to the main memory via AXI.
+   3. Since the data and instruction operations use the same memory region, data store may update the instruction cache under specific conditions.
+   4. Update the data structure and code to fetch 16 32-bits instructions in one round.   
+*/
 
 module cache_v2(
     input clk,
@@ -96,7 +100,7 @@ module cache_v2(
     output reg mem_i_arvalid = 0,
     input wire mem_i_arready,
     output reg[31:0] mem_i_araddr,
-    output reg[7:0] mem_i_arlen = 3,
+    output reg[7:0] mem_i_arlen = 15,
     output reg[2:0] mem_i_arsize = 'b010,
     output reg[1:0] mem_i_arburst = 1,
     
@@ -109,31 +113,31 @@ module cache_v2(
 
 // Sizes
 //
-// Cache size: 2^14 bytes
-// Blocks are 32 bytes, i.e. 2^4
+// Cache size: 2^16 bytes
+// Blocks are 64 bytes, i.e. 2^6
 // Number of blocks are 1024, i.e. 2^10
 
 // Address structure
 // NOTE: tag bits are the ms-bits here
 typedef struct packed {
-  logic[17:0] tag;
+  logic[15:0] tag;
   logic[9:0] index;
-  logic[3:0] block_offset;
+  logic[5:0] block_offset;
 } address;
 
 // BRAM structure
 typedef struct packed {
   logic active;
-  logic[17:0] tag;
-  logic[127:0] data;
+  logic[15:0] tag;
+  logic[511:0] data;
 } cache_block;
 
 logic [31:0] mem_start = 0;
 
 // Instruction BRAM
 
-logic[127:0] data_buffer;
-logic[127:0] inst_buffer;
+logic[511:0] data_buffer;
+logic[511:0] inst_buffer;
 
 logic data_ibram_we = 0;
 logic[9:0] data_ibram_addr;
@@ -155,8 +159,8 @@ enum { INIT, BRAM_WAIT, BRAM_RESP, DRAM_WORK, ERROR } state = INIT;
 typedef enum { BLOCK_NONE, BLOCK_HIT, BLOCK_OVERWRITE, BLOCK_ERROR } block_state;
 block_state inst_block_state = BLOCK_NONE;
 
-logic[3:0] data_write_check;
-logic[3:0] inst_block_read;
+logic[2:0] data_write_check;
+logic[5:0] inst_block_read;
 
 logic data_inf_error = 0;
 
@@ -264,17 +268,9 @@ always_ff @ (posedge clk) begin
         BLOCK_OVERWRITE: begin
             mem_i_arvalid <= 1;
             //mem_i_araddr <= later_inst_addr;
-            mem_i_araddr <= {later_inst_addr[31:4], 4'b0};
+            mem_i_araddr <= {later_inst_addr[31:6], 6'b0};
             
-            /*
-            inst_block_read = (later_inst_addr.block_offset == 4'd4) ? 1 : 
-                              ((later_inst_addr.block_offset == 4'd8) ? 2 :
-                              ((later_inst_addr.block_offset == 4'd12) ? 3 : 0));
-            */
             inst_block_read = 0;
-            
-            mem_i_arlen <= 3;
-            //mem_i_arlen <= (later_inst_addr[11:0] >= 12'hff4) ? 0 : 3;
         
             inst_block_read_done = 0;
         end

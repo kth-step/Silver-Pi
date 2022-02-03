@@ -6,15 +6,15 @@ input clk;
 
 input data_we;
 input [9:0] data_addr;
-input [146:0] data_in;
-output reg [146:0] data_out;
+input [528:0] data_in;
+output reg [528:0] data_out;
 
 input inst_we;
 input [9:0] inst_addr;
-input [146:0] inst_in;
-output reg [146:0] inst_out;
+input [528:0] inst_in;
+output reg [528:0] inst_out;
 
-logic[146:0] ram[2**10 - 1:0];
+logic[528:0] ram[2**10 - 1:0];
 
 initial begin
   for (integer i = 0; i < 2**10; i = i + 1) begin

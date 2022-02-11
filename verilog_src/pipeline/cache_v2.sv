@@ -3,8 +3,9 @@
 /* Notable changes compared to the previous version:
    1. Only keep the instruction cache, data cache removed.
    2. Data memory operations (load and store) are directly sent to the main memory via AXI.
-   3. Since the data and instruction operations use the same memory region, data store may update the instruction cache under specific conditions.
-   4. Update the data structure and code to fetch 16 32-bits instructions in one round.   
+   3. Update the data structure and code to fetch 16 32-bits instructions in one round.
+   4. If the command is 1 (only fetch the next instruction), produce the hit/miss (+ inst_rdata if hit) in one clock cycle.
+   5. The cache bram is changed to enable "assign inst_out = ram[inst_addr];".  
 */
 
 module cache_v2(
@@ -135,22 +136,14 @@ typedef struct packed {
 logic [31:0] mem_start = 0;
 
 // Instruction BRAM
-
-logic[511:0] data_buffer;
 logic[511:0] inst_buffer;
-
-logic data_ibram_we = 0;
-logic[9:0] data_ibram_addr;
-cache_block data_ibram_in;
-cache_block data_ibram_out;
 
 logic inst_ibram_we = 0;
 logic[9:0] inst_ibram_addr;
 cache_block inst_ibram_in;
 cache_block inst_ibram_out;
                  
-cache_bram_v2 ibram(.clk(clk), .data_we(data_ibram_we), .data_addr(data_ibram_addr), .data_in(data_ibram_in), .data_out(data_ibram_out),
-                               .inst_we(inst_ibram_we), .inst_addr(inst_ibram_addr), .inst_in(inst_ibram_in), .inst_out(inst_ibram_out));
+cache_bram_v2 ibram(.clk(clk), .inst_we(inst_ibram_we), .inst_addr(inst_ibram_addr), .inst_in(inst_ibram_in), .inst_out(inst_ibram_out));
 
 // Internal state
 
@@ -195,21 +188,19 @@ always_ff @ (posedge clk) begin
    end
 end
 
+assign later_inst_addr = mem_start + inst_addr;
+assign inst_ibram_addr = later_inst_addr.index;
+
 always_ff @ (posedge clk) begin
     case (state)
     INIT: begin
-        data_ibram_we <= 0;
         inst_ibram_we <= 0;
         
-        if (command != 0) begin
+        if ((command != 0) && (command != 1)) begin
             later_command = command;
             later_data_addr = mem_start + data_addr;
-            later_inst_addr = mem_start + inst_addr;
             later_data_wdata = data_wdata;
             later_data_wstrb = data_wstrb;
-            
-            data_ibram_addr <= later_data_addr.index;
-            inst_ibram_addr <= later_inst_addr.index;
             
             // Simplifies implementation for now, know that the CakeML compiler
             // will not generate self-modifying code like this:
@@ -219,6 +210,24 @@ always_ff @ (posedge clk) begin
             end else
                 state <= BRAM_WAIT;
         end
+        
+        else if (command == 1) begin
+           later_command = command;
+           inst_block_state = inst_block_action(inst_ibram_out, later_inst_addr);
+           
+           case (inst_block_state)
+           BLOCK_HIT: begin 
+              //inst_rdata <= inst_ibram_out.data[9'd8*later_inst_addr.block_offset +: 32];
+              inst_buffer = inst_ibram_out.data;
+              state <= INIT;
+           end
+           
+           BLOCK_OVERWRITE: begin
+              state <= BRAM_WAIT;
+           end
+           endcase
+        end
+        
     end
         
     BRAM_WAIT:
@@ -241,10 +250,6 @@ always_ff @ (posedge clk) begin
             data_write_check = 0;
             mem_d_wdata <= later_data_wdata;
             mem_d_wstrb <= later_data_wstrb;
-
-            if ((data_ibram_out.tag == later_data_addr.tag) && data_ibram_out.active) begin 
-                data_buffer = data_ibram_out.data;
-            end
             
             data_inf_done = 0;
         end
@@ -267,7 +272,6 @@ always_ff @ (posedge clk) begin
         
         BLOCK_OVERWRITE: begin
             mem_i_arvalid <= 1;
-            //mem_i_araddr <= later_inst_addr;
             mem_i_araddr <= {later_inst_addr[31:6], 6'b0};
             
             inst_block_read = 0;
@@ -330,8 +334,6 @@ always_ff @ (posedge clk) begin
         // Inst
         //
         
-        inst_ibram_we <= 0; // In case we had BLOCK_IN_DATA_CACHE in previous state
-        
         // Read address
         if (mem_i_arvalid && mem_i_arready)
             mem_i_arvalid <= 0;
@@ -375,24 +377,6 @@ always_ff @ (posedge clk) begin
     endcase
     
     if (data_inf_done && inst_block_state == BLOCK_HIT) begin
-        //
-        // Data
-        //
-            
-        // Is data write? May update the cache.
-        if (later_command == 3) begin
-            for (logic[2:0] i = 0; i < 4; i = i + 1) begin
-                if (later_data_wstrb[i]) begin
-                    data_buffer[9'd8*(later_data_addr.block_offset + i) +: 8] = later_data_wdata[i*8 +: 8];
-                end
-            end
-        
-            // only when the data block is already in the cache, then update the cache with changed data
-            if ((data_ibram_out.tag == later_data_addr.tag) && data_ibram_out.active) begin
-                data_ibram_we <= 1;
-                data_ibram_in <= {1'b1, later_data_addr.tag, data_buffer};
-            end   
-        end
         
         // Always update inst_rdata...    
         inst_rdata <= inst_buffer[9'd8*later_inst_addr.block_offset +: 32];    

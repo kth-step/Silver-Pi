@@ -147,7 +147,7 @@ cache_bram_v2 ibram(.clk(clk), .inst_we(inst_ibram_we), .inst_addr(inst_ibram_ad
 
 // Internal state
 
-enum { INIT, BRAM_WAIT, BRAM_RESP, DRAM_WORK, ERROR } state = INIT;
+enum { INIT, BRAM_WAIT, BRAM_RESP, MEM_WORK, ERROR } state = INIT;
 
 typedef enum { BLOCK_NONE, BLOCK_HIT, BLOCK_OVERWRITE, BLOCK_ERROR } block_state;
 block_state inst_block_state = BLOCK_NONE;
@@ -288,10 +288,10 @@ always_ff @ (posedge clk) begin
         if ((later_command != 2) && (later_command != 3) && inst_block_state == BLOCK_HIT)
             state <= INIT;
         else
-            state <= DRAM_WORK;
+            state <= MEM_WORK;
     end
     
-    DRAM_WORK: begin
+    MEM_WORK: begin
         //
         // Data
         //

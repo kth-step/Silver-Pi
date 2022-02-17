@@ -286,9 +286,10 @@ module EX_Ctrl_Unit (opc,isAcc_flag,interrupt_flag,MemRead,write_enable);
                isAcc_flag = (opc == 6'd8);
            end
            
-           else
+           else begin
                interrupt_flag = 0;
-               isAcc_flag = 0; 
+               isAcc_flag = 0;
+           end 
        end
 endmodule
 
@@ -504,12 +505,12 @@ module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_fl
     input [5:0] ID_opc;
     input PC_enable_flag;
     input [1:0] PCSel;
-    input [2:0] state;
+    input [3:0] state;
 
     output logic PC_wr_flag, ID_wr_flag, ID_flush_flag , EX_wr_flag, WB_flag;
 
     always_comb begin
-        if (state == 3'd5 || state == 3'd4 || state == 3'd3 || state == 3'd7)  // special states
+        if (state == 4'd5 || state == 4'd4 || state == 4'd3 || state == 4'd7)  // special states
         begin
             PC_wr_flag = 0;
             ID_wr_flag = 0;
@@ -518,7 +519,7 @@ module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_fl
             WB_flag = 0;
         end
         
-        else if (state == 3'd6 || state == 3'd2) begin // waiting for loading memory or acc
+        else if (state == 4'd6 || state == 4'd2) begin // waiting for loading memory or acc
             PC_wr_flag = 0;
             ID_wr_flag = 0;
             ID_flush_flag = 0;
@@ -526,12 +527,20 @@ module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_fl
             WB_flag = 0;
         end
         
-        else if (state == 3'd1) begin  // fetching new instr state
+        else if (state == 4'd1) begin  // fetching new instr state
             PC_wr_flag = 0;
             ID_wr_flag = 0;
             ID_flush_flag = 1;
             EX_wr_flag = 1;
             WB_flag = 1;
+        end
+        
+        else if (state == 4'd8) begin // update the PC state
+            PC_wr_flag = 0;
+            ID_wr_flag = 1;
+            ID_flush_flag = 0;
+            EX_wr_flag = 0;
+            WB_flag = 0;
         end
 
         else if (PCSel != 0) begin
@@ -628,7 +637,7 @@ module agp32_processor(
     input logic mem_start_ready,
     input logic interrupt_ack);
 
-   logic [2:0] state = 3'd3;
+   logic [3:0] state = 4'd3;
    logic do_interrupt = 0;
 
    /* additional wires for pipeline */
@@ -667,7 +676,7 @@ module agp32_processor(
 
    // assign
    assign PC = IF_PC_output;
-   assign IF_instr = inst_rdata;
+   assign IF_instr = ready ? inst_rdata : 32'h0000003F;
    assign MEM_read_data = data_rdata;
    assign PC_sel = ((EX_PC_sel == 2'b01 || (EX_PC_sel == 2'b10 && EX_ALU_res == 0) || (EX_PC_sel == 2'b11 && EX_ALU_res != 0))  ? EX_PC_sel : 2'b00);
    
@@ -721,35 +730,16 @@ module agp32_processor(
    always_ff @(posedge clk) begin
        if (error == 2'd0) begin
        case (state)
-           3'd0: begin
-               if ((EX_opc == 6'd0 || EX_opc == 6'd1 || EX_opc == 6'd6 || EX_opc == 6'd7 || EX_opc == 6'd9 || EX_opc == 6'd10 || EX_opc == 6'd11 || EX_opc == 6'd13 || EX_opc == 6'd14)) begin 
-                   command <= 3'd1; 
-                   state = 3'd1;
-               end
-
-               else if (EX_isInterrupt) begin
-                   command <= 3'd1;
-                   state = 3'd1;
-                   do_interrupt = 1;
-                   data_addr <= 32'd0;
-               end
-               
-               else if (EX_isAcc) begin
-                   command <= 3'd1;
-                   state = 3'd2;
-                   acc_arg = EX_DataA_Updated;
-                   acc_arg_ready <= 1;
-               end
-
-               else if (MEM_read_mem) begin
+           4'd0: begin
+               if (MEM_read_mem) begin
                    command <= 3'd2;
-                   state = 3'd6;
+                   state = 4'd6;
                    data_addr <= MEM_DataA;    
                end
 
                else if (MEM_wr_mem || MEM_wr_mem_byte) begin 
                    command <= 3'd3;
-                   state = 3'd1;
+                   state = 4'd1;
                    data_addr <= MEM_DataB;
                    if (MEM_wr_mem) begin
                        data_wdata <= MEM_DataA;
@@ -766,16 +756,35 @@ module agp32_processor(
                     end
                end
                
+               else if ((EX_opc == 6'd0 || EX_opc == 6'd1 || EX_opc == 6'd6 || EX_opc == 6'd7 || EX_opc == 6'd9 || EX_opc == 6'd10 || EX_opc == 6'd11 || EX_opc == 6'd13 || EX_opc == 6'd14)) begin 
+                   command <= 3'd1; 
+                   state = 4'd1;
+               end
+
+               else if (EX_isInterrupt) begin
+                   command <= 3'd1;
+                   state = 4'd1;
+                   do_interrupt = 1;
+                   data_addr <= 32'd0;
+               end
+               
+               else if (EX_isAcc) begin
+                   command <= 3'd1;
+                   state = 4'd2;
+                   acc_arg = EX_DataA_Updated;
+                   acc_arg_ready <= 1;
+               end
+               
                PC_enable_flag = 0;
            end
-           3'd1: begin
+           4'd1: begin
                if (ready && (command == 3'd0)) begin
                    if (do_interrupt) begin
-                      state = 3'd4; 
+                      state = 4'd4; 
                       do_interrupt = 0;
                       interrupt_req <= 1;
                    end
-                   else state = 3'd0;
+                   else state = 4'd8;
                end
                
                if (WB_isOut) begin
@@ -785,36 +794,36 @@ module agp32_processor(
                command <= 3'd0;
                PC_enable_flag = 1;
            end
-           3'd2: begin 
+           4'd2: begin 
                if (acc_res_ready && (!acc_arg_ready)) begin
-               state = 3'd0; 
+               state = 4'd0; 
                end 
                PC_enable_flag = 1;
                acc_arg_ready <= 0;
                command <= 3'd0;
            end
-           3'd3: begin 
+           4'd3: begin 
                if (mem_start_ready) begin
                command <= 3'd1;
-               state = 3'd1; 
+               state = 4'd1; 
                end
            end
-           3'd4: begin 
+           4'd4: begin 
                if (interrupt_ack) begin
-               state = 3'd0;
+               state = 4'd0;
                interrupt_req <= 0;
                end
                PC_enable_flag = 1; 
            end
-           3'd6: begin
+           4'd6: begin
                if (ready && (command == 3'd0)) begin
-               state = 3'd7;
+               state = 4'd7;
                enable_wb = 1;
                end
                command <= 3'd0;
                PC_enable_flag = 1;
            end
-           3'd7: begin
+           4'd7: begin
                if (enable_wb && force_wr_reg == 0) begin
                force_wr_reg = 1;
                end
@@ -825,12 +834,15 @@ module agp32_processor(
                force_wr_reg = 0;
                end
                else if (enable_wb == 0 && force_wr_reg == 0) begin
-               state = 3'd0;
+               state = 4'd0;
                end
+           end
+           4'd8: begin
+               state = 3'd0;
            end 
        endcase
        end
-       else state = 3'd5;
+       else state = 4'd5;
    end
    
    always_ff @(posedge clk) begin

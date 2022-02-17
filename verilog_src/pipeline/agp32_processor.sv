@@ -273,42 +273,42 @@ module Imm_Sel (instr,imm,imm_aV,imm_bV,imm_dV);
 endmodule
 
 // set up necessary flags for the stage based on opc (instruction).
-module EX_Ctrl_Unit (opc,interrupt_flag,MemRead,write_enable);
+module EX_Ctrl_Unit (opc,isAcc_flag,interrupt_flag,MemRead,write_enable);
        input [5:0] opc;
        input write_enable;
 
-       output logic interrupt_flag,MemRead;
+       output logic isAcc_flag,interrupt_flag,MemRead;
 
        always_comb begin
            if (write_enable) begin
                MemRead = (opc == 6'd4 || opc == 6'd5);
                interrupt_flag = (opc == 6'd12);
+               isAcc_flag = (opc == 6'd8);
            end
            
            else
-               interrupt_flag = 0; 
+               interrupt_flag = 0;
+               isAcc_flag = 0; 
        end
 endmodule
 
 
-module MEM_SetUp (opc,isAcc_flag,write_mem,write_mem_byte,write_reg,write_enable);
+module MEM_SetUp (opc,write_mem,write_mem_byte,write_reg,write_enable);
     input [5:0] opc;
     input write_enable;
 
-    output logic write_mem, write_mem_byte, write_reg, isAcc_flag;
+    output logic write_mem, write_mem_byte, write_reg;
 
     always_comb begin
         if (write_enable) begin
             write_mem = (opc == 6'd2); // StoreMem
             write_mem_byte = (opc == 6'd3); // StoreMemByte
-            write_reg = (opc == 6'd0 || opc == 6'd1 || opc == 6'd4 || opc == 6'd5 || opc == 6'd6 || opc == 6'd7 || opc == 6'd8 || opc == 6'd9 || opc == 6'd13 || opc == 6'd14) ? 1 : 0;
-            isAcc_flag = (opc == 6'd8);
+            write_reg = (opc == 6'd0 || opc == 6'd1 || opc == 6'd4 || opc == 6'd5 || opc == 6'd6 || opc == 6'd7 || opc == 6'd8 || opc == 6'd9 || opc == 6'd13 || opc == 6'd14) ? 1 : 0;        
         end
         else begin
             write_mem = 0;
             write_mem_byte = 0;
             write_reg = 0;
-            isAcc_flag = 0;
         end     
     end
 endmodule
@@ -399,14 +399,14 @@ module ID_Pipeline (clk, input_instr, input_PC, output_instr, output_PC, write_e
 endmodule
 
 module EX_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addressB,input_addressD,input_imm,input_readdataA,input_readdataB,input_dataD,input_en_addra,input_en_addrb,input_write_enable,
-                    interrupt_flag,MemRead,output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_imm,output_readdataA,output_readdataB,output_dataD,output_PC_sel,output_en_addra,output_en_addrb,output_write_enable);
+                    isAcc_flag,interrupt_flag,MemRead,output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_imm,output_readdataA,output_readdataB,output_dataD,output_PC_sel,output_en_addra,output_en_addrb,output_write_enable);
         input clk,input_en_addra,input_en_addrb,input_write_enable;
         input [5:0] input_opc;
         input [3:0] input_func;
         input [5:0] input_addressA,input_addressB,input_addressD;
         input [`WORD_SIZE_INDEX:0] input_PC,input_imm,input_readdataA,input_readdataB,input_dataD;
 
-        output logic interrupt_flag,MemRead,output_en_addra,output_en_addrb,output_write_enable;
+        output logic isAcc_flag,interrupt_flag,MemRead,output_en_addra,output_en_addrb,output_write_enable;
         output logic [5:0] output_opc;
         output logic [3:0] output_func;
         output logic [5:0] output_addressA,output_addressB,output_addressD;
@@ -415,7 +415,7 @@ module EX_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addre
 
         Com_Pipeline com_pipeline_ex(clk,input_PC,input_opc,input_func,input_addressA,input_addressB,input_addressD,input_write_enable,
                                      output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_write_enable);
-        EX_Ctrl_Unit EX_Ctrl(output_opc,interrupt_flag,MemRead,output_write_enable);
+        EX_Ctrl_Unit EX_Ctrl(output_opc,isAcc_flag,interrupt_flag,MemRead,output_write_enable);
 
         always_ff @(posedge clk) begin
             if (output_write_enable) begin 
@@ -433,14 +433,14 @@ module EX_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addre
 endmodule
 
 module MEM_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addressB,input_addressD,input_imm,input_ALUres,input_shift_res,input_readdataA,input_readdataB,input_rd_mem,input_write_enable,
-                     isAcc_flag,output_rd_mem,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_imm,output_ALUres,output_shift_res,output_readdataA,output_readdataB,output_write_enable);
+                     output_rd_mem,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_imm,output_ALUres,output_shift_res,output_readdataA,output_readdataB,output_write_enable);
     input clk,input_rd_mem,input_write_enable;
     input [5:0] input_opc;
     input [3:0] input_func;
     input [5:0] input_addressA,input_addressB,input_addressD;
     input [`WORD_SIZE_INDEX:0] input_PC,input_imm,input_readdataA,input_readdataB,input_ALUres,input_shift_res;
 
-    output logic output_rd_mem = 0, output_wr_mem, output_wr_mem_byte, output_wr_reg, output_write_enable, isAcc_flag;
+    output logic output_rd_mem = 0, output_wr_mem, output_wr_mem_byte, output_wr_reg, output_write_enable;
     output logic [5:0] output_opc;
     output logic [3:0] output_func;
     output logic [5:0] output_addressA,output_addressB,output_addressD;
@@ -449,7 +449,7 @@ module MEM_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addr
 
     Com_Pipeline com_pipeline_mem(clk,input_PC,input_opc,input_func,input_addressA,input_addressB,input_addressD,input_write_enable,
                                      output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_write_enable);
-    MEM_SetUp mem_setup(output_opc,isAcc_flag,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_write_enable);
+    MEM_SetUp mem_setup(output_opc,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_write_enable);
 
     always_ff @(posedge clk) begin
         if (output_write_enable) begin 
@@ -640,8 +640,8 @@ module agp32_processor(
 
    wire IF_PC_write_enable;
    wire ID_ID_write_enable, ID_EX_write_enable, ID_flush_flag, ID_EN_addra, ID_EN_addrb;
-   wire EX_write_enable, EX_isInterrupt, EX_MemRead, EX_EN_addra, EX_EN_addrb;
-   wire MEM_write_enable, MEM_read_mem, MEM_wr_mem, MEM_wr_mem_byte, MEM_wr_reg, MEM_isAcc;
+   wire EX_write_enable, EX_isInterrupt, EX_MemRead, EX_EN_addra, EX_EN_addrb, EX_isAcc;
+   wire MEM_write_enable, MEM_read_mem, MEM_wr_mem, MEM_wr_mem_byte, MEM_wr_reg;
    wire WB_write_enable, WB_wr_reg, WB_isOut, WB_isLoadUpper, WB_state_flag;
 
    wire [1:0] PC_sel;
@@ -700,7 +700,7 @@ module agp32_processor(
 
    // EX
    EX_Pipeline ex_pipeline(clk,ID_PC,ID_opc,ID_func,ID_Ra,ID_Rb,ID_Rw,ID_imm,ID_DataA,ID_DataB,ID_DataW,ID_EN_addra,ID_EN_addrb,ID_EX_write_enable,
-                           EX_isInterrupt,EX_MemRead,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_DataA,EX_DataB,EX_DataW,EX_PC_sel,EX_EN_addra,EX_EN_addrb,EX_write_enable);
+                           EX_isAcc,EX_isInterrupt,EX_MemRead,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_DataA,EX_DataB,EX_DataW,EX_PC_sel,EX_EN_addra,EX_EN_addrb,EX_write_enable);
    MUX_81 update_aV_forward(EX_DataA,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_PC + 32'd4,MEM_imm,32'd0,32'd0,EX_ForwardA,EX_DataA_Updated); 
    MUX_81 update_bV_forward(EX_DataB,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_PC + 32'd4,MEM_imm,32'd0,32'd0,EX_ForwardB,EX_DataB_Updated);
    MUX_21 set_alu_input1(EX_DataA_Updated,EX_PC,1'({EX_opc == 6'd9}),EX_ALU_input1);
@@ -710,7 +710,7 @@ module agp32_processor(
    
    // MEM
    MEM_Pipeline mem_pipeline(clk,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_ALU_res,EX_SHIFT_res,EX_DataA_Updated,EX_DataB_Updated,EX_MemRead,EX_write_enable,
-                             MEM_isAcc,MEM_read_mem,MEM_wr_mem,MEM_wr_mem_byte,MEM_wr_reg,MEM_PC,MEM_opc,MEM_func,MEM_Ra,MEM_Rb,MEM_Rw,MEM_imm,MEM_ALU_res,MEM_SHIFT_res,MEM_DataA,MEM_DataB,MEM_write_enable);
+                             MEM_read_mem,MEM_wr_mem,MEM_wr_mem_byte,MEM_wr_reg,MEM_PC,MEM_opc,MEM_func,MEM_Ra,MEM_Rb,MEM_Rw,MEM_imm,MEM_ALU_res,MEM_SHIFT_res,MEM_DataA,MEM_DataB,MEM_write_enable);
    MUX_41 generate_read_data_byte(32'({MEM_read_data[7:0]}),32'({MEM_read_data[15:8]}),32'({MEM_read_data[23:16]}),32'({MEM_read_data[31:24]}),2'({MEM_DataA[1:0]}),MEM_read_data_byte);
 
    // WB
@@ -734,10 +734,10 @@ module agp32_processor(
                    data_addr <= 32'd0;
                end
                
-               else if (MEM_isAcc) begin
+               else if (EX_isAcc) begin
                    command <= 3'd1;
                    state = 3'd2;
-                   acc_arg = MEM_DataA;
+                   acc_arg = EX_DataA_Updated;
                    acc_arg_ready <= 1;
                end
 

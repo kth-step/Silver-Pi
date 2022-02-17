@@ -537,7 +537,7 @@ module Hazard_Ctrl_Unit (ID_opc,PC_enable_flag,state,PC_wr_flag,ID_wr_flag,ID_fl
         
         else if (state == 4'd8) begin // update the PC state
             PC_wr_flag = 0;
-            ID_wr_flag = 1;
+            ID_wr_flag = 0;
             ID_flush_flag = 0;
             EX_wr_flag = 0;
             WB_flag = 0;
@@ -838,7 +838,7 @@ module agp32_processor(
                end
            end
            4'd8: begin
-               state = 3'd0;
+               state = 4'd0;
            end 
        endcase
        end

@@ -23,6 +23,7 @@ module cache_v2(
     input[2:0] command,
     // ready in AXI-sense, command != 00 && ready => start new transaction
     output ready,
+    output hit,
     
     // data and instruction addr input
     input[31:0] data_addr,
@@ -35,6 +36,7 @@ module cache_v2(
     // data and instruction read output
     output logic[31:0] data_rdata,
     output logic[31:0] inst_rdata,
+    output logic[31:0] inst_rdata_cache,
     
     // error reporting, 00 = no error, 01 = AXI error, 10 = internal cache error
     output reg[1:0] error = 0,
@@ -191,12 +193,17 @@ end
 assign later_inst_addr = mem_start + inst_addr;
 assign inst_ibram_addr = later_inst_addr.index;
 
+
+// check hit/miss when command == 1
+assign hit = ((command == 1) && (inst_ibram_out.active) && (inst_ibram_out.tag == later_inst_addr.tag));
+assign inst_rdata_cache = hit ? inst_ibram_out.data[9'd8*later_inst_addr.block_offset +: 32] : 32'h0000003F;
+
 always_ff @ (posedge clk) begin
     case (state)
     INIT: begin
         inst_ibram_we <= 0;
         
-        if ((command != 0) && (command != 1)) begin
+        if (((command != 0) && (command != 1)) || ((command == 1) && (hit == 0))) begin
             later_command = command;
             later_data_addr = mem_start + data_addr;
             later_data_wdata = data_wdata;
@@ -210,7 +217,7 @@ always_ff @ (posedge clk) begin
             end else
                 state <= BRAM_WAIT;
         end
-        
+ /*       
         else if (command == 1) begin
            later_command = command;
            inst_block_state = inst_block_action(inst_ibram_out, later_inst_addr);
@@ -227,7 +234,7 @@ always_ff @ (posedge clk) begin
            end
            endcase
         end
-        
+*/        
     end
         
     BRAM_WAIT:
@@ -378,7 +385,7 @@ always_ff @ (posedge clk) begin
     
     if (data_inf_done && inst_block_state == BLOCK_HIT) begin
         
-        // Always update inst_rdata...    
+        // Always update inst_rdata...  
         inst_rdata <= inst_buffer[9'd8*later_inst_addr.block_offset +: 32];    
     
         inst_block_state = BLOCK_NONE;

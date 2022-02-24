@@ -762,8 +762,8 @@ module agp32_processor(
    MUX_81 update_wV_forward(EX_DataW,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_PC + 32'd4,MEM_imm,EX_MEM_immwV,{WB_write_data[8:0],EX_DataW[22:0]},EX_ForwardW,EX_DataW_Updated);
    MUX_21 set_alu_input1(EX_DataA_Updated,EX_PC,1'({EX_opc == 6'd9}),EX_ALU_input1);
    MUX_21 set_alu_input2(EX_DataB_Updated,EX_DataA_Updated,1'({EX_opc == 6'd9}),EX_ALU_input2);
-   ALU_Unit compute_alu_res((EX_write_enable && (MEM_opc != 6'd16)),EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);
-   SHIFT_Unit compute_shift_res((EX_write_enable && (MEM_opc != 6'd16)),EX_func,EX_DataA_Updated,EX_DataB_Updated,EX_SHIFT_res);
+   ALU_Unit compute_alu_res(((state == 3'd0) && (MEM_opc != 6'd16 || (MEM_opc == 6'd16 && (EX_ForwardA != 0 || EX_ForwardB != 0)))),EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);
+   SHIFT_Unit compute_shift_res(((state == 3'd0) && (MEM_opc != 6'd16 || (MEM_opc == 6'd16 && (EX_ForwardA != 0 || EX_ForwardB != 0)))),EX_func,EX_DataA_Updated,EX_DataB_Updated,EX_SHIFT_res);
    
    // MEM
    MEM_Pipeline mem_pipeline(clk,EX_PC,EX_opc,EX_func,EX_Ra,EX_Rb,EX_Rw,EX_imm,EX_ALU_res,EX_SHIFT_res,EX_DataA_Updated,EX_DataB_Updated,EX_MemRead,((EX_write_enable && MEM_state_flag) || enable_mem),MEM_NOP_flag,

@@ -1,5 +1,5 @@
-/* 5-stages pipelined 32-bit Silver processor, Ning Dong.
-   Based on the single-cycle Silver processor from Andreas Lööw. 
+/* 5-stage pipelined 32-bit Silver processor, Ning Dong.
+   Ref: single-cycle Silver processor, Andreas Lööw. 
 
    IF: instruction feach.
    ID: instruction deceode.
@@ -13,7 +13,7 @@
 `define WORD_SIZE_INDEX 31
 
 // MUX: multiplexer
-module MUX_21(input0, input1, sel, output0);
+module MUX_21 (input0, input1, sel, output0);
     input [`WORD_SIZE_INDEX:0] input0, input1;
     input sel;
 
@@ -22,7 +22,7 @@ module MUX_21(input0, input1, sel, output0);
     assign output0 = (sel == 0 ? input0 : input1);
 endmodule
 
-module MUX_41(input0, input1, input2, input3, sel, output0);
+module MUX_41 (input0, input1, input2, input3, sel, output0);
     input [`WORD_SIZE_INDEX:0] input0, input1, input2, input3;
     input [1:0] sel;
 
@@ -140,7 +140,7 @@ module ALU_Unit (write_enable,func,input1,input2,alu_res);
     end  
 endmodule
 
-// compute the shift result for shift instructions.
+// Shift instruction.
 module SHIFT_Unit (write_enable,func,input_aV,input_bV,shift_res);
     input write_enable;
     input [3:0] func;
@@ -171,8 +171,8 @@ module SHIFT_Unit (write_enable,func,input_aV,input_bV,shift_res);
     end
 endmodule
 
-// PC Unit
-module PC_Unit(clk, PC_input, PC_output, write_enable);
+// PC: program counter.
+module PC_Unit (clk, PC_input, PC_output, write_enable);
     input clk, write_enable;
     input [`WORD_SIZE_INDEX:0] PC_input;
 
@@ -184,7 +184,7 @@ module PC_Unit(clk, PC_input, PC_output, write_enable);
     end 
 endmodule
 
-// SetUp_Opc: set up the corrent instr value (opc).
+// SetUp_Opc: set up the correct instruction (opc).
 module SetUp_Opc (instr,opc);
     input [`WORD_SIZE_INDEX:0] instr;
     
@@ -219,7 +219,7 @@ module SetUp_Opc (instr,opc);
     end
 endmodule
 
-// record the value of register data
+// Record the value of register data.
 module Data_Record (state,mem_opc,forwarda,forwardb,forwardd,input_aV,input_bV,input_dV,output_aV,output_bV,output_dV);
     input [2:0] state,forwarda,forwardb,forwardd;
     input [5:0] mem_opc;
@@ -296,7 +296,7 @@ module Imm_Sel (instr,imm,imm_aV,imm_bV,imm_dV);
     end
 endmodule
 
-// set up necessary flags for the stage based on opc (instruction).
+// set up necessary flags for the corresponding stage.
 module EX_Ctrl_Unit (opc,isAcc_flag,MemRead,write_enable);
        input [5:0] opc;
        input write_enable;
@@ -560,7 +560,7 @@ module Hazard_Ctrl_Unit (hit_flag,MEM_opc,state,PC_wr_flag,ID_wr_flag,ID_flush_f
             WB_flag = 0;
         end     
         
-        else if (MEM_opc == 6'd2 || MEM_opc == 6'd3  || MEM_opc == 6'd4 || MEM_opc == 6'd5) begin // stalling for memory instructions
+        else if (MEM_opc == 6'd2 || MEM_opc == 6'd3  || MEM_opc == 6'd4 || MEM_opc == 6'd5 || MEM_opc == 6'd12) begin // stalling for memory instructions
             PC_wr_flag = 0;
             ID_wr_flag = 0;
             ID_flush_flag = 0;
@@ -722,7 +722,7 @@ module agp32_processor(
    Forward_Ctrl_Unit forward_ctrl_unit(EX_Ra,EX_Rb,EX_Rw,EX_EN_addra,EX_EN_addrb,EX_EN_addrw,MEM_Rw,WB_Rw,EX_opc,MEM_opc,(MEM_wr_reg && MEM_state_flag),(WB_wr_reg && WB_state_flag),EX_ForwardA,EX_ForwardB,EX_ForwardW);
 
    // IF 
-   MUX_41 PC_Update (IF_PC_output + 32'd4, EX_ALU_res, EX_PC + EX_DataW_Updated, EX_PC + EX_DataW_Updated, PC_sel, IF_PC_input);
+   MUX_41 pc_update(IF_PC_output + 32'd4, EX_ALU_res, EX_PC + EX_DataW_Updated, EX_PC + EX_DataW_Updated, PC_sel, IF_PC_input);
    PC_Unit pc(clk, IF_PC_input, IF_PC_output, IF_PC_write_enable); 
 
    // ID
@@ -753,18 +753,18 @@ module agp32_processor(
    MUX_21 set_alu_input2(EX_DataB_Updated,EX_DataA_Updated,1'({EX_opc == 6'd9}),EX_ALU_input2);
    ALU_Unit compute_alu_res(((state == 3'd0) && (MEM_opc != 6'd16 || (MEM_opc == 6'd16 && (EX_ForwardA != 0 || EX_ForwardB != 0)))),EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);
    SHIFT_Unit compute_shift_res(((state == 3'd0) && (MEM_opc != 6'd16 || (MEM_opc == 6'd16 && (EX_ForwardA != 0 || EX_ForwardB != 0)))),EX_func,EX_DataA_Updated,EX_DataB_Updated,EX_SHIFT_res);
-   Data_Record record_aV_bV(state,MEM_opc,EX_ForwardA,EX_ForwardB,EX_ForwardW,EX_DataA_Updated,EX_DataB_Updated,EX_DataW_Updated,EX_DataA_Rec,EX_DataB_Rec,EX_DataW_Rec);
+   Data_Record record_value(state,MEM_opc,EX_ForwardA,EX_ForwardB,EX_ForwardW,EX_DataA_Updated,EX_DataB_Updated,EX_DataW_Updated,EX_DataA_Rec,EX_DataB_Rec,EX_DataW_Rec);
    
    // MEM
    MEM_Pipeline mem_pipeline(clk,EX_PC,EX_opc,EX_Rw,EX_imm,EX_ALU_res,EX_SHIFT_res,EX_DataA_Rec,EX_DataB_Rec,EX_DataW_Rec,EX_MemRead,((EX_write_enable && MEM_state_flag) || enable_mem),MEM_NOP_flag,
                              MEM_read_mem,MEM_isInterrupt,MEM_wr_mem,MEM_wr_mem_byte,MEM_wr_reg,MEM_PC,MEM_opc,MEM_Rw,MEM_imm,MEM_ALU_res,MEM_SHIFT_res,MEM_DataA,MEM_DataB,MEM_DataW,MEM_write_enable);
-   MUX_21 generate_imm_upper(MEM_imm,{MEM_imm[8:0],MEM_DataW[22:0]},1'({MEM_opc == 6'd14}),MEM_imm_Updated);
+   MUX_21 generate_imm_loadupper(MEM_imm,{MEM_imm[8:0],MEM_DataW[22:0]},1'({MEM_opc == 6'd14}),MEM_imm_Updated);
 
    // WB
    WB_Pipeline wb_pipeline(clk,MEM_PC,MEM_opc,MEM_Rw,MEM_imm_Updated,MEM_ALU_res,MEM_SHIFT_res,MEM_DataA,MEM_wr_reg,((MEM_write_enable && WB_state_flag) || enable_wb),
                            WB_data_sel,WB_wr_reg,WB_isOut,WB_PC,WB_opc,WB_Rw,WB_imm,WB_ALU_res,WB_SHIFT_res,WB_DataA,WB_write_enable);
    MUX_41 generate_read_data_byte(32'({WB_read_data[7:0]}),32'({WB_read_data[15:8]}),32'({WB_read_data[23:16]}),32'({WB_read_data[31:24]}),2'({WB_DataA[1:0]}),WB_read_data_byte);
-   MUX_81 mux_wb_write_data(WB_ALU_res,WB_SHIFT_res,32'({data_in}),WB_PC + 32'd4,WB_imm,WB_read_data,WB_read_data_byte,acc_res,WB_data_sel,WB_write_data);
+   MUX_81 generate_write_data(WB_ALU_res,WB_SHIFT_res,32'({data_in}),WB_PC + 32'd4,WB_imm,WB_read_data,WB_read_data_byte,acc_res,WB_data_sel,WB_write_data);
 
    always_ff @(posedge clk) begin
        if (error == 2'd0) begin

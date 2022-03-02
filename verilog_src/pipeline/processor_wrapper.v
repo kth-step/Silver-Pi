@@ -16,8 +16,7 @@ module processor_wrapper(
   input ready,
   input hit,
   input [31:0] data_rdata,
-  input [31:0] inst_rdata,
-  input [31:0] inst_rdata_cache);
+  input [31:0] inst_rdata);
 
 wire[31:0] PC;
 wire[31:0] data_addr_wire;
@@ -38,8 +37,7 @@ agp32_processor processor(.clk(clk),
           .ready(ready),
           .hit(hit),
           .data_rdata(data_rdata),
-          .inst_rdata(inst_rdata),
-          .inst_rdata_cache(inst_rdata_cache));
+          .inst_rdata(inst_rdata));
 
 // Part of is_mem in formalization
 assign inst_addr = {PC[31:2], 2'b0};

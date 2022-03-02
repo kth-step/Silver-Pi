@@ -19,7 +19,6 @@ module cache_wrapper #(
     
     output[31:0] data_rdata,
     output[31:0] inst_rdata,
-    output[31:0] inst_rdata_cache,
     
     output[1:0] error,
 
@@ -113,7 +112,6 @@ cache_v2 cache(
     
     .data_rdata(data_rdata),
     .inst_rdata(inst_rdata),
-    .inst_rdata_cache(inst_rdata_cache),
     
     .error(error),
 

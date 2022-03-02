@@ -36,7 +36,6 @@ module cache_v2(
     // data and instruction read output
     output logic[31:0] data_rdata,
     output logic[31:0] inst_rdata,
-    output logic[31:0] inst_rdata_cache,
     
     // error reporting, 00 = no error, 01 = AXI error, 10 = internal cache error
     output reg[1:0] error = 0,
@@ -196,7 +195,7 @@ assign inst_ibram_addr = later_inst_addr.index;
 
 // check hit/miss when command == 1
 assign hit = ((command == 1) && (inst_ibram_out.active) && (inst_ibram_out.tag == later_inst_addr.tag));
-assign inst_rdata_cache = hit ? inst_ibram_out.data[9'd8*later_inst_addr.block_offset +: 32] : 32'h0000003F;
+assign inst_rdata = hit ? inst_ibram_out.data[9'd8*later_inst_addr.block_offset +: 32] : 32'h0000003F;
 
 always_ff @ (posedge clk) begin
     case (state)
@@ -386,7 +385,7 @@ always_ff @ (posedge clk) begin
     if (data_inf_done && inst_block_state == BLOCK_HIT) begin
         
         // Always update inst_rdata...  
-        inst_rdata <= inst_buffer[9'd8*later_inst_addr.block_offset +: 32];    
+        //inst_rdata <= inst_buffer[9'd8*later_inst_addr.block_offset +: 32];    
     
         inst_block_state = BLOCK_NONE;
         state <= INIT;

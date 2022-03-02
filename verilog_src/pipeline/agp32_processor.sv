@@ -669,7 +669,6 @@ module agp32_processor(
     input logic hit,
     input logic [`WORD_SIZE_INDEX:0] data_rdata,
     input logic [`WORD_SIZE_INDEX:0] inst_rdata,
-    input logic [`WORD_SIZE_INDEX:0] inst_rdata_cache,
     input logic mem_start_ready,
     input logic interrupt_ack);
 
@@ -711,7 +710,7 @@ module agp32_processor(
 
    // assign
    assign PC = IF_PC_output;
-   assign IF_instr = (hit ? inst_rdata_cache : (ready ? inst_rdata : 32'h0000003F));
+   assign IF_instr = (hit ? inst_rdata : 32'h0000003F);
    assign WB_read_data = data_rdata;
    assign PC_sel = ((EX_PC_sel == 2'b01 || (EX_PC_sel == 2'b10 && EX_ALU_res == 0) || (EX_PC_sel == 2'b11 && EX_ALU_res != 0))  ? EX_PC_sel : 2'b00);
    

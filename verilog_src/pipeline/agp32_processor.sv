@@ -13,8 +13,8 @@
 `define WORD_SIZE_INDEX 31
 
 // MUX: multiplexer
-module MUX_21 (input0, input1, sel, output0);
-    input [`WORD_SIZE_INDEX:0] input0, input1;
+module MUX_21 (input0,input1,sel,output0);
+    input [`WORD_SIZE_INDEX:0] input0,input1;
     input sel;
 
     output [`WORD_SIZE_INDEX:0] output0;
@@ -22,8 +22,8 @@ module MUX_21 (input0, input1, sel, output0);
     assign output0 = (sel == 0 ? input0 : input1);
 endmodule
 
-module MUX_41 (input0, input1, input2, input3, sel, output0);
-    input [`WORD_SIZE_INDEX:0] input0, input1, input2, input3;
+module MUX_41 (input0,input1,input2,input3,sel,output0);
+    input [`WORD_SIZE_INDEX:0] input0,input1,input2,input3;
     input [1:0] sel;
 
     output [`WORD_SIZE_INDEX:0] output0;
@@ -34,8 +34,8 @@ module MUX_41 (input0, input1, input2, input3, sel, output0);
                      (sel == 2 ? input2 : input3)));
 endmodule
 
-module MUX_81 (input0, input1, input2, input3, input4, input5, input6, input7, sel, output0);
-    input [`WORD_SIZE_INDEX:0] input0, input1, input2, input3, input4, input5, input6, input7;
+module MUX_81 (input0,input1,input2,input3,input4,input5,input6,input7,sel,output0);
+    input [`WORD_SIZE_INDEX:0] input0,input1,input2,input3,input4,input5,input6,input7;
     input [2:0] sel;
 
     output [`WORD_SIZE_INDEX:0] output0;
@@ -172,8 +172,8 @@ module SHIFT_Unit (write_enable,func,input_aV,input_bV,shift_res);
 endmodule
 
 // PC: program counter.
-module PC_Unit (clk, PC_input, PC_output, write_enable);
-    input clk, write_enable;
+module PC_Unit (clk,PC_input,PC_output,write_enable);
+    input clk,write_enable;
     input [`WORD_SIZE_INDEX:0] PC_input;
 
     output logic [`WORD_SIZE_INDEX:0] PC_output = 0;
@@ -264,7 +264,7 @@ endmodule
 // Generate immediate for aV, bV, dV and special instructions.
 module Imm_Sel (instr,imm,imm_aV,imm_bV,imm_dV);
     input [`WORD_SIZE_INDEX:0] instr;
-    output logic [`WORD_SIZE_INDEX:0] imm, imm_aV, imm_bV, imm_dV;
+    output logic [`WORD_SIZE_INDEX:0] imm,imm_aV,imm_bV,imm_dV;
 
     always_comb begin
         // set up general imm for LoadUpperConstant and LoadConstant
@@ -316,7 +316,7 @@ module MEM_SetUp (opc,interrupt_flag,write_mem,write_mem_byte,write_reg,write_en
     input [5:0] opc;
     input write_enable;
 
-    output logic interrupt_flag,write_mem, write_mem_byte, write_reg;
+    output logic interrupt_flag,write_mem,write_mem_byte,write_reg;
 
     always_comb begin
         if (write_enable) begin
@@ -393,12 +393,12 @@ module Com_Pipeline (clk,input_PC,input_opc,input_addressD,input_dataA,input_imm
         end
 endmodule
 
-module ID_Pipeline (clk, input_instr, input_PC, output_instr, output_PC, write_enable,flush_flag);
+module ID_Pipeline (clk,input_instr,input_PC,output_instr,output_PC,write_enable,flush_flag);
     input clk;
-    input [`WORD_SIZE_INDEX:0] input_instr, input_PC;
-    input write_enable, flush_flag;
+    input [`WORD_SIZE_INDEX:0] input_instr,input_PC;
+    input write_enable,flush_flag;
 
-    output logic [`WORD_SIZE_INDEX:0] output_instr = 32'h0000003F, output_PC = 0;
+    output logic [`WORD_SIZE_INDEX:0] output_instr = 32'h0000003F,output_PC = 0;
 
     always_ff @(posedge clk) begin
         if (write_enable) begin
@@ -412,8 +412,10 @@ module ID_Pipeline (clk, input_instr, input_PC, output_instr, output_PC, write_e
     end
 endmodule
 
-module EX_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addressB,input_addressD,input_imm,input_readdataA,input_readdataB,input_dataD,input_en_addra,input_en_addrb,input_en_addrw,input_write_enable,input_nop_flag,
-                    isAcc_flag,MemRead,output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_imm,output_readdataA,output_readdataB,output_dataD,output_PC_sel,output_en_addra,output_en_addrb,output_en_addrw,output_write_enable);
+module EX_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addressB,input_addressD,input_imm,input_readdataA,
+                    input_readdataB,input_dataD,input_en_addra,input_en_addrb,input_en_addrw,input_write_enable,input_nop_flag,
+                    isAcc_flag,MemRead,output_PC,output_opc,output_func,output_addressA,output_addressB,output_addressD,output_imm,output_readdataA,
+                    output_readdataB,output_dataD,output_PC_sel,output_en_addra,output_en_addrb,output_en_addrw,output_write_enable);
         input clk,input_en_addra,input_en_addrb,input_en_addrw,input_write_enable,input_nop_flag;
         input [5:0] input_opc;
         input [3:0] input_func;
@@ -448,8 +450,10 @@ module EX_Pipeline (clk,input_PC,input_opc,input_func,input_addressA,input_addre
         end
 endmodule
 
-module MEM_Pipeline (clk,input_PC,input_opc,input_addressD,input_imm,input_ALUres,input_shift_res,input_readdataA,input_readdataB,input_readdataD,input_rd_mem,input_write_enable,input_nop_flag,
-                     output_rd_mem,output_interrupt_flag,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_PC,output_opc,output_addressD,output_imm,output_ALUres,output_shift_res,output_readdataA,output_readdataB,output_readdataD,output_write_enable);
+module MEM_Pipeline (clk,input_PC,input_opc,input_addressD,input_imm,input_ALUres,input_shift_res,input_readdataA,
+                     input_readdataB,input_readdataD,input_rd_mem,input_write_enable,input_nop_flag,
+                     output_rd_mem,output_interrupt_flag,output_wr_mem,output_wr_mem_byte,output_wr_reg,output_PC,output_opc,output_addressD,
+                     output_imm,output_ALUres,output_shift_res,output_readdataA,output_readdataB,output_readdataD,output_write_enable);
     input clk,input_rd_mem,input_write_enable,input_nop_flag;
     input [5:0] input_opc;
     input [5:0] input_addressD;
@@ -479,10 +483,10 @@ endmodule
 module WB_Pipeline (clk,input_PC,input_opc,input_addressD,input_imm,input_ALUres,input_shift_res,input_readdataA,input_wr_reg,input_write_enable,
                     data_sel,wr_reg_flag,isOut,output_PC,output_opc,output_addressD,output_imm,output_ALUres,output_shift_res,output_readdataA,output_write_enable);
 
-    input clk, input_wr_reg, input_write_enable;
+    input clk,input_wr_reg,input_write_enable;
     input [5:0] input_opc;
     input [5:0] input_addressD;
-    input [`WORD_SIZE_INDEX:0] input_PC, input_imm,input_readdataA,input_ALUres,input_shift_res;
+    input [`WORD_SIZE_INDEX:0] input_PC,input_imm,input_readdataA,input_ALUres,input_shift_res;
     
     output [2:0] data_sel;
     output logic wr_reg_flag = 0,isOut,output_write_enable;
@@ -511,7 +515,7 @@ module Hazard_Ctrl_Unit (hit_flag,MEM_opc,state,PC_wr_flag,ID_wr_flag,ID_flush_f
     input [1:0] PCSel;
     input [2:0] state;
 
-    output logic PC_wr_flag, ID_wr_flag, ID_flush_flag , EX_wr_flag, EX_NOP_flag, MEM_flag, MEM_NOP_flag, WB_flag;
+    output logic PC_wr_flag,ID_wr_flag,ID_flush_flag ,EX_wr_flag,EX_NOP_flag,MEM_flag,MEM_NOP_flag,WB_flag;
 
     always_comb begin
         if (state == 3'd5 || state == 3'd3)  // special states
@@ -598,12 +602,12 @@ endmodule
 // forward control unit
 module Forward_Ctrl_Unit (EX_addrA,EX_addrB,EX_addrW,EX_EN_addrA,EX_EN_addrB,EX_EN_addrW,MEM_addrD,WB_addrD,opc,MEM_opc,MEM_wrReg,WB_wrReg,forwardA,forwardB,forwardW);
    input [5:0] EX_addrA,EX_addrB,EX_addrW,MEM_addrD,WB_addrD;
-   input [5:0] opc, MEM_opc;
+   input [5:0] opc,MEM_opc;
    input EX_EN_addrA,EX_EN_addrB,EX_EN_addrW,MEM_wrReg,WB_wrReg;
 
-   output logic [2:0] forwardA = 0, forwardB = 0, forwardW = 0;
+   output logic [2:0] forwardA = 0,forwardB = 0,forwardW = 0;
    
-   wire check_addrA, check_addrB, check_addrW;
+   wire check_addrA,check_addrB,check_addrW;
 
    assign check_addrA = ((opc == 6'd7) || (opc == 6'd12) || (opc == 6'd13) || (opc == 6'd14) || (opc == 6'd15) || (opc == 6'd16)) ? 0 : 1;
    assign check_addrB = ((opc == 6'd0) || (opc == 6'd1) || (opc == 6'd2) || (opc == 6'd3) || (opc == 6'd6) ||
@@ -683,27 +687,27 @@ module agp32_processor(
    wire [`WORD_SIZE_INDEX:0] WB_PC,WB_DataA,WB_read_data,WB_read_data_byte,WB_imm,WB_ALU_res,WB_SHIFT_res,WB_write_data;
 
    wire IF_PC_write_enable;
-   wire ID_ID_write_enable, ID_EX_write_enable, ID_flush_flag, ID_EN_addra, ID_EN_addrb, ID_EN_addrw;
-   wire EX_write_enable, EX_MemRead, EX_EN_addra, EX_EN_addrb, EX_EN_addrw, EX_isAcc, EX_NOP_flag;
-   wire MEM_write_enable, MEM_read_mem, MEM_isInterrupt, MEM_wr_mem, MEM_wr_mem_byte, MEM_wr_reg, MEM_state_flag, MEM_NOP_flag;
-   wire WB_write_enable, WB_wr_reg, WB_isOut, WB_state_flag;
+   wire ID_ID_write_enable,ID_EX_write_enable,ID_flush_flag,ID_EN_addra,ID_EN_addrb,ID_EN_addrw;
+   wire EX_write_enable,EX_MemRead,EX_EN_addra,EX_EN_addrb,EX_EN_addrw,EX_isAcc,EX_NOP_flag,EX_compute_enable;
+   wire MEM_write_enable,MEM_read_mem,MEM_isInterrupt,MEM_wr_mem,MEM_wr_mem_byte,MEM_wr_reg,MEM_state_flag,MEM_NOP_flag;
+   wire WB_write_enable,WB_wr_reg,WB_isOut,WB_state_flag;
 
    wire [1:0] PC_sel;
-   wire [5:0] ID_Ra, ID_Rb, ID_Rw;
-   wire [5:0] EX_Ra, EX_Rb, EX_Rw;
+   wire [5:0] ID_Ra,ID_Rb,ID_Rw;
+   wire [5:0] EX_Ra,EX_Rb,EX_Rw;
    wire [1:0] EX_PC_sel;
-   wire [2:0] EX_ForwardA, EX_ForwardB, EX_ForwardW;
+   wire [2:0] EX_ForwardA,EX_ForwardB,EX_ForwardW;
    wire [5:0] MEM_Rw;
    wire [5:0] WB_Rw;
    wire [2:0] WB_data_sel;
    
-   wire [5:0] ID_opc, EX_opc, MEM_opc, WB_opc;
-   wire [3:0] ID_func, EX_func;
+   wire [5:0] ID_opc,EX_opc,MEM_opc,WB_opc;
+   wire [3:0] ID_func,EX_func;
 
    // Accelerator
-   reg [`WORD_SIZE_INDEX:0] acc_arg, acc_res;
+   reg [`WORD_SIZE_INDEX:0] acc_arg,acc_res;
    reg [1:0] acc_state;
-   reg acc_arg_ready, acc_res_ready;
+   reg acc_arg_ready,acc_res_ready;
    
    // additional flags to work with the hardware memory
    logic enable_mem = 0, enable_wb = 0;
@@ -718,11 +722,12 @@ module agp32_processor(
                         (2) forward_unit, pipeline forwarding.
    */
    Hazard_Ctrl_Unit hazard_ctrl_unit(hit,MEM_opc,state,IF_PC_write_enable,ID_ID_write_enable,ID_flush_flag,ID_EX_write_enable,EX_NOP_flag,MEM_state_flag,MEM_NOP_flag,WB_state_flag,PC_sel);
-   Forward_Ctrl_Unit forward_ctrl_unit(EX_Ra,EX_Rb,EX_Rw,EX_EN_addra,EX_EN_addrb,EX_EN_addrw,MEM_Rw,WB_Rw,EX_opc,MEM_opc,(MEM_wr_reg && MEM_state_flag),(WB_wr_reg && WB_state_flag),EX_ForwardA,EX_ForwardB,EX_ForwardW);
+   Forward_Ctrl_Unit forward_ctrl_unit(EX_Ra,EX_Rb,EX_Rw,EX_EN_addra,EX_EN_addrb,EX_EN_addrw,MEM_Rw,WB_Rw,EX_opc,MEM_opc,
+                                       (MEM_wr_reg && MEM_state_flag),(WB_wr_reg && WB_state_flag),EX_ForwardA,EX_ForwardB,EX_ForwardW);
 
    // IF 
-   MUX_41 pc_update(IF_PC_output + 32'd4, EX_ALU_res, EX_PC + EX_DataW_Updated, EX_PC + EX_DataW_Updated, PC_sel, IF_PC_input);
-   PC_Unit pc(clk, IF_PC_input, IF_PC_output, IF_PC_write_enable); 
+   MUX_41 pc_update(IF_PC_output + 32'd4,EX_ALU_res,EX_PC + EX_DataW_Updated,EX_PC + EX_DataW_Updated,PC_sel,IF_PC_input);
+   PC_Unit pc(clk,IF_PC_input,IF_PC_output,IF_PC_write_enable); 
 
    // ID
    ID_Pipeline id_pipeline(clk,IF_instr,IF_PC_output,ID_instr,ID_PC,ID_ID_write_enable,ID_flush_flag);
@@ -750,8 +755,9 @@ module agp32_processor(
    MUX_81 update_wV_forward(EX_DataW,WB_write_data,MEM_ALU_res,MEM_SHIFT_res,MEM_PC + 32'd4,MEM_imm_Updated,32'd0,32'd0,EX_ForwardW,EX_DataW_Updated);
    MUX_21 set_alu_input1(EX_DataA_Updated,EX_PC,1'({EX_opc == 6'd9}),EX_ALU_input1);
    MUX_21 set_alu_input2(EX_DataB_Updated,EX_DataA_Updated,1'({EX_opc == 6'd9}),EX_ALU_input2);
-   ALU_Unit compute_alu_res(((state == 3'd0) && (MEM_opc != 6'd16 || (MEM_opc == 6'd16 && (EX_ForwardA != 0 || EX_ForwardB != 0)))),EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);
-   SHIFT_Unit compute_shift_res(((state == 3'd0) && (MEM_opc != 6'd16 || (MEM_opc == 6'd16 && (EX_ForwardA != 0 || EX_ForwardB != 0)))),EX_func,EX_DataA_Updated,EX_DataB_Updated,EX_SHIFT_res);
+   assign EX_compute_enable = ((state == 3'd0) && (MEM_opc != 6'd16 || (MEM_opc == 6'd16 && (EX_ForwardA != 0 || EX_ForwardB != 0))));
+   ALU_Unit compute_alu_res(EX_compute_enable,EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);
+   SHIFT_Unit compute_shift_res(EX_compute_enable,EX_func,EX_DataA_Updated,EX_DataB_Updated,EX_SHIFT_res);
    Data_Record record_value(state,MEM_opc,EX_ForwardA,EX_ForwardB,EX_ForwardW,EX_DataA_Updated,EX_DataB_Updated,EX_DataW_Updated,EX_DataA_Rec,EX_DataB_Rec,EX_DataW_Rec);
    
    // MEM

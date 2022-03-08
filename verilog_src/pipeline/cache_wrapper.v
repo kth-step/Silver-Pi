@@ -9,7 +9,6 @@ module cache_wrapper #(
     
     input[2:0] command,
     output ready,
-    output hit,
     
     input[31:0] data_addr,
     input[31:0] inst_addr,
@@ -102,7 +101,6 @@ cache_v2 cache(
     .clk(clk),
     .command(command),
     .ready(ready),
-    .hit(hit),
     
     .data_addr(data_addr),
     .inst_addr(inst_addr),

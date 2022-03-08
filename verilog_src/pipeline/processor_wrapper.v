@@ -14,7 +14,6 @@ module processor_wrapper(
   input interrupt_ack,
   input [1:0] error,
   input ready,
-  input hit,
   input [31:0] data_rdata,
   input [31:0] inst_rdata);
 
@@ -35,7 +34,6 @@ agp32_processor processor(.clk(clk),
           .interrupt_ack(interrupt_ack),
           .error(error),
           .ready(ready),
-          .hit(hit),
           .data_rdata(data_rdata),
           .inst_rdata(inst_rdata));
 

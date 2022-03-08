@@ -23,7 +23,6 @@ module cache_v2(
     input[2:0] command,
     // ready in AXI-sense, command != 00 && ready => start new transaction
     output ready,
-    output hit,
     
     // data and instruction addr input
     input[31:0] data_addr,
@@ -161,8 +160,6 @@ logic data_inf_error = 0;
 logic data_inf_done = 1;
 logic inst_block_read_done = 1;
 
-assign ready = (state == INIT);
-
 logic[2:0] later_command;
 
 address later_data_addr;
@@ -170,17 +167,6 @@ address later_inst_addr;
 
 logic[31:0] later_data_wdata;
 logic[3:0] later_data_wstrb;
-
-function block_state inst_block_action;
-    input cache_block old_inst_block;
-    input address addr;
-begin
-    if (old_inst_block.active && old_inst_block.tag == addr.tag)
-        inst_block_action = BLOCK_HIT;
-    else
-        inst_block_action = BLOCK_OVERWRITE;
-end
-endfunction
 
 // mem_start handling
 always_ff @ (posedge clk) begin
@@ -194,8 +180,11 @@ assign inst_ibram_addr = later_inst_addr.index;
 
 
 // check hit/miss when command == 1
-assign hit = ((command == 1) && (inst_ibram_out.active) && (inst_ibram_out.tag == later_inst_addr.tag));
+logic hit;
+assign hit = ((inst_ibram_out.active) && (inst_ibram_out.tag == later_inst_addr.tag));
 assign inst_rdata = hit ? inst_ibram_out.data[9'd8*later_inst_addr.block_offset +: 32] : 32'h0000003F;
+assign ready = ((state == INIT) && hit);
+
 
 always_ff @ (posedge clk) begin
     case (state)
@@ -215,33 +204,13 @@ always_ff @ (posedge clk) begin
                 state <= ERROR;
             end else
                 state <= BRAM_WAIT;
-        end
- /*       
-        else if (command == 1) begin
-           later_command = command;
-           inst_block_state = inst_block_action(inst_ibram_out, later_inst_addr);
-           
-           case (inst_block_state)
-           BLOCK_HIT: begin 
-              //inst_rdata <= inst_ibram_out.data[9'd8*later_inst_addr.block_offset +: 32];
-              inst_buffer = inst_ibram_out.data;
-              state <= INIT;
-           end
-           
-           BLOCK_OVERWRITE: begin
-              state <= BRAM_WAIT;
-           end
-           endcase
-        end
-*/        
+        end      
     end
         
     BRAM_WAIT:
         state <= BRAM_RESP;
         
     BRAM_RESP: begin
-        inst_block_state = inst_block_action(inst_ibram_out, later_inst_addr);
-        
         //
         // Data
         //
@@ -272,29 +241,18 @@ always_ff @ (posedge clk) begin
         // Inst
         //
         
-        case (inst_block_state)
-        BLOCK_HIT:
-            inst_buffer = inst_ibram_out.data;
-        
-        BLOCK_OVERWRITE: begin
-            mem_i_arvalid <= 1;
-            mem_i_araddr <= {later_inst_addr[31:6], 6'b0};
+        inst_block_state = BLOCK_OVERWRITE;
+        mem_i_arvalid <= 1;
+        mem_i_araddr <= {later_inst_addr[31:6], 6'b0};
             
-            inst_block_read = 0;
+        inst_block_read = 0;
         
-            inst_block_read_done = 0;
-        end
-        
-        endcase
+        inst_block_read_done = 0;
         
         //
         // State
         //
-        
-        if ((later_command != 2) && (later_command != 3) && inst_block_state == BLOCK_HIT)
-            state <= INIT;
-        else
-            state <= MEM_WORK;
+        state <= MEM_WORK;
     end
     
     MEM_WORK: begin

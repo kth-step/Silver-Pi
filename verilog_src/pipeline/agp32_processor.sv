@@ -553,7 +553,7 @@ module Hazard_Ctrl_Unit (hit_flag,MEM_opc,state,PC_wr_flag,ID_wr_flag,ID_flush_f
         end
 
         //special cases when state == 0
-        else if (!hit_flag) begin // cache miss
+        else if (hit_flag == 0) begin // cache miss
             PC_wr_flag = 0;
             ID_wr_flag = 0;
             ID_flush_flag = 0;
@@ -615,42 +615,42 @@ module Forward_Ctrl_Unit (EX_addrA,EX_addrB,EX_addrW,EX_EN_addrA,EX_EN_addrB,EX_
    assign check_addrW = ((opc == 6'd10) || (opc == 6'd11) || (opc == 6'd14)) ? 1 : 0;
 
    always_comb begin
-       if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && EX_EN_addrA == 0 && check_addrA)
+       if ((EX_addrA == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && (EX_EN_addrA == 0) && check_addrA)
            forwardA = 3'd5;
-       else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrA == 0 && check_addrA)
+       else if ((EX_addrA == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd9) && (EX_EN_addrA == 0) && check_addrA)
            forwardA = 3'd4;
-       else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd1 && EX_EN_addrA == 0 && check_addrA)
+       else if ((EX_addrA == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd1) && (EX_EN_addrA == 0) && check_addrA)
            forwardA = 3'd3;
-       else if (EX_addrA == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd0 || MEM_opc == 6'd6) && EX_EN_addrA == 0 && check_addrA)
+       else if ((EX_addrA == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd0 || MEM_opc == 6'd6) && (EX_EN_addrA == 0) && check_addrA)
            forwardA = 3'd2;
-       else if (EX_addrA == WB_addrD && WB_wrReg == 1 && EX_EN_addrA == 0 && check_addrA) 
+       else if ((EX_addrA == WB_addrD) && (WB_wrReg == 1) && (EX_EN_addrA == 0) && check_addrA) 
            forwardA = 3'd1;
        else
            forwardA = 3'd0;   
     
        
-       if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && EX_EN_addrB == 0 && check_addrB)
+       if ((EX_addrB == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && (EX_EN_addrB == 0) && check_addrB)
            forwardB = 3'd5;
-       else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrB == 0 && check_addrB)
+       else if ((EX_addrB == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd9) && (EX_EN_addrB == 0) && check_addrB)
            forwardB = 3'd4;
-       else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd1 && EX_EN_addrB == 0 && check_addrB)
+       else if ((EX_addrB == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd1) && (EX_EN_addrB == 0) && check_addrB)
            forwardB = 3'd3;
-       else if (EX_addrB == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd0 || MEM_opc == 6'd6) && EX_EN_addrB == 0 && check_addrB)
+       else if ((EX_addrB == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd0 || MEM_opc == 6'd6) && (EX_EN_addrB == 0) && check_addrB)
            forwardB = 3'd2;
-       else if (EX_addrB == WB_addrD && WB_wrReg == 1 && EX_EN_addrB == 0 && check_addrB) 
+       else if ((EX_addrB == WB_addrD) && (WB_wrReg == 1) && (EX_EN_addrB == 0) && check_addrB) 
            forwardB = 3'd1;
        else
            forwardB = 3'd0;
            
-       if (EX_addrW == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && EX_EN_addrW == 0 && check_addrW)
+       if ((EX_addrW == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd13 || MEM_opc == 6'd14) && (EX_EN_addrW == 0) && check_addrW)
            forwardW = 3'd5;
-       else if (EX_addrW == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd9 && EX_EN_addrW == 0 && check_addrW)
+       else if ((EX_addrW == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd9) && (EX_EN_addrW == 0) && check_addrW)
            forwardW = 3'd4;
-       else if (EX_addrW == MEM_addrD && MEM_wrReg == 1 && MEM_opc == 6'd1 && EX_EN_addrW == 0 && check_addrW)
+       else if ((EX_addrW == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd1) && (EX_EN_addrW == 0) && check_addrW)
            forwardW = 3'd3;
-       else if (EX_addrW == MEM_addrD && MEM_wrReg == 1 && (MEM_opc == 6'd0 || MEM_opc == 6'd6) && EX_EN_addrW == 0 && check_addrW)
+       else if ((EX_addrW == MEM_addrD) && (MEM_wrReg == 1) && (MEM_opc == 6'd0 || MEM_opc == 6'd6) && (EX_EN_addrW == 0) && check_addrW)
            forwardW = 3'd2;
-       else if (EX_addrW == WB_addrD && WB_wrReg == 1 && EX_EN_addrW == 0 && check_addrW) 
+       else if ((EX_addrW == WB_addrD) && (WB_wrReg == 1) && (EX_EN_addrW == 0) && check_addrW) 
            forwardW = 3'd1;
        else
            forwardW = 3'd0;
@@ -670,7 +670,6 @@ module agp32_processor(
     output logic [3:0] data_wstrb,
     input logic [1:0] error,
     input logic ready,
-    input logic hit,
     input logic [`WORD_SIZE_INDEX:0] data_rdata,
     input logic [`WORD_SIZE_INDEX:0] inst_rdata,
     input logic mem_start_ready,
@@ -688,7 +687,7 @@ module agp32_processor(
 
    wire IF_PC_write_enable;
    wire ID_ID_write_enable,ID_EX_write_enable,ID_flush_flag,ID_EN_addra,ID_EN_addrb,ID_EN_addrw;
-   wire EX_write_enable,EX_MemRead,EX_EN_addra,EX_EN_addrb,EX_EN_addrw,EX_isAcc,EX_NOP_flag,EX_compute_enable;
+   wire EX_write_enable,EX_MemRead,EX_EN_addra,EX_EN_addrb,EX_EN_addrw,EX_isAcc,EX_NOP_flag, EX_compute_enable;
    wire MEM_write_enable,MEM_read_mem,MEM_isInterrupt,MEM_wr_mem,MEM_wr_mem_byte,MEM_wr_reg,MEM_state_flag,MEM_NOP_flag;
    wire WB_write_enable,WB_wr_reg,WB_isOut,WB_state_flag;
 
@@ -714,14 +713,14 @@ module agp32_processor(
 
    // assign
    assign PC = IF_PC_output;
-   assign IF_instr = (hit ? inst_rdata : 32'h0000003F);
+   assign IF_instr = (ready ? inst_rdata : 32'h0000003F);
    assign WB_read_data = data_rdata;
    assign PC_sel = ((EX_PC_sel == 2'b01 || (EX_PC_sel == 2'b10 && EX_ALU_res == 0) || (EX_PC_sel == 2'b11 && EX_ALU_res != 0))  ? EX_PC_sel : 2'b00);
    
    /* additional units: (1) hazard_unit, handle hazards.
                         (2) forward_unit, pipeline forwarding.
    */
-   Hazard_Ctrl_Unit hazard_ctrl_unit(hit,MEM_opc,state,IF_PC_write_enable,ID_ID_write_enable,ID_flush_flag,ID_EX_write_enable,EX_NOP_flag,MEM_state_flag,MEM_NOP_flag,WB_state_flag,PC_sel);
+   Hazard_Ctrl_Unit hazard_ctrl_unit(ready,MEM_opc,state,IF_PC_write_enable,ID_ID_write_enable,ID_flush_flag,ID_EX_write_enable,EX_NOP_flag,MEM_state_flag,MEM_NOP_flag,WB_state_flag,PC_sel);
    Forward_Ctrl_Unit forward_ctrl_unit(EX_Ra,EX_Rb,EX_Rw,EX_EN_addra,EX_EN_addrb,EX_EN_addrw,MEM_Rw,WB_Rw,EX_opc,MEM_opc,
                                        (MEM_wr_reg && MEM_state_flag),(WB_wr_reg && WB_state_flag),EX_ForwardA,EX_ForwardB,EX_ForwardW);
 
@@ -776,7 +775,7 @@ module agp32_processor(
        case (state)
            3'd0: begin
            
-               if (hit == 0) begin
+               if (ready == 0) begin
                    state = 3'd7;
                end
                

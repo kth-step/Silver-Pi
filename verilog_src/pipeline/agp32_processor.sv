@@ -254,7 +254,7 @@ module REG_Unit (clk,addressA,addressB,rd_addressD,wr_addressD,DataA,DataB,input
     assign DataB = R[addressB];
     assign output_DataD = R[rd_addressD];
     
-    always_ff @(negedge clk) begin
+    always_ff @(posedge clk) begin
         if (regWrite) begin
             R[wr_addressD] = input_DataD;
         end
@@ -658,6 +658,31 @@ module Forward_Ctrl_Unit (EX_addrA,EX_addrB,EX_addrW,EX_EN_addrA,EX_EN_addrB,EX_
    end
 endmodule
 
+// forward value from WB to ID
+module ID_Forward (ID_addrA,ID_addrB,ID_addrD,WB_addrD,WB_wrReg,ID_forwardA,ID_forwardB,ID_forwardD);
+      input [5:0] ID_addrA,ID_addrB,ID_addrD,WB_addrD;
+      input WB_wrReg;
+      
+      output logic ID_forwardA = 0,ID_forwardB = 0,ID_forwardD = 0;
+      
+      always_comb begin
+         if (ID_addrA == WB_addrD && WB_wrReg)
+             ID_forwardA = 1;
+         else
+             ID_forwardA = 0;
+             
+         if (ID_addrB == WB_addrD && WB_wrReg)
+             ID_forwardB = 1;
+         else
+             ID_forwardB = 0;
+             
+         if (ID_addrD == WB_addrD && WB_wrReg)
+             ID_forwardD = 1;
+         else
+             ID_forwardD = 0;
+      end
+endmodule
+
 module agp32_processor(
     input clk,
     input logic [1:0] data_in,
@@ -680,14 +705,14 @@ module agp32_processor(
 
    /* additional wires for pipeline */
    wire [`WORD_SIZE_INDEX:0] IF_PC_input,IF_PC_output,IF_instr;
-   wire [`WORD_SIZE_INDEX:0] ID_PC,ID_instr,ID_readDataA,ID_readDataB,ID_readDataW,ID_DataA,ID_DataB,ID_DataW,ID_imm,ID_immaV,ID_immbV,ID_immwV;
+   wire [`WORD_SIZE_INDEX:0] ID_PC,ID_instr,ID_readDataA,ID_readDataB,ID_readDataW,ID_readDataA_Updated,ID_readDataB_Updated,ID_readDataW_Updated,ID_DataA,ID_DataB,ID_DataW,ID_imm,ID_immaV,ID_immbV,ID_immwV;
    wire [`WORD_SIZE_INDEX:0] EX_PC,EX_DataA,EX_DataB,EX_DataW,EX_imm,EX_ALU_res,EX_ALU_input1,EX_ALU_input2,EX_SHIFT_res,EX_DataA_Updated,EX_DataB_Updated,EX_DataW_Updated,EX_DataA_Rec,EX_DataB_Rec,EX_DataW_Rec;
    wire [`WORD_SIZE_INDEX:0] MEM_PC,MEM_DataA,MEM_DataB,MEM_DataW,MEM_imm,MEM_imm_Updated,MEM_ALU_res,MEM_SHIFT_res;
    wire [`WORD_SIZE_INDEX:0] WB_PC,WB_DataA,WB_read_data,WB_read_data_byte,WB_imm,WB_ALU_res,WB_SHIFT_res,WB_write_data;
 
    wire IF_PC_write_enable;
-   wire ID_ID_write_enable,ID_EX_write_enable,ID_flush_flag,ID_EN_addra,ID_EN_addrb,ID_EN_addrw;
-   wire EX_write_enable,EX_MemRead,EX_EN_addra,EX_EN_addrb,EX_EN_addrw,EX_isAcc,EX_NOP_flag, EX_compute_enable;
+   wire ID_ID_write_enable,ID_EX_write_enable,ID_flush_flag,ID_EN_addra,ID_EN_addrb,ID_EN_addrw,ID_ForwardA,ID_ForwardB,ID_ForwardW;
+   wire EX_write_enable,EX_MemRead,EX_EN_addra,EX_EN_addrb,EX_EN_addrw,EX_isAcc,EX_NOP_flag,EX_compute_enable;
    wire MEM_write_enable,MEM_read_mem,MEM_isInterrupt,MEM_wr_mem,MEM_wr_mem_byte,MEM_wr_reg,MEM_state_flag,MEM_NOP_flag;
    wire WB_write_enable,WB_wr_reg,WB_isOut,WB_state_flag;
 
@@ -742,9 +767,13 @@ module agp32_processor(
    assign ID_func = ((ID_opc == 6'd0) || (ID_opc == 6'd1) || ((ID_opc == 6'd6) || ((ID_opc == 6'd9) || ((ID_opc == 6'd10) || (ID_opc == 6'd11))))) ? ID_instr[9:6] : 4'd9;
    REG_Unit register(clk,ID_Ra,ID_Rb,ID_Rw,WB_Rw,ID_readDataA,ID_readDataB,WB_write_data,ID_readDataW,(WB_wr_reg && WB_state_flag));
    Imm_Sel imm_sel(ID_instr,ID_imm,ID_immaV,ID_immbV,ID_immwV);
-   MUX_21 aV_sel(ID_readDataA,ID_immaV,ID_instr[23],ID_DataA);
-   MUX_21 bV_sel(ID_readDataB,ID_immbV,ID_instr[16],ID_DataB);
-   MUX_21 wV_sel(ID_readDataW,ID_immwV,ID_instr[31],ID_DataW);
+   ID_Forward update_reg_data(ID_Ra,ID_Rb,ID_Rw,WB_Rw,(WB_wr_reg && WB_state_flag),ID_ForwardA,ID_ForwardB,ID_ForwardW);
+   MUX_21 update_read_dataA(ID_readDataA,WB_write_data,ID_ForwardA,ID_readDataA_Updated);
+   MUX_21 update_read_dataB(ID_readDataB,WB_write_data,ID_ForwardB,ID_readDataB_Updated);
+   MUX_21 update_read_dataW(ID_readDataW,WB_write_data,ID_ForwardW,ID_readDataW_Updated);
+   MUX_21 aV_sel(ID_readDataA_Updated,ID_immaV,ID_instr[23],ID_DataA);
+   MUX_21 bV_sel(ID_readDataB_Updated,ID_immbV,ID_instr[16],ID_DataB);
+   MUX_21 wV_sel(ID_readDataW_Updated,ID_immwV,ID_instr[31],ID_DataW);
 
    // EX
    EX_Pipeline ex_pipeline(clk,ID_PC,ID_opc,ID_func,ID_Ra,ID_Rb,ID_Rw,ID_imm,ID_DataA,ID_DataB,ID_DataW,ID_EN_addra,ID_EN_addrb,ID_EN_addrw,ID_EX_write_enable,EX_NOP_flag,
@@ -756,7 +785,7 @@ module agp32_processor(
    MUX_21 set_alu_input2(EX_DataB_Updated,EX_DataA_Updated,1'({EX_opc == 6'd9}),EX_ALU_input2);
    assign EX_compute_enable = ((state == 3'd0) && (MEM_opc != 6'd16 || (MEM_opc == 6'd16 && (EX_ForwardA != 0 || EX_ForwardB != 0))));
    ALU_Unit compute_alu_res(EX_compute_enable,EX_func,EX_ALU_input1,EX_ALU_input2,EX_ALU_res);
-   SHIFT_Unit compute_shift_res(EX_compute_enable,EX_func,EX_DataA_Updated,EX_DataB_Updated,EX_SHIFT_res);
+   SHIFT_Unit compute_shift_res((EX_compute_enable && EX_opc == 6'd1),EX_func,EX_DataA_Updated,EX_DataB_Updated,EX_SHIFT_res);
    Data_Record record_value(state,MEM_opc,EX_ForwardA,EX_ForwardB,EX_ForwardW,EX_DataA_Updated,EX_DataB_Updated,EX_DataW_Updated,EX_DataA_Rec,EX_DataB_Rec,EX_DataW_Rec);
    
    // MEM

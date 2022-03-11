@@ -124,5 +124,58 @@ val is_mem_def = Define `
 (*val is_mem_mem_no_errors = Q.store_thm("is_mem_mem_no_errors",
  `!accs c fext. is_mem accs c fext ==> mem_no_errors fext`,
  rw [is_mem_def]);*)
+ 
+ (** Accelerator specification **)
+
+val is_acc_def = Define `
+ is_acc f circuit =
+  ?k. !n.
+   (circuit n).acc_arg_ready
+   ==>
+   (k <> 0 ==> ~(circuit (SUC n)).acc_res_ready) /\
+   (!l. l < k /\ (!m. m <> 0 /\ m <= l ==> ~(circuit (n + m)).acc_arg_ready) ==>
+        ~(circuit (SUC (n + l))).acc_res_ready) /\
+   ((!m. m < k ==> ~(circuit (SUC (n + m))).acc_arg_ready /\ (circuit (SUC (n + m))).acc_arg = (circuit n).acc_arg) ==>
+    (circuit (SUC (n + k))).acc_res_ready /\
+    ((circuit (SUC (n + k))).acc_res = f (circuit n).acc_arg))`;
+
+(** Start of mem interface **)
+
+val is_mem_start_interface_def = Define `
+ is_mem_start_interface fext =
+  ?n. (!m. m < n ==> ~(fext m).mem_start_ready) /\ (fext n).mem_start_ready`;
+
+(** Interrupt interface **)
+
+(* This is a little difficult to model properly because the interrupt interface is async. *)
+val is_interrupt_interface_def = Define `
+ is_interrupt_interface accessors step fext =
+  ((fext 0).io_events = [] /\
+  (fext 0).interrupt_state = InterruptReady /\
+  !n. case (fext n).interrupt_state of
+         InterruptReady =>
+          if accessors.get_interrupt_req (step n) then
+           ?m. (!p. p < m ==> ~(fext (SUC (n + p))).interrupt_ack) /\
+               (fext (SUC (n + m))).interrupt_state = InterruptAck /\
+               (* This assumes that memory is not changed during interrupts,
+                  this assumption could be added as a precondition. *)
+               (fext (SUC (n + m))).io_events = SNOC (fext n).mem (fext n).io_events /\
+               (fext (SUC (n + m))).interrupt_ack
+          else
+           (fext (SUC n)).interrupt_state = InterruptReady /\
+           (fext (SUC n)).io_events = (fext n).io_events /\
+           ~(fext (SUC n)).interrupt_ack
+       | InterruptWorking => T
+       | InterruptAck =>
+         (fext (SUC n)).interrupt_state = InterruptReady /\
+         (fext (SUC n)).io_events = (fext n).io_events /\
+         ~(fext (SUC n)).interrupt_ack)`;
+
+(* Collection of all interfaces in the current "laboratory environment" *)
+val is_lab_env_def = Define `
+ is_lab_env accessors step fext <=>
+  is_mem accessors step fext /\
+  is_mem_start_interface fext /\
+  is_interrupt_interface accessors step fext`;
 
 val _ = export_theory ();

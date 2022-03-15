@@ -1,10 +1,10 @@
-open hardwarePreamble translatorTheory translatorCoreLib;
+open hardwarePreamble;
 (* depend on the circuit datatype *)
-open agp32ProcessorTheory;
+open agp32StateTheory;
 (* open ag32MachineTheory *)
 
 
-val _ = new_theory "ag32Environment";
+val _ = new_theory "agp32Environment";
 
 val _ = prefer_num ();
 val _ = guess_lengths ();

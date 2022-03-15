@@ -398,7 +398,7 @@ module ID_Pipeline (clk,input_instr,input_PC,output_instr,output_PC,write_enable
     input [`WORD_SIZE_INDEX:0] input_instr,input_PC;
     input write_enable,flush_flag;
 
-    output logic [`WORD_SIZE_INDEX:0] output_instr = 32'h0000003F,output_PC = 0;
+    output logic [`WORD_SIZE_INDEX:0] output_instr = 32'h0000003F,output_PC;
 
     always_ff @(posedge clk) begin
         if (write_enable) begin
@@ -904,7 +904,7 @@ module agp32_processor(
            end 
        endcase
        end
-       else state = 4'd5;
+       else state = 3'd5;
    end
    
    always_ff @(posedge clk) begin

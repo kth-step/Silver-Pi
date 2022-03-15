@@ -130,7 +130,6 @@ typedef struct packed {
 typedef struct packed {
   logic active;
   logic[15:0] tag;
-  logic[511:0] data;
 } cache_block;
 
 logic [31:0] mem_start = 0;
@@ -140,10 +139,12 @@ logic[511:0] inst_buffer;
 
 logic inst_ibram_we = 0;
 logic[9:0] inst_ibram_addr;
-cache_block inst_ibram_in;
-cache_block inst_ibram_out;
+cache_block inst_ibram_tag_in;
+cache_block inst_ibram_tag_out;
+logic [511:0] inst_ibram_data_in;
+logic [511:0] inst_ibram_data_out;
                  
-cache_bram_v2 ibram(.clk(clk), .inst_we(inst_ibram_we), .inst_addr(inst_ibram_addr), .inst_in(inst_ibram_in), .inst_out(inst_ibram_out));
+cache_bram_v2 ibram(.clk(clk), .inst_we(inst_ibram_we), .inst_addr(inst_ibram_addr), .inst_tag_in(inst_ibram_tag_in), .inst_data_in(inst_ibram_data_in), .inst_tag_out(inst_ibram_tag_out), .inst_data_out(inst_ibram_data_out));
 
 // Internal state
 
@@ -181,8 +182,8 @@ assign inst_ibram_addr = later_inst_addr.index;
 
 // check hit/miss when command == 1
 logic hit;
-assign hit = ((inst_ibram_out.active) && (inst_ibram_out.tag == later_inst_addr.tag));
-assign inst_rdata = hit ? inst_ibram_out.data[9'd8*later_inst_addr.block_offset +: 32] : 32'h0000003F;
+assign hit = ((inst_ibram_tag_out.active) && (inst_ibram_tag_out.tag == later_inst_addr.tag));
+assign inst_rdata = hit ? inst_ibram_data_out[9'd8*later_inst_addr.block_offset +: 32] : 32'h0000003F;
 assign ready = ((state == INIT) && hit);
 
 
@@ -332,7 +333,8 @@ always_ff @ (posedge clk) begin
                     inst_block_state = BLOCK_HIT;
                     
                     inst_ibram_we <= 1;
-                    inst_ibram_in <= {1'b1, later_inst_addr.tag, inst_buffer};
+                    inst_ibram_tag_in <= {1'b1, later_inst_addr.tag};
+                    inst_ibram_data_in <= inst_buffer;
                 end
             end
         end

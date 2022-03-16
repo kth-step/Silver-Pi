@@ -59,6 +59,8 @@ val _ = Datatype `
                  EX_imm: word32;
                  EX_ALU_input1: word32;
                  EX_ALU_input2: word32;
+                 EX_carry_flag : bool;
+                 EX_overflow_flag : bool;
                  EX_ALU_res: word32;
                  EX_SHIFT_res: word32;
                  EX_write_enable: bool;
@@ -67,7 +69,7 @@ val _ = Datatype `
                  EX_addrW_enable: bool;
                  EX_isAcc: bool;
                  EX_NOP_flag: bool;
-                 (* EX_compute_enable: bool; *)
+                 EX_compute_enable: bool;
                  EX_PC_sel: word2;
                  EX_ForwardA: word3;
                  EX_ForwardB: word3;

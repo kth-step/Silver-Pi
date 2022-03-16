@@ -168,6 +168,120 @@ End
 
 Theorem ID_data_update_trans = REWRITE_RULE [MUX_21_def] ID_data_update_def
 
+(** Set up some flags of EX stage **)
+Definition EX_ctrl_update_def:
+  EX_ctrl_update (fext:ext) (s:state_circuit) s' =
+  if s'.ID.ID_EX_write_enable then
+    s' with EX := s'.EX with EX_isAcc := (s'.EX.EX_opc = 8w)
+  else s'
+End
+
+(* Forward data from MEM/WB -> EX *)
+Definition EX_forward_data_def:
+  EX_forward_data (fext:ext) (s:state_circuit) s' =
+  s' with EX := s'.EX with <| EX_dataA_updated :=
+                              MUX_81 s'.EX.EX_ForwardA s'.EX.EX_dataA s'.WB.WB_write_data
+                                     s'.MEM.MEM_ALU_res s'.MEM.MEM_SHIFT_res
+                                     (s'.MEM.MEM_PC + 4w) s'.MEM.MEM_imm_updated 0w 0w;
+                              EX_dataB_updated :=
+                              MUX_81 s'.EX.EX_ForwardB s'.EX.EX_dataB s'.WB.WB_write_data
+                                     s'.MEM.MEM_ALU_res s'.MEM.MEM_SHIFT_res
+                                     (s'.MEM.MEM_PC + 4w) s'.MEM.MEM_imm_updated 0w 0w;
+                              EX_dataW_updated :=
+                              MUX_81 s'.EX.EX_ForwardW s'.EX.EX_dataW s'.WB.WB_write_data
+                                     s'.MEM.MEM_ALU_res s'.MEM.MEM_SHIFT_res
+                                     (s'.MEM.MEM_PC + 4w) s'.MEM.MEM_imm_updated 0w 0w
+                           |>                  
+End
+
+Theorem EX_forward_data_trans = REWRITE_RULE [MUX_81_def] EX_forward_data_def
+
+(** set up inputs for ALU **)
+Definition EX_ALU_input_update_def:
+  EX_ALU_input_update (fext:ext) (s:state_circuit) s' =
+  s' with EX := s'.EX with <| EX_ALU_input1 :=
+                              MUX_21 (s'.EX.EX_opc = 9w) s'.EX.EX_dataA_updated s'.EX.EX_PC;
+                              EX_ALU_input2 :=
+                              MUX_21 (s'.EX.EX_opc = 9w) s'.EX.EX_dataB_updated s'.EX.EX_dataA_updated;
+                           |>
+End
+
+Theorem EX_ALU_input_update_trans = REWRITE_RULE [MUX_21_def] EX_ALU_input_update_def
+
+(** EX_compute_enable: aviod errors due to stalling **)
+Definition EX_compute_enable_update_def:
+  EX_compute_enable_update (fext:ext) (s:state_circuit) s' =
+  s' with EX := s'.EX with EX_compute_enable := (s'.state = 0w /\
+                                                (s'.MEM.MEM_opc <> 16w \/ s'.MEM.MEM_opc = 16w /\
+                                                (s'.EX.EX_ForwardA <> 0w \/ s'.EX.EX_ForwardB <> 0w)))
+End
+
+(** ALU **)
+Definition ALU_def:
+  ALU (func:word4) input1 input2 s =
+  let ALU_sum = (w2w input1 + w2w input1 +
+                 (if func = 1w then v2w [s.EX.EX_carry_flag] else 0w)) : 33 word;
+      ALU_prod = (w2w input1 * w2w input2) : word64 in
+    case func of
+      0w => s with EX := s.EX with <| EX_overflow_flag := ((word_bit 31 input1 = word_bit 31 input2) /\
+                                                           (word_bit 31 ALU_sum <> word_bit 31 input1));
+                                      EX_carry_flag := word_bit 32 ALU_sum;
+                                      EX_ALU_res := (31 >< 0) ALU_sum
+                                   |>
+    | 1w => s with EX := s.EX with <| EX_carry_flag := word_bit 32 ALU_sum;
+                                      EX_ALU_res := (31 >< 0) ALU_sum
+                                   |>
+                                      
+    | 2w => let ALU_sub = input1 − input2 in
+              s with EX := s.EX with <| EX_ALU_res := ALU_sub;
+                                        EX_overflow_flag := ((word_bit 31 input1 <> word_bit 31 input2) /\
+                                                             (word_bit 31 ALU_sub <> word_bit 31 input1))
+                                     |>
+    | 3w => s with EX := s.EX with EX_ALU_res := v2w [s.EX.EX_carry_flag]
+    | 4w => s with EX := s.EX with EX_ALU_res := v2w [s.EX.EX_overflow_flag]
+    | 5w => s with EX := s.EX with EX_ALU_res := input1 + 1w
+    | 6w => s with EX := s.EX with EX_ALU_res := input1 - 1w
+    | 7w => s with EX := s.EX with EX_ALU_res := (31 >< 0) ALU_prod
+    | 8w => s with EX := s.EX with EX_ALU_res := (63 >< 32) ALU_prod
+    | 9w => s with EX := s.EX with EX_ALU_res := (input1 && input2)
+    | 10w => s with EX := s.EX with EX_ALU_res := (input1 || input2)
+    | 11w => s with EX := s.EX with EX_ALU_res := (input1 ⊕ input2)
+    | 12w => s with EX := s.EX with EX_ALU_res := v2w [input1 = input2]
+    | 13w => s with EX := s.EX with EX_ALU_res := v2w [input1 < input2]
+    | 14w => s with EX := s.EX with EX_ALU_res := v2w [input1 <+ input2]
+    | 15w => s with EX := s.EX with EX_ALU_res := input2
+End
+
+Definition EX_ALU_update_def:
+  EX_ALU_update (fext:ext) (s:state_circuit) s' =
+  if s'.EX.EX_compute_enable then
+    ALU s'.EX.EX_func s'.EX.EX_ALU_input1 s'.EX.EX_ALU_input2 s'
+  else s'
+End
+
+Theorem EX_ALU_update_trans = REWRITE_RULE [ALU_def] EX_ALU_update_def
+
+(** SHIFT **)
+Definition SHIFT_def:
+  SHIFT (func:word2) inputa inputb s =
+  case func of
+     0w => s with EX := s.EX with EX_SHIFT_res := inputa <<~ inputb
+   | 1w => s with EX := s.EX with EX_SHIFT_res := inputa >>>~ inputb
+   | 2w => s with EX := s.EX with EX_SHIFT_res := inputa >>~ inputb
+   | 3w => let shift_sh = word_mod inputb 32w in
+             s with EX := s.EX with EX_SHIFT_res := (inputa >>>~ shift_sh) || (inputa <<~ (32w - shift_sh))
+End
+
+Definition EX_SHIFT_update_def:
+  EX_SHIFT_update (fext:ext) (s:state_circuit) s' =
+  if s'.EX.EX_compute_enable then
+    SHIFT ((1 >< 0) s'.EX.EX_func) s'.EX.EX_dataA_updated s'.EX.EX_dataB_updated s'
+  else s'
+End
+
+Theorem EX_SHIFT_update_trans = REWRITE_RULE [SHIFT_def] EX_SHIFT_update_def
+
+
 (* always_ff related: triggered by posedge clk *)
 (** Fetch: update PC **)
 Definition IF_PC_output_update_def:
@@ -195,6 +309,30 @@ Definition REG_write_def:
   else s'
 End
 
+(** Execute: ID -> EX **)
+Definition EX_pipeline_def:
+  EX_pipeline (fext:ext) (s:state_circuit) s' =
+  if s'.ID.ID_EX_write_enable then
+    s' with EX := s'.EX with <| EX_PC := s'.ID.ID_PC; EX_dataA := s'.ID.ID_dataA;
+                                EX_dataB := s'.ID.ID_dataB; EX_dataW := s'.ID.ID_dataW;
+                                EX_imm := s'.ID.ID_imm; EX_write_enable := s'.ID.ID_EX_write_enable;
+                                EX_addrA_enable := s'.ID.ID_addrA_enable;
+                                EX_addrB_enable := s'.ID.ID_addrB_enable;
+                                EX_addrW_enable := s'.ID.ID_addrW_enable;
+                                EX_addrA := s'.ID.ID_addrA; EX_addrB := s'.ID.ID_addrB;
+                                EX_addrW := s'.ID.ID_addrW; EX_opc := s'.ID.ID_opc;
+                                EX_func := s'.ID.ID_func;
+                                EX_PC_sel := if s'.ID.ID_opc = 9w then 1w
+                                             else if s'.ID.ID_opc = 10w then 2w
+                                             else if s'.ID.ID_opc = 11w then 3w
+                                             else 0w
+                             |>
+  else if s'.EX.EX_NOP_flag then
+    s' with EX := s'.EX with <| EX_write_enable := s'.ID.ID_EX_write_enable; EX_opc := 16w |>
+  else
+    s' with EX := s'.EX with EX_write_enable := s'.ID.ID_EX_write_enable
+End
+
 (* processor *)
 val init_tm = add_x_inits “<|PC := 0w;
                              R := K 0w;
@@ -204,9 +342,8 @@ val init_tm = add_x_inits “<|PC := 0w;
                              do_interrupt := F;
                              interrupt_req := F;
                              IF := <| IF_PC_output := 0w |>;
-                             ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F; ID_ForwardB := F;
-                                      ID_ForwardW := F
-                                   |>;
+                             ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F;
+                                      ID_ForwardB := F; ID_ForwardW := F |>;
                              EX := <| EX_PC := 0w |>;
                              MEM := <| MEM_PC := 0w |>;
                              WB := <| WB_PC := 0w |> |>”;
@@ -216,11 +353,13 @@ Definition agp32_init_def:
 End
 
 Definition agp32_def:
-  agp32 = mk_module (procs [IF_PC_output_update; ID_pipeline; REG_write])
+  agp32 = mk_module (procs [IF_PC_output_update; ID_pipeline; REG_write; EX_pipeline])
                     (procs [IF_PC_sel_update; IF_PC_input_update; ID_addr_update;
                             ID_opc_update; ID_func_update; REG_read; ID_imm_update;
                             ID_imm_reg_update; ID_forward_update; ID_read_data_update;
-                            ID_data_update])
+                            ID_data_update; EX_ctrl_update; EX_forward_data;
+                            EX_ALU_input_update; EX_compute_enable_update;
+                            EX_ALU_update; EX_SHIFT_update])
                     agp32_init
 End
 

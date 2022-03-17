@@ -5,7 +5,7 @@ val _ = new_theory "agp32State";
 (** IF_state: fetch related **)
 Datatype:
   IF_state = <| IF_PC_input: word32;
-                IF_PC_output: word32;
+                (* IF_PC_output: word32; *)
                 IF_instr: word32;
                 IF_PC_write_enable: bool;
                 PC_sel: word2
@@ -131,7 +131,8 @@ End
 
 (* pipelined Silver CPU *)
 Datatype:
-  state_circuit = <| (** globel state **)
+  state_circuit = <| 
+    (** globel state **)
     state: word3;
     PC: word32;
     R: word6 -> word32;

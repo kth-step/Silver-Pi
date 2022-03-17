@@ -46,7 +46,7 @@ End
 Definition IF_PC_input_update_def:
   IF_PC_input_update (fext:ext) s s' =
   s' with IF := s'.IF with
-                  IF_PC_input := MUX_41 s'.IF.PC_sel (s.IF.IF_PC_output + 4w) s'.EX.EX_ALU_res
+                  IF_PC_input := MUX_41 s'.IF.PC_sel (s.PC + 4w) s'.EX.EX_ALU_res
                                         (s'.EX.EX_PC + s'.EX.EX_dataW_updated)
                                         (s'.EX.EX_PC + s'.EX.EX_dataW_updated)
 End
@@ -469,10 +469,10 @@ Theorem Fordward_ctrl_trans = REWRITE_RULE [Forward_update_def] Forward_ctrl_def
 
 (* always_ff related: triggered by posedge clk *)
 (** Fetch: update PC **)
-Definition IF_PC_output_update_def:
-  IF_PC_output_update (fext:ext) s s' =
+Definition IF_PC_update_def:
+  IF_PC_update (fext:ext) s s' =
   if s'.IF.IF_PC_write_enable then
-    s' with IF := s'.IF with IF_PC_output := s.IF.IF_PC_input
+    s' with PC := s'.IF.IF_PC_input
   else s'
 End
 
@@ -480,7 +480,7 @@ End
 Definition ID_pipeline_def:
   ID_pipeline (fext:ext) s s' =
   if s'.ID.ID_ID_write_enable then
-    s' with ID := s'.ID with <| ID_PC := s.IF.IF_PC_output; ID_instr := s.IF.IF_instr |>
+    s' with ID := s'.ID with <| ID_PC := s.PC; ID_instr := s.IF.IF_instr |>
   else if s'.ID.ID_flush_flag then
     s' with ID := s'.ID with ID_instr := 0x0000003Fw
   else s'
@@ -550,13 +550,14 @@ End
 
 (* processor *)
 val init_tm = add_x_inits “<| R := K 0w;
+                              PC := 0w;
                               state := 3w;
                               acc_arg_ready := F;               
                               command := 0w;          
                               data_addr := 0xffffffffw;        
                               do_interrupt := F;               
                               interrupt_req := F;           
-                              IF := <| IF_PC_output := 0w |>; 
+                              IF := <| PC_sel := 0w |>; 
                               ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F;                 
                                        ID_ForwardB := F; ID_ForwardW := F |>;       
                               EX := <| EX_ForwardA := 0w; EX_ForwardB := 0w; EX_ForwardW := 0w |>;
@@ -569,7 +570,7 @@ Definition agp32_init_def:
 End
 
 Definition agp32_def:
-  agp32 = mk_module (procs [IF_PC_output_update; ID_pipeline; REG_write; EX_pipeline;
+  agp32 = mk_module (procs [IF_PC_update; ID_pipeline; REG_write; EX_pipeline;
                             MEM_pipeline; WB_pipeline])
                     (procs [IF_PC_sel_update; IF_PC_input_update; ID_addr_update;
                             ID_opc_update; ID_func_update; REG_read; ID_imm_update;

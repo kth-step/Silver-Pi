@@ -168,7 +168,7 @@ End
 
 Theorem ID_data_update_trans = REWRITE_RULE [MUX_21_def] ID_data_update_def
 
-(** Set up some flags of EX stage **)
+(** Set up flags of EX stage **)
 Definition EX_ctrl_update_def:
   EX_ctrl_update (fext:ext) (s:state_circuit) s' =
   if s'.ID.ID_EX_write_enable then
@@ -245,7 +245,7 @@ Definition ALU_def:
     | 8w => s with EX := s.EX with EX_ALU_res := (63 >< 32) ALU_prod
     | 9w => s with EX := s.EX with EX_ALU_res := (input1 && input2)
     | 10w => s with EX := s.EX with EX_ALU_res := (input1 || input2)
-    | 11w => s with EX := s.EX with EX_ALU_res := (input1 ⊕ input2)
+    | 11w => s with EX := s.EX with EX_ALU_res := (input1 ?? input2)
     | 12w => s with EX := s.EX with EX_ALU_res := v2w [input1 = input2]
     | 13w => s with EX := s.EX with EX_ALU_res := v2w [input1 < input2]
     | 14w => s with EX := s.EX with EX_ALU_res := v2w [input1 <+ input2]
@@ -281,6 +281,96 @@ End
 
 Theorem EX_SHIFT_update_trans = REWRITE_RULE [SHIFT_def] EX_SHIFT_update_def
 
+(** record data **)
+Definition EX_data_rec_update_def:
+  EX_data_rec_update (fext:ext) (s:state_circuit) s' =
+  if s'.state = 0w /\ s'.MEM.MEM_opc <> 16w then
+    s' with EX := s'.EX with <| EX_dataA_rec := s'.EX.EX_dataA_updated;
+                                EX_dataB_rec := s'.EX.EX_dataB_updated;
+                                EX_dataW_rec := s'.EX.EX_dataW_updated
+                             |>
+  else if s'.state = 0w /\ s'.MEM.MEM_opc = 16w then
+    s' with EX := s'.EX with <| EX_dataA_rec :=
+                                if s'.EX.EX_ForwardA <> 0w then s'.EX.EX_dataA_updated
+                                else s'.EX.EX_dataA_rec;
+                                EX_dataB_rec :=
+                                if s'.EX.EX_ForwardB <> 0w then s'.EX.EX_dataB_updated
+                                else s'.EX.EX_dataB_rec;
+                                EX_dataW_rec :=
+                                if s'.EX.EX_ForwardW <> 0w then s'.EX.EX_dataW_updated
+                                else s'.EX.EX_dataW_rec
+                             |>
+  else s'
+End
+
+(** Set up flags of MEM stage **)
+Definition MEM_ctrl_update_def:
+  MEM_ctrl_update (fext:ext) (s:state_circuit) s' =
+  if (s'.EX.EX_write_enable /\ s'.MEM.MEM_state_flag) \/ s'.MEM.MEM_enable then
+    s' with MEM := s'.MEM with <| MEM_read_mem := (s'.MEM.MEM_opc = 4w \/ s'.MEM.MEM_opc = 5w);
+                                  MEM_write_mem := (s'.MEM.MEM_opc = 2w);
+                                  MEM_write_mem_byte := (s'.MEM.MEM_opc = 3w);
+                                  MEM_write_reg := (s'.MEM.MEM_opc = 0w \/ s'.MEM.MEM_opc = 1w \/
+                                                    s'.MEM.MEM_opc = 4w \/ s'.MEM.MEM_opc = 5w \/
+                                                    s'.MEM.MEM_opc = 6w \/ s'.MEM.MEM_opc = 7w \/
+                                                    s'.MEM.MEM_opc = 8w \/ s'.MEM.MEM_opc = 9w \/
+                                                    s'.MEM.MEM_opc = 13w \/ s'.MEM.MEM_opc = 14w);
+                                  MEM_isInterrupt := (s'.MEM.MEM_opc = 12w);
+                               |>                   
+  else s'
+End
+
+(** generate the value for the LoadUpperConstant instruction **)
+Definition MEM_imm_update_def:
+  MEM_imm_update (fext:ext) (s:state_circuit) s' =
+  s' with MEM := s'.MEM with MEM_imm_updated := MUX_21 (s'.MEM.MEM_opc = 14w) s'.MEM.MEM_imm
+                                                ((8 >< 0) s.MEM.MEM_imm @@ (22 >< 0) s.MEM.MEM_dataW)
+End
+
+Theorem MUX_imm_update_trans = REWRITE_RULE [MUX_21_def] MEM_imm_update_def
+
+(** set up flags for WB stage **)
+Definition WB_ctrl_update_def:
+  WB_ctrl_update (fext:ext) (s:state_circuit) s' =
+  if (s'.MEM.MEM_write_enable /\ s'.WB.WB_state_flag) \/ s'.WB.WB_enable then
+    s' with WB := s'.WB with <| WB_isOut := (s'.WB.WB_opc = 6w);
+                                WB_data_sel := if s'.WB.WB_opc = 0w \/ s'.WB.WB_opc = 6w then 0w
+                                               else if s'.WB.WB_opc = 1w then 1w
+                                               else if s'.WB.WB_opc = 7w then 2w
+                                               else if s'.WB.WB_opc = 9w then 3w
+                                               else if s'.WB.WB_opc = 13w \/ s'.WB.WB_opc = 14w then 4w
+                                               else if s'.WB.WB_opc = 4w then 5w
+                                               else if s'.WB.WB_opc = 5w then 6w
+                                               else if s'.WB.WB_opc = 8w then 7w
+                                               else 0w
+                             |>
+  else s'
+End
+
+(** generate read data for the LoadMemByte instruction **)
+Definition WB_read_data_byte_update_def:
+  WB_read_data_byte_update (fext:ext) (s:state_circuit) s' =
+  s' with WB := s'.WB with WB_read_data_byte := MUX_41 ((1 >< 0) s'.WB.WB_dataA)
+                                                       (w2w ((7 >< 0) s'.WB.WB_read_data))
+                                                       (w2w ((15 >< 8) s'.WB.WB_read_data))
+                                                       (w2w ((23 >< 16) s'.WB.WB_read_data))
+                                                       (w2w ((31 >< 24) s'.WB.WB_read_data))
+End
+
+Theorem WB_read_data_byte_update_trans = REWRITE_RULE [MUX_41_def] WB_read_data_byte_update_def
+
+(** choose correct data based on WB_data_sel to write register **)
+Definition WB_write_data_update_def:
+  WB_write_data_update (fext:ext) (s:state_circuit) s' =
+  s' with WB := s'.WB with WB_write_data := MUX_81 s'.WB.WB_data_sel s'.WB.WB_ALU_res
+                                                   s'.WB.WB_SHIFT_res (w2w s'.data_in)
+                                                   (s'.WB.WB_PC + 4w) s'.WB.WB_imm
+                                                   s'.WB.WB_read_data s'.WB.WB_read_data_byte
+                                                   s'.acc_res
+End
+
+Theorem WB_write_data_update_trans = REWRITE_RULE [MUX_81_def] WB_write_data_update_def
+
 
 (* always_ff related: triggered by posedge clk *)
 (** Fetch: update PC **)
@@ -315,23 +405,53 @@ Definition EX_pipeline_def:
   if s'.ID.ID_EX_write_enable then
     s' with EX := s'.EX with <| EX_PC := s'.ID.ID_PC; EX_dataA := s'.ID.ID_dataA;
                                 EX_dataB := s'.ID.ID_dataB; EX_dataW := s'.ID.ID_dataW;
-                                EX_imm := s'.ID.ID_imm; EX_write_enable := s'.ID.ID_EX_write_enable;
+                                EX_imm := s'.ID.ID_imm; EX_write_enable := T;
                                 EX_addrA_enable := s'.ID.ID_addrA_enable;
                                 EX_addrB_enable := s'.ID.ID_addrB_enable;
                                 EX_addrW_enable := s'.ID.ID_addrW_enable;
                                 EX_addrA := s'.ID.ID_addrA; EX_addrB := s'.ID.ID_addrB;
-                                EX_addrW := s'.ID.ID_addrW; EX_opc := s'.ID.ID_opc;
+                                EX_addrW := s'.ID.ID_addrW;
+                                EX_opc := if s'.EX.EX_NOP_flag then 16w else s'.ID.ID_opc;
                                 EX_func := s'.ID.ID_func;
                                 EX_PC_sel := if s'.ID.ID_opc = 9w then 1w
                                              else if s'.ID.ID_opc = 10w then 2w
                                              else if s'.ID.ID_opc = 11w then 3w
                                              else 0w
                              |>
-  else if s'.EX.EX_NOP_flag then
-    s' with EX := s'.EX with <| EX_write_enable := s'.ID.ID_EX_write_enable; EX_opc := 16w |>
   else
-    s' with EX := s'.EX with EX_write_enable := s'.ID.ID_EX_write_enable
+    s' with EX := s'.EX with EX_write_enable := F
 End
+
+(** MEM: EX -> MEM **)
+Definition MEM_pipeline_def:
+  MEM_pipeline (fext:ext) (s:state_circuit) s' =
+  if (s'.EX.EX_write_enable /\ s'.MEM.MEM_state_flag) \/ s'.MEM.MEM_enable then
+    s' with MEM := s'.MEM with <| MEM_PC := s'.EX.EX_PC; MEM_dataA := s'.EX.EX_dataA_rec;
+                                  MEM_dataB := s'.EX.EX_dataB_rec; MEM_dataW := s'.EX.EX_dataW_rec;
+                                  MEM_imm := s'.EX.EX_imm; MEM_ALU_res := s'.EX.EX_ALU_res;
+                                  MEM_SHIFT_res := s'.EX.EX_SHIFT_res; MEM_write_enable := T;
+                                  MEM_addrW := s'.EX.EX_addrW;
+                                  MEM_opc := if s'.MEM.MEM_NOP_flag then 16w else s'.EX.EX_opc
+                               |>
+  else
+    s' with MEM := s'.MEM with MEM_write_enable := F
+End
+
+(** WB: MEM -> WB **)
+Definition WB_pipeline_def:
+  WB_pipeline (fext:ext) (s:state_circuit) s' =
+  if (s'.MEM.MEM_write_enable /\ s'.WB.WB_state_flag) \/ s'.WB.WB_enable then
+    s' with WB := s'.WB with <| WB_PC := s'.MEM.MEM_PC; WB_dataA := s'.MEM.MEM_dataA;
+                                WB_imm := s'.MEM.MEM_imm; WB_ALU_res := s'.MEM.MEM_ALU_res;
+                                WB_SHIFT_res := s'.MEM.MEM_SHIFT_res;
+                                WB_write_reg := s'.MEM.MEM_write_reg;
+                                WB_addrW := s'.MEM.MEM_addrW;
+                                WB_opc := s'.MEM.MEM_opc
+                             |>
+  else
+    s' with WB := s'.WB with WB_write_enable := F
+End
+
 
 (* processor *)
 val init_tm = add_x_inits “<|PC := 0w;
@@ -353,13 +473,16 @@ Definition agp32_init_def:
 End
 
 Definition agp32_def:
-  agp32 = mk_module (procs [IF_PC_output_update; ID_pipeline; REG_write; EX_pipeline])
+  agp32 = mk_module (procs [IF_PC_output_update; ID_pipeline; REG_write; EX_pipeline;
+                            MEM_pipeline; WB_pipeline])
                     (procs [IF_PC_sel_update; IF_PC_input_update; ID_addr_update;
                             ID_opc_update; ID_func_update; REG_read; ID_imm_update;
                             ID_imm_reg_update; ID_forward_update; ID_read_data_update;
                             ID_data_update; EX_ctrl_update; EX_forward_data;
                             EX_ALU_input_update; EX_compute_enable_update;
-                            EX_ALU_update; EX_SHIFT_update])
+                            EX_ALU_update; EX_SHIFT_update; EX_data_rec_update;
+                            MEM_ctrl_update; MEM_imm_update; WB_ctrl_update;
+                            WB_read_data_byte_update; WB_write_data_update])
                     agp32_init
 End
 

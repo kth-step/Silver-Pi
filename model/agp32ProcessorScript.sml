@@ -220,8 +220,8 @@ End
 Definition ALU_def:
   ALU (func:word4) input1 input2 s =
   let ALU_sum = (w2w input1 + w2w input1 +
-                 (if func = 1w then v2w [s.EX.EX_carry_flag] else 0w)) : 33 word;
-      ALU_prod = (w2w input1 * w2w input2) : word64 in
+                 (if func = 1w then v2w [s.EX.EX_carry_flag] else 0w)) : 33 word in
+  let ALU_prod = (w2w input1 * w2w input2) : word64 in
     case func of
       0w => s with EX := s.EX with <| EX_overflow_flag := ((word_bit 31 input1 = word_bit 31 input2) /\
                                                            (word_bit 31 ALU_sum <> word_bit 31 input1));
@@ -371,6 +371,101 @@ End
 
 Theorem WB_write_data_update_trans = REWRITE_RULE [MUX_81_def] WB_write_data_update_def
 
+(** hazard handling **)
+Definition Hazard_ctrl_def:
+  Hazard_ctrl fext (s:state_circuit) s' =
+  if s'.state = 3w \/ s'.state = 5w then
+    s' with <| IF := s'.IF with IF_PC_write_enable := F;
+               ID := s'.ID with <| ID_ID_write_enable := F; ID_flush_flag := T;
+                                   ID_EX_write_enable := F |>;
+               EX := s'.EX with EX_NOP_flag := F;
+               MEM := s'.MEM with <| MEM_state_flag := F; MEM_NOP_flag := F |>;
+               WB := s'.WB with WB_state_flag := F
+            |>
+  else if s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w \/ s'.state = 7w then
+    s' with <| IF := s'.IF with IF_PC_write_enable := F;
+               ID := s'.ID with <| ID_ID_write_enable := F; ID_flush_flag := F;
+                                   ID_EX_write_enable := F |>;
+               EX := s'.EX with EX_NOP_flag := F;
+               MEM := s'.MEM with <| MEM_state_flag := F; MEM_NOP_flag := F |>;
+               WB := s'.WB with WB_state_flag := F
+            |>
+  else if s'.state = 1w then
+    s' with <| IF := s'.IF with IF_PC_write_enable := F;
+               ID := s'.ID with <| ID_ID_write_enable := F; ID_flush_flag := T;
+                                   ID_EX_write_enable := F |>;
+               EX := s'.EX with EX_NOP_flag := F;
+               MEM := s'.MEM with <| MEM_state_flag := T; MEM_NOP_flag := F |>;
+               WB := s'.WB with WB_state_flag := T
+            |>
+  else if ~fext.ready then
+    s' with <| IF := s'.IF with IF_PC_write_enable := F;
+               ID := s'.ID with <| ID_ID_write_enable := F; ID_flush_flag := F;
+                                   ID_EX_write_enable := F |>;
+               EX := s'.EX with EX_NOP_flag := F;
+               MEM := s'.MEM with <| MEM_state_flag := F; MEM_NOP_flag := F |>;
+               WB := s'.WB with WB_state_flag := F
+            |>
+  else if s'.MEM.MEM_opc = 2w \/ s'.MEM.MEM_opc = 3w \/ s'.MEM.MEM_opc = 4w \/
+          s'.MEM.MEM_opc = 5w \/ s'.MEM.MEM_opc = 12w then
+    s' with <| IF := s'.IF with IF_PC_write_enable := F;
+               ID := s'.ID with <| ID_ID_write_enable := F; ID_flush_flag := F;
+                                   ID_EX_write_enable := F |>;
+               EX := s'.EX with EX_NOP_flag := F;
+               MEM := s'.MEM with <| MEM_state_flag := F; MEM_NOP_flag := T |>;
+               WB := s'.WB with WB_state_flag := T
+            |>
+  else if s'.IF.PC_sel <> 0w then
+    s' with <| IF := s'.IF with IF_PC_write_enable := T;
+               ID := s'.ID with <| ID_ID_write_enable := F; ID_flush_flag := T;
+                                   ID_EX_write_enable := T |>;
+               EX := s'.EX with EX_NOP_flag := T;
+               MEM := s'.MEM with <| MEM_state_flag := T; MEM_NOP_flag := F |>;
+               WB := s'.WB with WB_state_flag := T
+            |>
+  else
+    s' with <| IF := s'.IF with IF_PC_write_enable := T;
+               ID := s'.ID with <| ID_ID_write_enable := T; ID_flush_flag := F;
+                                   ID_EX_write_enable := T |>;
+               EX := s'.EX with EX_NOP_flag := F;
+               MEM := s'.MEM with <| MEM_state_flag := T; MEM_NOP_flag := F |>;
+               WB := s'.WB with WB_state_flag := T
+            |>
+End
+
+(* data forwarding *)
+Definition Forward_update_def:
+  Forward_update EX_addr addr_disable check s : word3 =
+  if EX_addr = s.MEM.MEM_addrW /\ s.MEM.MEM_write_reg /\
+     (s.MEM.MEM_opc = 13w \/ s.MEM.MEM_opc = 14w) /\ (~ addr_disable) /\ check then 5w
+  else if EX_addr = s.MEM.MEM_addrW /\ s.MEM.MEM_write_reg /\
+          s.MEM.MEM_opc = 9w /\ (~ addr_disable) /\ check then 4w
+  else if EX_addr = s.MEM.MEM_addrW /\ s.MEM.MEM_write_reg /\
+          s.MEM.MEM_opc = 1w /\ (~ addr_disable) /\ check then 3w
+  else if EX_addr = s.MEM.MEM_addrW /\ s.MEM.MEM_write_reg /\
+          (s.MEM.MEM_opc = 0w \/ s.MEM.MEM_opc = 6w) /\ (~ addr_disable) /\ check then 2w
+  else if EX_addr = s.WB.WB_addrW /\ s.WB.WB_write_reg /\ (~ addr_disable) /\ check then 1w
+  else 0w
+End
+
+Definition Forward_ctrl_def:
+  Forward_ctrl (fext:ext) (s:state_circuit) s' =
+  let checkA = (s'.EX.EX_opc = 0w \/ s'.EX.EX_opc = 1w \/ s'.EX.EX_opc = 2w \/ s'.EX.EX_opc = 3w \/
+                s'.EX.EX_opc = 4w \/ s'.EX.EX_opc = 5w \/ s'.EX.EX_opc = 6w \/ s'.EX.EX_opc = 8w \/
+                s'.EX.EX_opc = 9w \/ s'.EX.EX_opc = 10w \/ s'.EX.EX_opc = 11w) in
+  let checkB = (s'.EX.EX_opc = 0w \/ s'.EX.EX_opc = 1w \/ s'.EX.EX_opc = 2w \/ s'.EX.EX_opc = 3w \/
+                s'.EX.EX_opc = 6w \/ s'.EX.EX_opc = 10w \/ s'.EX.EX_opc = 11w) in
+  let checkW = (s'.EX.EX_opc = 10w \/ s'.EX.EX_opc = 11w \/ s'.EX.EX_opc = 14w) in
+    s' with EX := s'.EX with <| EX_ForwardA :=
+                                Forward_update s'.EX.EX_addrA s'.EX.EX_addrA_enable checkA s';
+                                EX_ForwardB :=
+                                Forward_update s'.EX.EX_addrB s'.EX.EX_addrB_enable checkB s';
+                                EX_ForwardW :=
+                                Forward_update s'.EX.EX_addrW s'.EX.EX_addrW_enable checkW s'
+                             |>                               
+End
+
+Theorem Fordward_ctrl_trans = REWRITE_RULE [Forward_update_def] Forward_ctrl_def
 
 (* always_ff related: triggered by posedge clk *)
 (** Fetch: update PC **)
@@ -454,19 +549,20 @@ End
 
 
 (* processor *)
-val init_tm = add_x_inits “<|PC := 0w;
-                             R := K 0w;
-                             state := 3w;
-                             acc_arg_ready := F;
-                             command := 0w;
-                             do_interrupt := F;
-                             interrupt_req := F;
-                             IF := <| IF_PC_output := 0w |>;
-                             ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F;
-                                      ID_ForwardB := F; ID_ForwardW := F |>;
-                             EX := <| EX_PC := 0w |>;
-                             MEM := <| MEM_PC := 0w |>;
-                             WB := <| WB_PC := 0w |> |>”;
+val init_tm = add_x_inits “<| R := K 0w;
+                              state := 3w;
+                              acc_arg_ready := F;               
+                              command := 0w;          
+                              data_addr := 0xffffffffw;        
+                              do_interrupt := F;               
+                              interrupt_req := F;           
+                              IF := <| IF_PC_output := 0w |>; 
+                              ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F;                 
+                                       ID_ForwardB := F; ID_ForwardW := F |>;       
+                              EX := <| EX_ForwardA := 0w; EX_ForwardB := 0w; EX_ForwardW := 0w |>;
+                              MEM := <| MEM_enable := F |>; 
+                              WB := <| WB_enable := F |>
+                           |>”;
 
 Definition agp32_init_def:
   agp32_init fbits = ^init_tm
@@ -482,7 +578,8 @@ Definition agp32_def:
                             EX_ALU_input_update; EX_compute_enable_update;
                             EX_ALU_update; EX_SHIFT_update; EX_data_rec_update;
                             MEM_ctrl_update; MEM_imm_update; WB_ctrl_update;
-                            WB_read_data_byte_update; WB_write_data_update])
+                            WB_read_data_byte_update; WB_write_data_update;
+                            Hazard_ctrl; Forward_ctrl])
                     agp32_init
 End
 

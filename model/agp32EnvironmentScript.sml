@@ -20,7 +20,7 @@ val _ = Datatype `
 
           (* Memory *)
           mem : word32 -> word8;
-          (*error : word2;*)
+          error : word2;
           ready : bool;
           data_rdata : word32;
           inst_rdata : word32;
@@ -73,8 +73,8 @@ val word_at_addr_def = Define `
  word_at_addr (mem : word32 -> word8) addr =
   (mem (addr + 3w) @@ (mem (addr + 2w) @@ (mem (addr + 1w) @@ mem addr):word16):word24):word32`;
 
-(*val mem_no_errors_def = Define `
- mem_no_errors fext = !n. (fext n).error = 0w`;*)
+val mem_no_errors_def = Define `
+ mem_no_errors fext = !n. (fext n).error = 0w`;
 
 (* TODO: Should just handle errors in the same way as other interfaces *)
 (* TODO: Would make more sense to have alignment preconds, rather than doing alignment "automatically" *)
@@ -117,13 +117,13 @@ val is_mem_def = Define `
    ?m. (!p. p < m ==> (fext (SUC (n + p))).mem = (fext n).mem /\ ~(fext (SUC (n + p))).ready) /\
        (fext (SUC (n + m))).mem = (fext n).mem /\
        (fext (SUC (n + m))).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n))) /\
-       (fext (SUC (n + m))).ready) (*/\
+       (fext (SUC (n + m))).ready) /\
 
-  mem_no_errors fext*)`;
+  mem_no_errors fext`;
 
-(*val is_mem_mem_no_errors = Q.store_thm("is_mem_mem_no_errors",
+val is_mem_mem_no_errors = Q.store_thm("is_mem_mem_no_errors",
  `!accs c fext. is_mem accs c fext ==> mem_no_errors fext`,
- rw [is_mem_def]);*)
+ rw [is_mem_def]);
  
  (** Accelerator specification **)
 

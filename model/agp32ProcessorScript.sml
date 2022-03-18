@@ -1,11 +1,11 @@
 open hardwarePreamble translatorTheory translatorCoreLib agp32StateTheory agp32EnvironmentTheory;
 
+(* Pipelined Silver processor implementation *)
 val _ = new_theory "agp32Processor";
 
 val _ = prefer_num ();
 val _ = guess_lengths ();
 
-(* Pipelined Silver processor implementation *)
 
 (* multiplexer functions used by different blocks *)
 Definition MUX_21_def:
@@ -32,6 +32,7 @@ Definition MUX_81_def:
   else if sel = 6w then input6
   else input7
 End
+
 
 (* always_comb related *)
 (** compute PC **)
@@ -361,9 +362,9 @@ Theorem WB_read_data_byte_update_trans = REWRITE_RULE [MUX_41_def] WB_read_data_
 
 (** choose correct data based on WB_data_sel to write register **)
 Definition WB_write_data_update_def:
-  WB_write_data_update (fext:ext) (s:state_circuit) s' =
+  WB_write_data_update fext (s:state_circuit) s' =
   s' with WB := s'.WB with WB_write_data := MUX_81 s'.WB.WB_data_sel s'.WB.WB_ALU_res
-                                                   s'.WB.WB_SHIFT_res (w2w s'.data_in)
+                                                   s'.WB.WB_SHIFT_res (w2w fext.data_in)
                                                    (s'.WB.WB_PC + 4w) s'.WB.WB_imm
                                                    s'.WB.WB_read_data s'.WB.WB_read_data_byte
                                                    s'.acc_res
@@ -467,12 +468,21 @@ End
 
 Theorem Fordward_ctrl_trans = REWRITE_RULE [Forward_update_def] Forward_ctrl_def
 
+(** assign some items **)
+Definition assign_update_def:
+  assign_update fext (s:state_circuit) s' =
+  s' with <| IF := s'.IF with IF_instr := if fext.ready then fext.inst_rdata else 0x0000003Fw;
+             WB := s'.WB with WB_read_data := fext.data_rdata
+          |>
+End
+
+
 (* always_ff related: triggered by posedge clk *)
 (** Fetch: update PC **)
 Definition IF_PC_update_def:
   IF_PC_update (fext:ext) s s' =
   if s'.IF.IF_PC_write_enable then
-    s' with PC := s'.IF.IF_PC_input
+    s' with PC := s.IF.IF_PC_input
   else s'
 End
 
@@ -547,23 +557,105 @@ Definition WB_pipeline_def:
     s' with WB := s'.WB with WB_write_enable := F
 End
 
+(** state **)
+Definition agp32_next_state_def:
+  agp32_next_state fext s s' =
+  if fext.error = 0w then
+    case s'.state of
+      0w => (let s' = s' with <| data_out := if s'.WB.WB_isOut then (9 >< 0) s'.WB.WB_ALU_res
+                                            else s'.data_out;
+                                MEM := s'.MEM with MEM_enable := F;
+                                WB := s'.WB with WB_enable := F
+                             |> in
+              if ~fext.ready then s' with state := 7w
+              else if s'.MEM.MEM_isInterrupt then
+                s' with <| state := 7w; command := 4w;
+                           do_interrupt := T; data_addr := 0w
+                        |>
+              else if s'.MEM.MEM_read_mem then
+                s' with <| state := 7w; command := 2w;
+                           data_addr := s'.MEM.MEM_dataA
+                        |>
+              else if s'.MEM.MEM_write_mem then
+                s' with <| state := 7w; command := 3w;
+                           data_addr := s'.MEM.MEM_dataB;
+                           data_wdata := s'.MEM.MEM_dataA; data_wstrb := 15w
+                        |>
+              else if s'.MEM.MEM_write_mem_byte then
+                s' with <| state := 7w; command := 3w;
+                           data_addr := s'.MEM.MEM_dataB;
+                           data_wdata := case (1 >< 0) s'.MEM.MEM_dataB of
+                                           0w => bit_field_insert 7 0 ((7 >< 0) s'.MEM.MEM_dataA) s'.data_wdata
+                                         | 1w => bit_field_insert 15 8 ((7 >< 0) s'.MEM.MEM_dataA) s'.data_wdata
+                                         | 2w => bit_field_insert 23 16 ((7 >< 0) s'.MEM.MEM_dataA) s'.data_wdata
+                                         | 3w => bit_field_insert 31 24 ((7 >< 0) s'.MEM.MEM_dataA) s'.data_wdata;
+                           data_wstrb := 1w <<~ w2w ((1 >< 0) s'.MEM.MEM_dataB)
+                        |>
+              else if (s'.IF.PC_sel <> 0w) then
+                s' with <| state := 1w; command := 1w |>
+              else if (s'.EX.EX_isAcc) then
+                s' with <| state := 2w; command := 0w;
+                           acc_arg := s'.EX.EX_dataA_updated;
+                           acc_arg_ready := T
+                        |>
+              else s')                      
+    | 1w => (let s' = if fext.ready /\ s.command = 0w then s' with state := 6w           
+                      else s' in
+               s' with command := 0w)
+    | 2w => (let s' = if s.acc_res_ready /\ ~s.acc_arg_ready then s' with state := 6w
+                      else s' in
+               s' with acc_arg_ready := F)
+    | 3w => (if fext.mem_start_ready then
+               s' with <| state := 1w; command := 1w |>
+             else s')
+    | 4w => (if fext.interrupt_ack then
+               s' with <| state := 6w; interrupt_req := F|>
+             else s')
+    | 6w => s' with <| state := 0w; command := 1w;
+                       MEM := s'.MEM with MEM_enable := T;
+                       WB := s'.WB with WB_enable := T
+                    |>
+    | 7w => (let s' = if fext.ready /\ s.command = 0w then
+                        if s'.do_interrupt then s' with <| state := 4w; do_interrupt := F;
+                                                           interrupt_req := T |>
+                        else s' with state := 6w
+                      else s' in
+               s' with command := 0w)
+    | _ => s'                      
+  else
+    s' with state := 5w
+End
+
+(** Accelerator: integer addition **)
+Definition Acc_compute_def:
+  Acc_compute (fext:ext) s s' =
+  if s.acc_arg_ready then
+    s' with <| acc_res_ready := F; acc_state := 0w |>
+  else
+    case s.acc_state of
+      0w => s' with acc_state := 1w
+    | 1w => s' with <| acc_res := w2w ((31 >< 16) s.acc_arg + (15 >< 0) s.acc_arg);
+                       acc_res_ready := T
+                    |>
+    | _ => s'
+End
+
 
 (* processor *)
-val init_tm = add_x_inits “<| R := K 0w;
-                              PC := 0w;
-                              state := 3w;
-                              acc_arg_ready := F;               
-                              command := 0w;          
-                              data_addr := 0xffffffffw;        
-                              do_interrupt := F;               
-                              interrupt_req := F;           
-                              IF := <| PC_sel := 0w |>; 
-                              ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F;                 
-                                       ID_ForwardB := F; ID_ForwardW := F |>;       
-                              EX := <| EX_ForwardA := 0w; EX_ForwardB := 0w; EX_ForwardW := 0w |>;
-                              MEM := <| MEM_enable := F |>; 
-                              WB := <| WB_enable := F |>
-                           |>”;
+val init_tm = add_x_inits ``<| R := K 0w;
+                               PC := 0w;
+                               state := 3w;     
+                               acc_arg_ready := F;             
+                               command := 0w;       
+                               data_addr := 0xffffffffw;         
+                               do_interrupt := F;           
+                               interrupt_req := F;           
+                               IF := <| PC_sel := 0w |>;           
+                               ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F;                   
+                                        ID_ForwardB := F; ID_ForwardW := F |>;
+                               EX := <| EX_ForwardA := 0w; EX_ForwardB := 0w; EX_ForwardW := 0w |>;
+                               MEM := <| MEM_enable := F |>;                              
+                               WB := <| WB_enable := F |> |>``;
 
 Definition agp32_init_def:
   agp32_init fbits = ^init_tm
@@ -571,7 +663,7 @@ End
 
 Definition agp32_def:
   agp32 = mk_module (procs [IF_PC_update; ID_pipeline; REG_write; EX_pipeline;
-                            MEM_pipeline; WB_pipeline])
+                            MEM_pipeline; WB_pipeline; agp32_next_state; Acc_compute])
                     (procs [IF_PC_sel_update; IF_PC_input_update; ID_addr_update;
                             ID_opc_update; ID_func_update; REG_read; ID_imm_update;
                             ID_imm_reg_update; ID_forward_update; ID_read_data_update;
@@ -580,7 +672,7 @@ Definition agp32_def:
                             EX_ALU_update; EX_SHIFT_update; EX_data_rec_update;
                             MEM_ctrl_update; MEM_imm_update; WB_ctrl_update;
                             WB_read_data_byte_update; WB_write_data_update;
-                            Hazard_ctrl; Forward_ctrl])
+                            Hazard_ctrl; Forward_ctrl; assign_update])
                     agp32_init
 End
 

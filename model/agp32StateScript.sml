@@ -137,7 +137,6 @@ Datatype:
     PC: word32;
     R: word6 -> word32;
     data_out: word10;
-    data_in: word2;
     acc_arg: word32;
     acc_arg_ready: bool;
     interrupt_req: bool;

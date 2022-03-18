@@ -7,12 +7,10 @@ val _ = prefer_num ();
 
 val module_def = agp32_def;
 val abstract_fields = ["mem", "io_events", "interrupt_state"];
-val outputs = ["PC"];
-val comms = ["PC", "data_out",
-             "command", "data_addr", "data_wdata", "data_wstrb",
-             "acc_arg", "acc_arg_ready",
-             "acc_res", "acc_res_ready",
-             "interrupt_req"];
+val outputs = ["PC", "data_out", "interrupt_req", "command", 
+               "data_addr", "data_wdata", "data_wstrb"];
+val comms = ["data_out", "command", "data_addr", "data_wdata", "data_wstrb",
+             "acc_arg", "acc_arg_ready", "acc_res", "acc_res_ready", "interrupt_req"];
 
 val trans_thm = module2hardware module_def
                                 abstract_fields

@@ -169,7 +169,7 @@ End
 
 Theorem ID_data_update_trans = REWRITE_RULE [MUX_21_def] ID_data_update_def
 
-(** Set up flags of EX stage **)
+(** set up flags of EX stage **)
 Definition EX_ctrl_update_def:
   EX_ctrl_update (fext:ext) (s:state_circuit) s' =
   if s'.ID.ID_EX_write_enable then
@@ -177,7 +177,7 @@ Definition EX_ctrl_update_def:
   else s'
 End
 
-(* Forward data from MEM/WB -> EX *)
+(** forward data from MEM/WB -> EX **)
 Definition EX_forward_data_def:
   EX_forward_data (fext:ext) (s:state_circuit) s' =
   s' with EX := s'.EX with <| EX_dataA_updated :=
@@ -434,7 +434,7 @@ Definition Hazard_ctrl_def:
             |>
 End
 
-(* data forwarding *)
+(** data forwarding **)
 Definition Forward_update_def:
   Forward_update EX_addr addr_disable check s : word3 =
   if EX_addr = s.MEM.MEM_addrW /\ s.MEM.MEM_write_reg /\
@@ -478,7 +478,7 @@ End
 
 
 (* always_ff related: triggered by posedge clk *)
-(** Fetch: update PC **)
+(** fetch: update PC **)
 Definition IF_PC_update_def:
   IF_PC_update (fext:ext) s s' =
   if s'.IF.IF_PC_write_enable then
@@ -486,7 +486,7 @@ Definition IF_PC_update_def:
   else s'
 End
 
-(** Decode: IF -> ID **)
+(** decode: IF -> ID **)
 Definition ID_pipeline_def:
   ID_pipeline (fext:ext) s s' =
   if s'.ID.ID_ID_write_enable then
@@ -504,7 +504,7 @@ Definition REG_write_def:
   else s'
 End
 
-(** Execute: ID -> EX **)
+(** execute: ID -> EX **)
 Definition EX_pipeline_def:
   EX_pipeline (fext:ext) (s:state_circuit) s' =
   if s'.ID.ID_EX_write_enable then
@@ -527,7 +527,7 @@ Definition EX_pipeline_def:
     s' with EX := s'.EX with EX_write_enable := F
 End
 
-(** MEM: EX -> MEM **)
+(** memory: EX -> MEM **)
 Definition MEM_pipeline_def:
   MEM_pipeline (fext:ext) (s:state_circuit) s' =
   if (s'.EX.EX_write_enable /\ s'.MEM.MEM_state_flag) \/ s'.MEM.MEM_enable then
@@ -542,7 +542,7 @@ Definition MEM_pipeline_def:
     s' with MEM := s'.MEM with MEM_write_enable := F
 End
 
-(** WB: MEM -> WB **)
+(** write back: MEM -> WB **)
 Definition WB_pipeline_def:
   WB_pipeline (fext:ext) (s:state_circuit) s' =
   if (s'.MEM.MEM_write_enable /\ s'.WB.WB_state_flag) \/ s'.WB.WB_enable then
@@ -553,8 +553,7 @@ Definition WB_pipeline_def:
                                 WB_addrW := s'.MEM.MEM_addrW;
                                 WB_opc := s'.MEM.MEM_opc
                              |>
-  else
-    s' with WB := s'.WB with WB_write_enable := F
+  else s'
 End
 
 (** state **)
@@ -626,7 +625,7 @@ Definition agp32_next_state_def:
     s' with state := 5w
 End
 
-(** Accelerator: integer addition **)
+(** accelerator: integer addition **)
 Definition Acc_compute_def:
   Acc_compute (fext:ext) s s' =
   if s.acc_arg_ready then
@@ -653,9 +652,10 @@ val init_tm = add_x_inits ``<| R := K 0w;
                                IF := <| PC_sel := 0w |>;           
                                ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F;                   
                                         ID_ForwardB := F; ID_ForwardW := F |>;
-                               EX := <| EX_ForwardA := 0w; EX_ForwardB := 0w; EX_ForwardW := 0w |>;
+                               EX := <| EX_ForwardA := 0w; EX_ForwardB := 0w; EX_ForwardW := 0w;
+                                        EX_PC_sel := 0w |>;
                                MEM := <| MEM_enable := F |>;                              
-                               WB := <| WB_enable := F |> |>``;
+                               WB := <| WB_enable := F; WB_write_reg := F |> |>``;
 
 Definition agp32_init_def:
   agp32_init fbits = ^init_tm

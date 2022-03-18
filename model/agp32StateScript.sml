@@ -118,7 +118,6 @@ Datatype:
                  WB_ALU_res: word32;
                  WB_SHIFT_res: word32;
                  WB_write_data: word32;
-                 WB_write_enable: bool;
                  WB_write_reg: bool;
                  WB_isOut: bool;
                  WB_state_flag: bool;
@@ -142,7 +141,7 @@ Datatype:
     interrupt_req: bool;
     do_interrupt: bool;
 
-    (** memory(cache) interface **)
+    (** memory (cache) interface **)
     command: word3;
     data_addr: word32;
     data_wdata: word32;
@@ -153,7 +152,7 @@ Datatype:
     acc_res_ready: bool;
     acc_state: word2;
 
-    (** piepeline **)
+    (** pipeline **)
     IF: IF_state;
     ID: ID_state;
     EX: EX_state;

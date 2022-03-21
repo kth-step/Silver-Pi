@@ -98,11 +98,11 @@ End
 
 (** register read **)
 Definition REG_read_def:
-  REG_read (fext:ext) (s:state_circuit) s' =
-  s' with ID := s'.ID with <| ID_read_dataA := s'.R s'.ID.ID_addrA;
-                              ID_read_dataB := s'.R s'.ID.ID_addrB;
-                              ID_read_dataW := s'.R s'.ID.ID_addrW 
-                           |>
+  REG_read (fext:ext) (s:state_circuit) s' = let
+    s' = s' with ID := (s'.ID with ID_read_dataA := s'.R s'.ID.ID_addrA);
+    s' = s' with ID := (s'.ID with ID_read_dataB := s'.R s'.ID.ID_addrB);
+    s' = s' with ID := (s'.ID with ID_read_dataW := s'.R s'.ID.ID_addrW) in
+   s'
 End
 
 (** generate immediate **)

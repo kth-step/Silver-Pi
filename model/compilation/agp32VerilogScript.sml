@@ -34,7 +34,7 @@ end
 
 val verilogstr =
  definition"agp32_v_def"
- |> REWRITE_RULE [definition"agp32_v_seqs_def", definition"agp32_v_combs_def"]
+ |> REWRITE_RULE [definition"agp32_v_seqs_def", definition"agp32_v_combs_def", definition"agp32_v_decls_def"]
  |> concl
  |> rhs
  |> verilog_print "agp32_processor";

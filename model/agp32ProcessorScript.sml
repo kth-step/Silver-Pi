@@ -442,23 +442,35 @@ Definition Forward_update_def:
   else 0w
 End
 
-Definition Forward_ctrl_def:
-  Forward_ctrl (fext:ext) (s:state_circuit) s' =
+Definition ForwardA_def:
+  ForwardA (fext:ext) (s:state_circuit) s' =
   let checkA = (s'.EX.EX_opc = 0w \/ s'.EX.EX_opc = 1w \/ s'.EX.EX_opc = 2w \/ s'.EX.EX_opc = 3w \/
                 s'.EX.EX_opc = 4w \/ s'.EX.EX_opc = 5w \/ s'.EX.EX_opc = 6w \/ s'.EX.EX_opc = 8w \/
-                s'.EX.EX_opc = 9w \/ s'.EX.EX_opc = 10w \/ s'.EX.EX_opc = 11w);
-      checkB = (s'.EX.EX_opc = 0w \/ s'.EX.EX_opc = 1w \/ s'.EX.EX_opc = 2w \/ s'.EX.EX_opc = 3w \/
-                s'.EX.EX_opc = 6w \/ s'.EX.EX_opc = 10w \/ s'.EX.EX_opc = 11w);
-      checkW = (s'.EX.EX_opc = 10w \/ s'.EX.EX_opc = 11w \/ s'.EX.EX_opc = 14w);
-      s' = s' with EX := s'.EX with EX_ForwardA :=
-           Forward_update s'.EX.EX_addrA s'.EX.EX_addrA_enable checkA s';
-      s' = s' with EX := s'.EX with EX_ForwardB :=
-           Forward_update s'.EX.EX_addrB s'.EX.EX_addrB_enable checkB s' in
-      s' with EX := s'.EX with EX_ForwardW :=
-      Forward_update s'.EX.EX_addrW s'.EX.EX_addrW_enable checkW s'
+                s'.EX.EX_opc = 9w \/ s'.EX.EX_opc = 10w \/ s'.EX.EX_opc = 11w) in
+    s' with EX := s'.EX with EX_ForwardA :=
+    Forward_update s'.EX.EX_addrA s'.EX.EX_addrA_enable checkA s'
 End
 
-Theorem Fordward_ctrl_trans = REWRITE_RULE [Forward_update_def] Forward_ctrl_def
+Theorem FordwardA_trans = REWRITE_RULE [Forward_update_def] ForwardA_def
+
+Definition ForwardB_def:
+  ForwardB (fext:ext) (s:state_circuit) s' =
+  let checkB = (s'.EX.EX_opc = 0w \/ s'.EX.EX_opc = 1w \/ s'.EX.EX_opc = 2w \/ s'.EX.EX_opc = 3w \/
+                s'.EX.EX_opc = 6w \/ s'.EX.EX_opc = 10w \/ s'.EX.EX_opc = 11w) in
+    s' with EX := s'.EX with EX_ForwardB :=
+    Forward_update s'.EX.EX_addrB s'.EX.EX_addrB_enable checkB s'
+End
+
+Theorem FordwardB_trans = REWRITE_RULE [Forward_update_def] ForwardB_def
+                                       
+Definition ForwardW_def:
+  ForwardW (fext:ext) (s:state_circuit) s' =
+  let checkW = (s'.EX.EX_opc = 10w \/ s'.EX.EX_opc = 11w \/ s'.EX.EX_opc = 14w) in
+    s' with EX := s'.EX with EX_ForwardW :=
+    Forward_update s'.EX.EX_addrW s'.EX.EX_addrW_enable checkW s'
+End
+
+Theorem FordwardW_trans = REWRITE_RULE [Forward_update_def] ForwardW_def
 
 (** assign some items **)
 Definition assign_update_def:
@@ -669,7 +681,7 @@ Definition agp32_init_def:
 End
 
 Definition agp32_def:
-  agp32 = mk_module (procs [IF_PC_update; ID_pipeline; (*REG_write;*) EX_pipeline;
+  agp32 = mk_module (procs [IF_PC_update; ID_pipeline; REG_write; EX_pipeline;
                             MEM_pipeline; WB_pipeline; agp32_next_state; Acc_compute])
                     (procs [IF_PC_sel_update; IF_PC_input_update; ID_addr_update;
                             ID_opc_update; ID_func_update; REG_read; ID_imm_update;
@@ -679,7 +691,7 @@ Definition agp32_def:
                             EX_ALU_update; EX_SHIFT_update; EX_data_rec_update;
                             MEM_ctrl_update; MEM_imm_update; WB_ctrl_update;
                             WB_read_data_byte_update; WB_write_data_update;
-                            Hazard_ctrl; Forward_ctrl; assign_update])
+                            Hazard_ctrl; ForwardA; ForwardB; ForwardW; assign_update])
                     agp32_init
 End
 

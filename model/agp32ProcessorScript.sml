@@ -562,47 +562,42 @@ Definition agp32_next_state_def:
     case s'.state of
       0w => (let s' = s' with data_out := if s'.WB.WB_isOut then (9 >< 0) s'.WB.WB_ALU_res
                                           else s.data_out;
-                 s' = s' with MEM := (s'.MEM with MEM_enable := F);
-                 s' = s' with WB := (s'.WB with WB_enable := F) in
+                 s' = s' with MEM := s'.MEM with MEM_enable := F;
+                 s' = s' with WB := s'.WB with WB_enable := F in
               if ~fext.ready then s' with state := 7w
-              else if s'.MEM.MEM_isInterrupt then let
-                s' = s' with state := 7w;
-                s' = s' with command := 4w;
-                s' = s' with do_interrupt := T;
-                s' = s' with data_addr := 0w in
-               s'
-              else if s'.MEM.MEM_read_mem then let
-                s' = s' with state := 7w;
-                s' = s' with command := 2w;
-                s' = s' with data_addr := s'.MEM.MEM_dataA in
-               s'
-              else if s'.MEM.MEM_write_mem then let
-                s' = s' with state := 7w;
-                s' = s' with command := 3w;
-                s' = s' with data_addr := s'.MEM.MEM_dataB;
-                s' = s' with data_wdata := s'.MEM.MEM_dataA;
-                s' = s' with data_wstrb := 15w in
-               s'
-              else if s'.MEM.MEM_write_mem_byte then let
-                s' = s' with state := 7w;
-                s' = s' with command := 3w;
-                s' = s' with data_addr := s'.MEM.MEM_dataB;
-                s' = s' with data_wstrb := 1w <<~ w2w ((1 >< 0) s'.MEM.MEM_dataB) in
+              else if s'.MEM.MEM_isInterrupt then
+                let s' = s' with state := 7w;
+                    s' = s' with command := 4w;
+                    s' = s' with do_interrupt := T in
+                  s' with data_addr := 0w                                       
+              else if s'.MEM.MEM_read_mem then
+                let s' = s' with state := 7w;
+                    s' = s' with command := 2w in
+                  s' with data_addr := s'.MEM.MEM_dataA
+              else if s'.MEM.MEM_write_mem then
+                let s' = s' with state := 7w;
+                    s' = s' with command := 3w;
+                    s' = s' with data_addr := s'.MEM.MEM_dataB;
+                    s' = s' with data_wdata := s'.MEM.MEM_dataA in
+                  s' with data_wstrb := 15w
+              else if s'.MEM.MEM_write_mem_byte then
+                let s' = s' with state := 7w;
+                    s' = s' with command := 3w;
+                    s' = s' with data_addr := s'.MEM.MEM_dataB;
+                    s' = s' with data_wstrb := 1w <<~ w2w ((1 >< 0) s'.MEM.MEM_dataB) in
                case (1 >< 0) s'.MEM.MEM_dataB of
                  0w => s' with data_wdata := bit_field_insert 7 0 ((7 >< 0) s'.MEM.MEM_dataA) s'.data_wdata
                | 1w => s' with data_wdata := bit_field_insert 15 8 ((7 >< 0) s'.MEM.MEM_dataA) s'.data_wdata
                | 2w => s' with data_wdata := bit_field_insert 23 16 ((7 >< 0) s'.MEM.MEM_dataA) s'.data_wdata
                | 3w => s' with data_wdata := bit_field_insert 31 24 ((7 >< 0) s'.MEM.MEM_dataA) s'.data_wdata
-              else if (s'.IF.PC_sel <> 0w) then let
-                s' = s' with state := 1w;
-                s' = s' with command := 1w in
-               s'
-              else if s'.EX.EX_isAcc then let
-                s' = s' with state := 2w;
-                s' = s' with command := 0w;
-                s' = s' with acc_arg := s'.EX.EX_dataA_updated;
-                s' = s' with acc_arg_ready := T in
-               s'
+              else if (s'.IF.PC_sel <> 0w) then
+                let s' = s' with state := 1w in
+                  s' with command := 1w
+              else if s'.EX.EX_isAcc then
+                let s' = s' with state := 2w;
+                    s' = s' with command := 0w;
+                s' = s' with acc_arg := s'.EX.EX_dataA_updated in
+                  s' with acc_arg_ready := T
               else s')
     | 1w => (let s' = if fext.ready /\ s.command = 0w then s' with state := 6w           
                       else s' in
@@ -610,23 +605,18 @@ Definition agp32_next_state_def:
     | 2w => (let s' = if s.acc_res_ready /\ ~s.acc_arg_ready then s' with state := 6w
                       else s' in
                s' with acc_arg_ready := F)
-    | 3w => if fext.mem_start_ready then let
-              s' = s' with state := 1w;
-              s' = s' with command := 1w in
-             s'
-            else
-             s'
-    | 4w => if fext.interrupt_ack then let
-              s' = s' with state := 6w;
-              s' = s' with interrupt_req := F in
-             s'
-            else
-             s'
+    | 3w => if fext.mem_start_ready then
+              let s' = s' with state := 1w in
+                s' with command := 1w
+            else s'
+    | 4w => if fext.interrupt_ack then
+               let s' = s' with state := 6w in
+                 s' with interrupt_req := F
+            else s'
     | 6w => let s' = s' with state := 0w;
                 s' = s' with command := 1w;
-                s' = s' with MEM := (s'.MEM with MEM_enable := T);
-                s' = s' with WB := (s'.WB with WB_enable := T) in
-             s'
+                s' = s' with MEM := s'.MEM with MEM_enable := T in
+              s' with WB := s'.WB with WB_enable := T
     | 7w => (let s' = if fext.ready /\ s.command = 0w then
                         if s'.do_interrupt then let
                           s' = s' with state := 4w;
@@ -646,13 +636,13 @@ End
 Definition Acc_compute_def:
   Acc_compute (fext:ext) s s' =
   if s.acc_arg_ready then
-    s' with <| acc_res_ready := F; acc_state := 0w |>
+    let s' = s' with acc_res_ready := F in
+      s' with acc_state := 0w
   else
     case s'.acc_state of
       0w => s' with acc_state := 1w
-    | 1w => s' with <| acc_res := w2w ((31 >< 16) s.acc_arg + (15 >< 0) s.acc_arg);
-                       acc_res_ready := T
-                    |>
+    | 1w => let s' = s' with acc_res := w2w ((31 >< 16) s.acc_arg + (15 >< 0) s.acc_arg) in
+              s' with acc_res_ready := T
     | _ => s'
 End
 
@@ -679,7 +669,7 @@ Definition agp32_init_def:
 End
 
 Definition agp32_def:
-  agp32 = mk_module (procs [IF_PC_update; ID_pipeline; REG_write; EX_pipeline;
+  agp32 = mk_module (procs [IF_PC_update; ID_pipeline; (*REG_write;*) EX_pipeline;
                             MEM_pipeline; WB_pipeline; agp32_next_state; Acc_compute])
                     (procs [IF_PC_sel_update; IF_PC_input_update; ID_addr_update;
                             ID_opc_update; ID_func_update; REG_read; ID_imm_update;

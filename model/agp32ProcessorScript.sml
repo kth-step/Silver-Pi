@@ -125,7 +125,7 @@ Definition ID_imm_reg_update_def:
 End
 
 (** update the value from reg in case the addr is written by the WB stage **)
-Definition ID_foward_update_def:
+Definition ID_forward_update_def:
   ID_forward_update (fext:ext) (s:state_circuit) s' =
   let s' = s' with ID := s'.ID with ID_ForwardA := if s'.ID.ID_addrA = s'.WB.WB_addrW /\
                                                       s'.WB.WB_write_reg /\ s'.WB.WB_state_flag then T
@@ -212,9 +212,9 @@ End
 (** ALU **)
 Definition ALU_def:
   ALU (func:word4) input1 input2 s =
-  let ALU_sum = (w2w input1 + w2w input1 +
-                 (if func = 1w then v2w [s.EX.EX_carry_flag] else 0w)) : 33 word in
-  let ALU_prod = (w2w input1 * w2w input2) : word64 in
+  let ALU_sum = (w2w input1 + w2w input2 +
+                 (if func = 1w then v2w [s.EX.EX_carry_flag] else 0w)) : 33 word;
+      ALU_prod = (w2w input1 * w2w input2) : word64 in
     case func of
       0w => let s = s with EX := s.EX with EX_overflow_flag :=
                     ((word_bit 31 input1 = word_bit 31 input2) /\
@@ -243,7 +243,7 @@ Definition ALU_def:
 End
 
 Definition EX_ALU_update_def:
-  EX_ALU_update (fext:ext) (s:state_circuit) s' =
+  EX_ALU_update (fext:ext) s s' =
   if s'.EX.EX_compute_enable then
     ALU s'.EX.EX_func s'.EX.EX_ALU_input1 s'.EX.EX_ALU_input2 s'
   else s'
@@ -259,7 +259,7 @@ Definition SHIFT_def:
    | 1w => s with EX := s.EX with EX_SHIFT_res := inputa >>>~ inputb
    | 2w => s with EX := s.EX with EX_SHIFT_res := inputa >>~ inputb
    | 3w => let shift_sh = word_mod inputb 32w in
-             s with EX := s.EX with EX_SHIFT_res := (inputa >>>~ shift_sh) || (inputa <<~ (32w - shift_sh))
+   s with EX := s.EX with EX_SHIFT_res := ((inputa >>>~ shift_sh) || (inputa <<~ (32w - shift_sh)))
 End
 
 Definition EX_SHIFT_update_def:
@@ -269,7 +269,13 @@ Definition EX_SHIFT_update_def:
   else s'
 End
 
-Theorem EX_SHIFT_update_trans = REWRITE_RULE [SHIFT_def] EX_SHIFT_update_def
+Triviality word_mod_32:
+ !w. word_mod w (32w : word32) = w2w (((4 >< 0) w):word5)
+Proof
+ gen_tac >> CONV_TAC (LHS_CONV wordsLib.WORD_MOD_BITS_CONV) >> blastLib.BBLAST_TAC
+QED
+
+Theorem EX_SHIFT_update_trans = REWRITE_RULE [SHIFT_def,word_mod_32] EX_SHIFT_update_def
 
 (** record data **)
 Definition EX_data_rec_update_def:
@@ -315,7 +321,7 @@ Definition MEM_imm_update_def:
                                                 ((8 >< 0) s.MEM.MEM_imm @@ (22 >< 0) s.MEM.MEM_dataW)
 End
 
-Theorem MUX_imm_update_trans = REWRITE_RULE [MUX_21_def] MEM_imm_update_def
+Theorem MEM_imm_update_trans = REWRITE_RULE [MUX_21_def] MEM_imm_update_def
 
 (** set up flags for WB stage **)
 Definition WB_ctrl_update_def:
@@ -348,12 +354,12 @@ Theorem WB_read_data_byte_update_trans = REWRITE_RULE [MUX_41_def] WB_read_data_
 
 (** choose correct data based on WB_data_sel to write register **)
 Definition WB_write_data_update_def:
-  WB_write_data_update fext (s:state_circuit) s' =
+  WB_write_data_update fext s s' =
   s' with WB := s'.WB with WB_write_data := MUX_81 s'.WB.WB_data_sel s'.WB.WB_ALU_res
                                                    s'.WB.WB_SHIFT_res (w2w fext.data_in)
                                                    (s'.WB.WB_PC + 4w) s'.WB.WB_imm
                                                    s'.WB.WB_read_data s'.WB.WB_read_data_byte
-                                                   s'.acc_res
+                                                   s.acc_res
 End
 
 Theorem WB_write_data_update_trans = REWRITE_RULE [MUX_81_def] WB_write_data_update_def
@@ -451,7 +457,7 @@ Definition ForwardA_def:
     Forward_update s'.EX.EX_addrA s'.EX.EX_addrA_enable checkA s'
 End
 
-Theorem FordwardA_trans = REWRITE_RULE [Forward_update_def] ForwardA_def
+Theorem ForwardA_trans = REWRITE_RULE [Forward_update_def] ForwardA_def
 
 Definition ForwardB_def:
   ForwardB (fext:ext) (s:state_circuit) s' =
@@ -461,7 +467,7 @@ Definition ForwardB_def:
     Forward_update s'.EX.EX_addrB s'.EX.EX_addrB_enable checkB s'
 End
 
-Theorem FordwardB_trans = REWRITE_RULE [Forward_update_def] ForwardB_def
+Theorem ForwardB_trans = REWRITE_RULE [Forward_update_def] ForwardB_def
                                        
 Definition ForwardW_def:
   ForwardW (fext:ext) (s:state_circuit) s' =
@@ -470,7 +476,7 @@ Definition ForwardW_def:
     Forward_update s'.EX.EX_addrW s'.EX.EX_addrW_enable checkW s'
 End
 
-Theorem FordwardW_trans = REWRITE_RULE [Forward_update_def] ForwardW_def
+Theorem ForwardW_trans = REWRITE_RULE [Forward_update_def] ForwardW_def
 
 (** assign some items **)
 Definition assign_update_def:
@@ -660,6 +666,7 @@ End
 
 
 (* processor *)
+(** initialize some items **)
 val init_tm = add_x_inits ``<| R := K 0w;
                                PC := 0w;
                                state := 3w;     
@@ -680,6 +687,7 @@ Definition agp32_init_def:
   agp32_init fbits = ^init_tm
 End
 
+(** pipelined Silver **)
 Definition agp32_def:
   agp32 = mk_module (procs [IF_PC_update; ID_pipeline; REG_write; EX_pipeline;
                             MEM_pipeline; WB_pipeline; agp32_next_state; Acc_compute])
@@ -688,7 +696,7 @@ Definition agp32_def:
                             ID_imm_reg_update; ID_forward_update; ID_read_data_update;
                             ID_data_update; EX_ctrl_update; EX_forward_data;
                             EX_ALU_input_update; EX_compute_enable_update;
-                            EX_ALU_update; EX_SHIFT_update; EX_data_rec_update;
+                            (*EX_ALU_update;*) EX_SHIFT_update; EX_data_rec_update;
                             MEM_ctrl_update; MEM_imm_update; WB_ctrl_update;
                             WB_read_data_byte_update; WB_write_data_update;
                             Hazard_ctrl; ForwardA; ForwardB; ForwardW; assign_update])

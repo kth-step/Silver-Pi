@@ -1,4 +1,4 @@
-open hardwarePreamble alignmentTheory alistTheory agp32StateTheory agp32ProcessorTheory translatorLib verilogPrintLib;
+open hardwarePreamble alignmentTheory alistTheory agp32ProcessorTheory translatorLib verilogPrintLib;
 
 val _ = new_theory "agp32Verilog";
 
@@ -16,14 +16,6 @@ in
  val tstate = init_translator module_def
                               abstract_fields
                               comms
-
-(*
-Example translation of just
-val s = “s:state_circuit”;
-val s' = “s':state_circuit”;
-val th = hol2hardware tstate s s' (agp32_next_state_def |> concl |> strip_forall |> snd |> rhs)
-*)
-
 
  val trans_thm = module2hardware tstate
                                  module_def

@@ -210,46 +210,42 @@ Definition EX_compute_enable_update_def:
 End
 
 (** ALU **)
-Definition ALU_def:
-  ALU (func:word4) input1 input2 s =
-  let ALU_sum = (w2w input1 + w2w input2 +
-                 (if func = 1w then v2w [s.EX.EX_carry_flag] else 0w)) : 33 word;
+Definition EX_ALU_update_def:
+  EX_ALU_update (fext:ext) (s:state_circuit) s' =
+  let input1 = s'.EX.EX_ALU_input1;
+      input2 = s'.EX.EX_ALU_input2;
+      func = s'.EX.EX_func;
+      ALU_sum = (w2w input1 + w2w input2 +
+                 (if func = 1w then v2w [s'.EX.EX_carry_flag] else 0w)) : 33 word;
       ALU_prod = (w2w input1 * w2w input2) : word64 in
+  if s'.EX.EX_compute_enable then
     case func of
-      0w => let s = s with EX := s.EX with EX_overflow_flag :=
+      0w => let s' = s' with EX := s'.EX with EX_overflow_flag :=
                     ((word_bit 31 input1 = word_bit 31 input2) /\
                      (word_bit 31 ALU_sum <> word_bit 31 input1));
-                s = s with EX := s.EX with EX_carry_flag := word_bit 32 ALU_sum in
-              s with EX := s.EX with EX_ALU_res := (31 >< 0) ALU_sum
-    | 1w => let s = s with EX := s.EX with EX_carry_flag := word_bit 32 ALU_sum in
-              s with EX := s.EX with EX_ALU_res := (31 >< 0) ALU_sum
+                s' = s' with EX := s'.EX with EX_carry_flag := word_bit 32 ALU_sum in
+              s' with EX := s'.EX with EX_ALU_res := (31 >< 0) ALU_sum
+    | 1w => let s' = s' with EX := s'.EX with EX_carry_flag := word_bit 32 ALU_sum in
+              s' with EX := s'.EX with EX_ALU_res := (31 >< 0) ALU_sum
     | 2w => let ALU_sub = input1 − input2;
-                s = s with EX := s.EX with EX_ALU_res := ALU_sub in
-              s with EX := s.EX with EX_overflow_flag := ((word_bit 31 input1 <> word_bit 31 input2) /\
+                s' = s' with EX := s'.EX with EX_ALU_res := ALU_sub in
+              s' with EX := s'.EX with EX_overflow_flag := ((word_bit 31 input1 <> word_bit 31 input2) /\
                                                           (word_bit 31 ALU_sub <> word_bit 31 input1))
-    | 3w => s with EX := s.EX with EX_ALU_res := v2w [s.EX.EX_carry_flag]
-    | 4w => s with EX := s.EX with EX_ALU_res := v2w [s.EX.EX_overflow_flag]
-    | 5w => s with EX := s.EX with EX_ALU_res := input1 + 1w
-    | 6w => s with EX := s.EX with EX_ALU_res := input1 - 1w
-    | 7w => s with EX := s.EX with EX_ALU_res := (31 >< 0) ALU_prod
-    | 8w => s with EX := s.EX with EX_ALU_res := (63 >< 32) ALU_prod
-    | 9w => s with EX := s.EX with EX_ALU_res := (input1 && input2)
-    | 10w => s with EX := s.EX with EX_ALU_res := (input1 || input2)
-    | 11w => s with EX := s.EX with EX_ALU_res := (input1 ?? input2)
-    | 12w => s with EX := s.EX with EX_ALU_res := v2w [input1 = input2]
-    | 13w => s with EX := s.EX with EX_ALU_res := v2w [input1 < input2]
-    | 14w => s with EX := s.EX with EX_ALU_res := v2w [input1 <+ input2]
-    | 15w => s with EX := s.EX with EX_ALU_res := input2
-End
-
-Definition EX_ALU_update_def:
-  EX_ALU_update (fext:ext) s s' =
-  if s'.EX.EX_compute_enable then
-    ALU s'.EX.EX_func s'.EX.EX_ALU_input1 s'.EX.EX_ALU_input2 s'
+    | 3w => s' with EX := s'.EX with EX_ALU_res := v2w [s'.EX.EX_carry_flag]
+    | 4w => s' with EX := s'.EX with EX_ALU_res := v2w [s'.EX.EX_overflow_flag]
+    | 5w => s' with EX := s'.EX with EX_ALU_res := input1 + 1w
+    | 6w => s' with EX := s'.EX with EX_ALU_res := input1 - 1w
+    | 7w => s' with EX := s'.EX with EX_ALU_res := (31 >< 0) ALU_prod
+    | 8w => s' with EX := s'.EX with EX_ALU_res := (63 >< 32) ALU_prod
+    | 9w => s' with EX := s'.EX with EX_ALU_res := (input1 && input2)
+    | 10w => s' with EX := s'.EX with EX_ALU_res := (input1 || input2)
+    | 11w => s' with EX := s'.EX with EX_ALU_res := (input1 ?? input2)
+    | 12w => s' with EX := s'.EX with EX_ALU_res := v2w [input1 = input2]
+    | 13w => s' with EX := s'.EX with EX_ALU_res := v2w [input1 < input2]
+    | 14w => s' with EX := s'.EX with EX_ALU_res := v2w [input1 <+ input2]
+    | 15w => s' with EX := s'.EX with EX_ALU_res := input2
   else s'
 End
-
-Theorem EX_ALU_update_trans = REWRITE_RULE [ALU_def] EX_ALU_update_def
 
 (** SHIFT **)
 Definition SHIFT_def:
@@ -259,7 +255,7 @@ Definition SHIFT_def:
    | 1w => s with EX := s.EX with EX_SHIFT_res := inputa >>>~ inputb
    | 2w => s with EX := s.EX with EX_SHIFT_res := inputa >>~ inputb
    | 3w => let shift_sh = word_mod inputb 32w in
-   s with EX := s.EX with EX_SHIFT_res := ((inputa >>>~ shift_sh) || (inputa <<~ (32w - shift_sh)))
+             s with EX := s.EX with EX_SHIFT_res := (inputa >>>~ shift_sh) || (inputa <<~ (32w - shift_sh))
 End
 
 Definition EX_SHIFT_update_def:
@@ -696,7 +692,7 @@ Definition agp32_def:
                             ID_imm_reg_update; ID_forward_update; ID_read_data_update;
                             ID_data_update; EX_ctrl_update; EX_forward_data;
                             EX_ALU_input_update; EX_compute_enable_update;
-                            (*EX_ALU_update;*) EX_SHIFT_update; EX_data_rec_update;
+                            EX_ALU_update; EX_SHIFT_update; EX_data_rec_update;
                             MEM_ctrl_update; MEM_imm_update; WB_ctrl_update;
                             WB_read_data_byte_update; WB_write_data_update;
                             Hazard_ctrl; ForwardA; ForwardB; ForwardW; assign_update])

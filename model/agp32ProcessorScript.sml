@@ -314,7 +314,7 @@ End
 Definition MEM_imm_update_def:
   MEM_imm_update (fext:ext) (s:state_circuit) s' =
   s' with MEM := s'.MEM with MEM_imm_updated := MUX_21 (s'.MEM.MEM_opc = 14w) s'.MEM.MEM_imm
-                                                ((8 >< 0) s.MEM.MEM_imm @@ (22 >< 0) s.MEM.MEM_dataW)
+                                                ((8 >< 0) s'.MEM.MEM_imm @@ (22 >< 0) s'.MEM.MEM_dataW)
 End
 
 Theorem MEM_imm_update_trans = REWRITE_RULE [MUX_21_def] MEM_imm_update_def

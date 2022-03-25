@@ -151,6 +151,15 @@ Datatype:
     acc_res: word32;
     acc_res_ready: bool;
     acc_state: word2;
+    
+    (** additional items used inside pipeline blocks **)
+    ALU_sum: word33;
+    ALU_prod: word64;
+    ALU_sub: word32;
+    shift_sh: word32;
+    checkA: bool;
+    checkB: bool;
+    checkW: bool;
 
     (** pipeline **)
     IF: IF_state;

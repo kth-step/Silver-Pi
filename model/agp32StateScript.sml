@@ -153,7 +153,7 @@ Datatype:
     acc_state: word2;
     
     (** additional items used inside pipeline blocks **)
-    ALU_sum: word33;
+    ALU_sum: 33 word;
     ALU_prod: word64;
     ALU_sub: word32;
     shift_sh: word32;

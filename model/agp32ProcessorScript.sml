@@ -43,45 +43,45 @@ End
    
 (** compute PC **)
 Definition IF_PC_sel_update_def:
-  IF_PC_sel_update (fext:ext) s s' =
-  if (s.EX.EX_PC_sel = 1w) \/ ((s.EX.EX_PC_sel = 2w) /\ (s'.EX.EX_ALU_res = 0w)) \/
-     ((s.EX.EX_PC_sel = 3w) /\ (s'.EX.EX_ALU_res <> 0w)) then
-    s' with IF := s'.IF with PC_sel := s.EX.EX_PC_sel
+  IF_PC_sel_update (fext:ext) (s:state_circuit) s' =
+  if (s'.EX.EX_PC_sel = 1w) \/ ((s'.EX.EX_PC_sel = 2w) /\ (s'.EX.EX_ALU_res = 0w)) \/
+     ((s'.EX.EX_PC_sel = 3w) /\ (s'.EX.EX_ALU_res <> 0w)) then
+    s' with IF := s'.IF with PC_sel := s'.EX.EX_PC_sel
   else s' with IF := s'.IF with PC_sel := 0w  
 End
    
 Definition IF_PC_input_update_def:
   IF_PC_input_update (fext:ext) s s' =
   s' with IF := s'.IF with
-                  IF_PC_input := MUX_41 s.IF.PC_sel (s.PC + 4w) s'.EX.EX_ALU_res
-                                        (s.EX.EX_PC + s.EX.EX_dataW_updated)
-                                        (s.EX.EX_PC + s.EX.EX_dataW_updated)
+                  IF_PC_input := MUX_41 s'.IF.PC_sel (s.PC + 4w) s'.EX.EX_ALU_res
+                                        (s.EX.EX_PC + s'.EX.EX_dataW_updated)
+                                        (s.EX.EX_PC + s'.EX.EX_dataW_updated)
 End
 
 Theorem IF_PC_input_update_trans = REWRITE_RULE [MUX_41_def] IF_PC_input_update_def
 
 (** decode instr **)
 Definition ID_opc_func_update_def:
-  ID_opc_func_update (fext:ext) s s' =
-  let s' = if word_bit 24 s.ID.ID_instr then
-             if word_bit 31 s.ID.ID_instr then
+  ID_opc_func_update (fext:ext) (s:state_circuit) s' =
+  let s' = if word_bit 24 s'.ID.ID_instr then
+             if word_bit 31 s'.ID.ID_instr then
                s' with ID := s'.ID with ID_opc := 13w
-             else if (23 >< 9) s.ID.ID_instr = 0w then
+             else if (23 >< 9) s'.ID.ID_instr = 0w then
                s' with ID := s'.ID with ID_opc := 14w
              else
                s' with ID := s'.ID with ID_opc := 15w
-           else if (5 >< 0) s.ID.ID_instr = 10w \/ (5 >< 0) s.ID.ID_instr = 11w \/
-                   (5 >< 0) s.ID.ID_instr = 12w then                                             
-             s' with ID := s'.ID with ID_opc := (5 >< 0) s.ID.ID_instr
-           else if word_bit 31 s.ID.ID_instr then
+           else if (5 >< 0) s'.ID.ID_instr = 10w \/ (5 >< 0) s'.ID.ID_instr = 11w \/
+                   (5 >< 0) s'.ID.ID_instr = 12w then                                             
+             s' with ID := s'.ID with ID_opc := (5 >< 0) s'.ID.ID_instr
+           else if word_bit 31 s'.ID.ID_instr then
              s' with ID := s'.ID with ID_opc := 15w
-           else if (5 >< 0) s.ID.ID_instr <+ 10w then
-             s' with ID := s'.ID with ID_opc := (5 >< 0) s.ID.ID_instr
+           else if (5 >< 0) s'.ID.ID_instr <+ 10w then
+             s' with ID := s'.ID with ID_opc := (5 >< 0) s'.ID.ID_instr
            else
              s' with ID := s'.ID with ID_opc := 15w in
   if s'.ID.ID_opc = 0w \/ s'.ID.ID_opc = 1w \/ s'.ID.ID_opc = 6w \/
      s'.ID.ID_opc = 9w \/ s'.ID.ID_opc = 10w \/ s'.ID.ID_opc = 11w then
-    s' with ID := s'.ID with ID_func := (9 >< 6) s.ID.ID_instr
+    s' with ID := s'.ID with ID_func := (9 >< 6) s'.ID.ID_instr
   else
     s' with ID := s'.ID with ID_func := 9w
 End
@@ -89,53 +89,53 @@ End
 (** update the data from read_data and imm for A/B/W **)
 Definition ID_data_update_def:
   ID_data_update (fext:ext) s s' =
-  let s' = s' with ID := s'.ID with ID_addrA := (22 >< 17) s.ID.ID_instr;
-      s' = s' with ID := s'.ID with ID_addrB := (15 >< 10) s.ID.ID_instr;
-      s' = s' with ID := s'.ID with ID_addrW := (30 >< 25) s.ID.ID_instr;
-      s' = s' with ID := s'.ID with ID_addrA_enable := word_bit 23 s.ID.ID_instr;
-      s' = s' with ID := s'.ID with ID_addrB_enable := word_bit 16 s.ID.ID_instr;
-      s' = s' with ID := s'.ID with ID_addrW_enable := word_bit 31 s.ID.ID_instr;
+  let s' = s' with ID := s'.ID with ID_addrA := (22 >< 17) s'.ID.ID_instr;
+      s' = s' with ID := s'.ID with ID_addrB := (15 >< 10) s'.ID.ID_instr;
+      s' = s' with ID := s'.ID with ID_addrW := (30 >< 25) s'.ID.ID_instr;
+      s' = s' with ID := s'.ID with ID_addrA_enable := word_bit 23 s'.ID.ID_instr;
+      s' = s' with ID := s'.ID with ID_addrB_enable := word_bit 16 s'.ID.ID_instr;
+      s' = s' with ID := s'.ID with ID_addrW_enable := word_bit 31 s'.ID.ID_instr;
       s' = s' with ID := s'.ID with ID_read_dataA := s'.R s'.ID.ID_addrA;
       s' = s' with ID := s'.ID with ID_read_dataB := s'.R s'.ID.ID_addrB;
       s' = s' with ID := s'.ID with ID_read_dataW := s'.R s'.ID.ID_addrW;
-      s' = s' with ID := s'.ID with ID_immA := sw2sw ((22 >< 17) s.ID.ID_instr);
-      s' = s' with ID := s'.ID with ID_immB := sw2sw ((15 >< 10) s.ID.ID_instr);
-      s' = s' with ID := s'.ID with ID_immW := sw2sw ((30 >< 25) s.ID.ID_instr);
+      s' = s' with ID := s'.ID with ID_immA := sw2sw ((22 >< 17) s'.ID.ID_instr);
+      s' = s' with ID := s'.ID with ID_immB := sw2sw ((15 >< 10) s'.ID.ID_instr);
+      s' = s' with ID := s'.ID with ID_immW := sw2sw ((30 >< 25) s'.ID.ID_instr);
       s' = s' with ID := s'.ID with ID_ForwardA := if s'.ID.ID_addrA = s.WB.WB_addrW /\
-                                                      s.WB.WB_write_reg /\ s.WB.WB_state_flag then T
+                                                      s.WB.WB_write_reg /\ s'.WB.WB_state_flag then T
                                                    else F;
       s' = s' with ID := s'.ID with ID_ForwardB := if s'.ID.ID_addrB = s.WB.WB_addrW /\
-                                                      s.WB.WB_write_reg /\ s.WB.WB_state_flag then T
+                                                      s.WB.WB_write_reg /\ s'.WB.WB_state_flag then T
                                                    else F;
       s' = s' with ID := s'.ID with ID_ForwardW := if s'.ID.ID_addrW = s.WB.WB_addrW /\
-                                                      s.WB.WB_write_reg /\ s.WB.WB_state_flag then T
+                                                      s.WB.WB_write_reg /\ s'.WB.WB_state_flag then T
                                                    else F;
       s' = s' with ID := s'.ID with ID_read_dataA_updated :=
-           MUX_21 s'.ID.ID_ForwardA s'.ID.ID_read_dataA s.WB.WB_write_data;
+           MUX_21 s'.ID.ID_ForwardA s'.ID.ID_read_dataA s'.WB.WB_write_data;
       s' = s' with ID := s'.ID with ID_read_dataB_updated :=
-           MUX_21 s'.ID.ID_ForwardB s'.ID.ID_read_dataB s.WB.WB_write_data;
+           MUX_21 s'.ID.ID_ForwardB s'.ID.ID_read_dataB s'.WB.WB_write_data;
       s' = s' with ID := s'.ID with ID_read_dataW_updated :=
-           MUX_21 s'.ID.ID_ForwardW s'.ID.ID_read_dataW s.WB.WB_write_data;
+           MUX_21 s'.ID.ID_ForwardW s'.ID.ID_read_dataW s'.WB.WB_write_data;
       s' = s' with ID := s'.ID with ID_dataA :=
-           MUX_21 (word_bit 23 s.ID.ID_instr) s'.ID.ID_read_dataA_updated s'.ID.ID_immA;
+           MUX_21 (word_bit 23 s'.ID.ID_instr) s'.ID.ID_read_dataA_updated s'.ID.ID_immA;
       s' = s' with ID := s'.ID with ID_dataB :=
-           MUX_21 (word_bit 16 s.ID.ID_instr) s'.ID.ID_read_dataB_updated s'.ID.ID_immB in
+           MUX_21 (word_bit 16 s'.ID.ID_instr) s'.ID.ID_read_dataB_updated s'.ID.ID_immB in
     s' with ID := s'.ID with ID_dataW :=
-    MUX_21 (word_bit 31 s.ID.ID_instr) s'.ID.ID_read_dataW_updated s'.ID.ID_immW
+    MUX_21 (word_bit 31 s'.ID.ID_instr) s'.ID.ID_read_dataW_updated s'.ID.ID_immW
 End
 
 Theorem ID_data_update_trans = REWRITE_RULE [MUX_21_def] ID_data_update_def
 
 (** generate immediate **)
 Definition ID_imm_update_def:
-  ID_imm_update (fext:ext) s s' =
-  if word_bit 31 s.ID.ID_instr /\ word_bit 24 s.ID.ID_instr then
-    if word_bit 23 s.ID.ID_instr then
-      s' with ID := s'.ID with ID_imm := 0w - w2w ((22 >< 0) s.ID.ID_instr)
+  ID_imm_update (fext:ext) (s:state_circuit) s' =
+  if word_bit 31 s'.ID.ID_instr /\ word_bit 24 s'.ID.ID_instr then
+    if word_bit 23 s'.ID.ID_instr then
+      s' with ID := s'.ID with ID_imm := 0w - w2w ((22 >< 0) s'.ID.ID_instr)
     else
-      s' with ID := s'.ID with ID_imm := w2w ((22 >< 0) s.ID.ID_instr)
-  else if word_bit 24 s.ID.ID_instr /\ (23 >< 9) s.ID.ID_instr = 0w then
-    s' with ID := s'.ID with ID_imm := w2w ((8 >< 0) s.ID.ID_instr)
+      s' with ID := s'.ID with ID_imm := w2w ((22 >< 0) s'.ID.ID_instr)
+  else if word_bit 24 s'.ID.ID_instr /\ (23 >< 9) s'.ID.ID_instr = 0w then
+    s' with ID := s'.ID with ID_imm := w2w ((8 >< 0) s'.ID.ID_instr)
   else
     s' with ID := s'.ID with ID_imm := 0w
 End
@@ -143,7 +143,7 @@ End
 (** set up flags of EX stage **)
 Definition EX_ctrl_update_def:
   EX_ctrl_update (fext:ext) s s' =
-  if s.ID.ID_EX_write_enable then
+  if s'.ID.ID_EX_write_enable then
     let s' = s' with EX := s'.EX with EX_isAcc := (s.EX.EX_opc = 8w) in
       s' with EX := s'.EX with EX_PC_sel := if s.EX.EX_opc = 9w then 1w
                                             else if s.EX.EX_opc = 10w then 2w
@@ -156,17 +156,17 @@ End
 Definition EX_forward_data_def:
   EX_forward_data (fext:ext) s s' =
   let s' = s' with EX := s'.EX with EX_dataA_updated :=
-           MUX_81 s.EX.EX_ForwardA s'.EX.EX_dataA s.WB.WB_write_data
+           MUX_81 s'.EX.EX_ForwardA s'.EX.EX_dataA s'.WB.WB_write_data
                   s.MEM.MEM_ALU_res s.MEM.MEM_SHIFT_res
-                  (s.MEM.MEM_PC + 4w) s.MEM.MEM_imm_updated 0w 0w;
+                  (s.MEM.MEM_PC + 4w) s'.MEM.MEM_imm_updated 0w 0w;
      s' = s' with EX := s'.EX with EX_dataB_updated :=
-          MUX_81 s.EX.EX_ForwardB s'.EX.EX_dataB s.WB.WB_write_data
+          MUX_81 s'.EX.EX_ForwardB s'.EX.EX_dataB s'.WB.WB_write_data
                  s.MEM.MEM_ALU_res s.MEM.MEM_SHIFT_res
-                 (s.MEM.MEM_PC + 4w) s.MEM.MEM_imm_updated 0w 0w in
+                 (s.MEM.MEM_PC + 4w) s'.MEM.MEM_imm_updated 0w 0w in
     s' with EX := s'.EX with EX_dataW_updated :=
-    MUX_81 s.EX.EX_ForwardW s'.EX.EX_dataW s.WB.WB_write_data
+    MUX_81 s'.EX.EX_ForwardW s'.EX.EX_dataW s'.WB.WB_write_data
            s.MEM.MEM_ALU_res s.MEM.MEM_SHIFT_res
-           (s.MEM.MEM_PC + 4w) s.MEM.MEM_imm_updated 0w 0w
+           (s.MEM.MEM_PC + 4w) s'.MEM.MEM_imm_updated 0w 0w
 End
 
 Theorem EX_forward_data_trans = REWRITE_RULE [MUX_81_def] EX_forward_data_def
@@ -175,9 +175,9 @@ Theorem EX_forward_data_trans = REWRITE_RULE [MUX_81_def] EX_forward_data_def
 Definition EX_ALU_input_update_def:
   EX_ALU_input_update (fext:ext) s s' =
   let s' = s' with EX := s'.EX with EX_ALU_input1 :=
-           MUX_21 (s.EX.EX_opc = 9w) s.EX.EX_dataA_updated s.EX.EX_PC in
+           MUX_21 (s.EX.EX_opc = 9w) s'.EX.EX_dataA_updated s.EX.EX_PC in
     s' with EX := s'.EX with EX_ALU_input2 :=
-    MUX_21 (s.EX.EX_opc = 9w) s.EX.EX_dataB_updated s.EX.EX_dataA_updated
+    MUX_21 (s.EX.EX_opc = 9w) s'.EX.EX_dataB_updated s'.EX.EX_dataA_updated
 End
 
 Theorem EX_ALU_input_update_trans = REWRITE_RULE [MUX_21_def] EX_ALU_input_update_def
@@ -187,56 +187,56 @@ Definition EX_compute_enable_update_def:
   EX_compute_enable_update (fext:ext) s s' =
   s' with EX := s'.EX with EX_compute_enable := (s'.state = 0w /\
                                                 (s.MEM.MEM_opc <> 16w \/ (s.MEM.MEM_opc = 16w /\
-                                                (s.EX.EX_ForwardA <> 0w \/ s.EX.EX_ForwardB <> 0w))))
+                                                (s'.EX.EX_ForwardA <> 0w \/ s'.EX.EX_ForwardB <> 0w))))
 End
 
 (** ALU **)
 Definition EX_ALU_update_def:
-  EX_ALU_update (fext:ext) s s' =
-  let s' = s' with ALU_sum := (w2w s.EX.EX_ALU_input1 + w2w s.EX.EX_ALU_input2 +
+  EX_ALU_update (fext:ext) (s:state_circuit) s' =
+  let s' = s' with ALU_sum := (w2w s'.EX.EX_ALU_input1 + w2w s'.EX.EX_ALU_input2 +
                               (if s'.EX.EX_func = 1w then v2w [s'.EX.EX_carry_flag] else 0w));
-      s' = s' with ALU_prod := (w2w s.EX.EX_ALU_input1 * w2w s.EX.EX_ALU_input2) in
-  if s.EX.EX_compute_enable then
+      s' = s' with ALU_prod := (w2w s'.EX.EX_ALU_input1 * w2w s'.EX.EX_ALU_input2) in
+  if s'.EX.EX_compute_enable then
     case s'.EX.EX_func of
       0w => (let s' = s' with EX := s'.EX with EX_overflow_flag :=
-                      ((word_bit 31 s.EX.EX_ALU_input1 = word_bit 31 s.EX.EX_ALU_input2) /\
-                       (word_bit 31 s'.ALU_sum <> word_bit 31 s.EX.EX_ALU_input1));
+                      ((word_bit 31 s'.EX.EX_ALU_input1 = word_bit 31 s'.EX.EX_ALU_input2) /\
+                       (word_bit 31 s'.ALU_sum <> word_bit 31 s'.EX.EX_ALU_input1));
                  s' = s' with EX := s'.EX with EX_carry_flag := word_bit 32 s'.ALU_sum in
                s' with EX := s'.EX with EX_ALU_res := (31 >< 0) s'.ALU_sum)
     | 1w => (let s' = s' with EX := s'.EX with EX_carry_flag := word_bit 32 s'.ALU_sum in
                s' with EX := s'.EX with EX_ALU_res := (31 >< 0) s'.ALU_sum)
-    | 2w => (let s' = s' with ALU_sub := s.EX.EX_ALU_input1 − s.EX.EX_ALU_input2;
+    | 2w => (let s' = s' with ALU_sub := s'.EX.EX_ALU_input1 − s'.EX.EX_ALU_input2;
                  s' = s' with EX := s'.EX with EX_ALU_res := s'.ALU_sub in
                s' with EX := s'.EX with EX_overflow_flag :=
-               ((word_bit 31 s.EX.EX_ALU_input1 <> word_bit 31 s.EX.EX_ALU_input2) /\
-                (word_bit 31 s'.ALU_sub <> word_bit 31 s.EX.EX_ALU_input1)))
+               ((word_bit 31 s'.EX.EX_ALU_input1 <> word_bit 31 s'.EX.EX_ALU_input2) /\
+                (word_bit 31 s'.ALU_sub <> word_bit 31 s'.EX.EX_ALU_input1)))
     | 3w => s' with EX := s'.EX with EX_ALU_res := v2w [s'.EX.EX_carry_flag]
     | 4w => s' with EX := s'.EX with EX_ALU_res := v2w [s'.EX.EX_overflow_flag]
-    | 5w => s' with EX := s'.EX with EX_ALU_res := s.EX.EX_ALU_input1 + 1w
-    | 6w => s' with EX := s'.EX with EX_ALU_res := s.EX.EX_ALU_input1 - 1w
+    | 5w => s' with EX := s'.EX with EX_ALU_res := s'.EX.EX_ALU_input1 + 1w
+    | 6w => s' with EX := s'.EX with EX_ALU_res := s'.EX.EX_ALU_input1 - 1w
     | 7w => s' with EX := s'.EX with EX_ALU_res := (31 >< 0) s'.ALU_prod
     | 8w => s' with EX := s'.EX with EX_ALU_res := (63 >< 32) s'.ALU_prod
-    | 9w => s' with EX := s'.EX with EX_ALU_res := (s.EX.EX_ALU_input1 && s.EX.EX_ALU_input2)
-    | 10w => s' with EX := s'.EX with EX_ALU_res := (s.EX.EX_ALU_input1 || s.EX.EX_ALU_input2)
-    | 11w => s' with EX := s'.EX with EX_ALU_res := (s.EX.EX_ALU_input1 ?? s.EX.EX_ALU_input2)
-    | 12w => s' with EX := s'.EX with EX_ALU_res := v2w [s.EX.EX_ALU_input1 = s.EX.EX_ALU_input2]
-    | 13w => s' with EX := s'.EX with EX_ALU_res := v2w [s.EX.EX_ALU_input1 < s.EX.EX_ALU_input2]
-    | 14w => s' with EX := s'.EX with EX_ALU_res := v2w [s.EX.EX_ALU_input1 <+ s.EX.EX_ALU_input2]
-    | 15w => s' with EX := s'.EX with EX_ALU_res := s.EX.EX_ALU_input2
+    | 9w => s' with EX := s'.EX with EX_ALU_res := (s'.EX.EX_ALU_input1 && s'.EX.EX_ALU_input2)
+    | 10w => s' with EX := s'.EX with EX_ALU_res := (s'.EX.EX_ALU_input1 || s'.EX.EX_ALU_input2)
+    | 11w => s' with EX := s'.EX with EX_ALU_res := (s'.EX.EX_ALU_input1 ?? s'.EX.EX_ALU_input2)
+    | 12w => s' with EX := s'.EX with EX_ALU_res := v2w [s'.EX.EX_ALU_input1 = s'.EX.EX_ALU_input2]
+    | 13w => s' with EX := s'.EX with EX_ALU_res := v2w [s'.EX.EX_ALU_input1 < s'.EX.EX_ALU_input2]
+    | 14w => s' with EX := s'.EX with EX_ALU_res := v2w [s'.EX.EX_ALU_input1 <+ s'.EX.EX_ALU_input2]
+    | 15w => s' with EX := s'.EX with EX_ALU_res := s'.EX.EX_ALU_input2
   else s'
 End
 
 (** SHIFT **)
 Definition EX_SHIFT_update_def:
-  EX_SHIFT_update (fext:ext) s s' =
-  if s.EX.EX_compute_enable then
+  EX_SHIFT_update (fext:ext) (s:state_circuit) s' =
+  if s'.EX.EX_compute_enable then
     case ((1 >< 0) s'.EX.EX_func) of
-      0w => s' with EX := s'.EX with EX_SHIFT_res := s.EX.EX_dataA_updated <<~ s.EX.EX_dataB_updated
-    | 1w => s' with EX := s'.EX with EX_SHIFT_res := s.EX.EX_dataA_updated >>>~ s.EX.EX_dataB_updated
-    | 2w => s' with EX := s'.EX with EX_SHIFT_res := s.EX.EX_dataA_updated >>~ s.EX.EX_dataB_updated
-    | 3w => let s' = s' with shift_sh := word_mod s.EX.EX_dataB_updated 32w in
+      0w => s' with EX := s'.EX with EX_SHIFT_res := s'.EX.EX_dataA_updated <<~ s'.EX.EX_dataB_updated
+    | 1w => s' with EX := s'.EX with EX_SHIFT_res := s'.EX.EX_dataA_updated >>>~ s'.EX.EX_dataB_updated
+    | 2w => s' with EX := s'.EX with EX_SHIFT_res := s'.EX.EX_dataA_updated >>~ s'.EX.EX_dataB_updated
+    | 3w => let s' = s' with shift_sh := word_mod s'.EX.EX_dataB_updated 32w in
               s' with EX := s'.EX with EX_SHIFT_res :=
-              (s.EX.EX_dataA_updated >>>~ s'.shift_sh) || (s.EX.EX_dataA_updated <<~ (32w - s'.shift_sh))
+              (s'.EX.EX_dataA_updated >>>~ s'.shift_sh) || (s'.EX.EX_dataA_updated <<~ (32w - s'.shift_sh))
   else s'
 End
 
@@ -250,20 +250,20 @@ Theorem EX_SHIFT_update_trans = REWRITE_RULE [word_mod_32] EX_SHIFT_update_def
 
 (** record data **)
 Definition EX_data_rec_update_def:
-  EX_data_rec_update (fext:ext) (s:state_circuit) s' =
+  EX_data_rec_update (fext:ext) s s' =
   if s'.state = 0w /\ s.MEM.MEM_opc <> 16w then
-    let s' = s' with EX := s'.EX with EX_dataA_rec := s.EX.EX_dataA_updated;
-        s' = s' with EX := s'.EX with EX_dataB_rec := s.EX.EX_dataB_updated in
-      s' with EX := s'.EX with EX_dataW_rec := s.EX.EX_dataW_updated
+    let s' = s' with EX := s'.EX with EX_dataA_rec := s'.EX.EX_dataA_updated;
+        s' = s' with EX := s'.EX with EX_dataB_rec := s'.EX.EX_dataB_updated in
+      s' with EX := s'.EX with EX_dataW_rec := s'.EX.EX_dataW_updated
   else if s'.state = 0w /\ s.MEM.MEM_opc = 16w then
     let s' = s' with EX := s'.EX with EX_dataA_rec :=
-             if s.EX.EX_ForwardA <> 0w then s.EX.EX_dataA_updated
+             if s'.EX.EX_ForwardA <> 0w then s'.EX.EX_dataA_updated
              else s'.EX.EX_dataA_rec;
         s' = s' with EX := s'.EX with EX_dataB_rec :=
-             if s.EX.EX_ForwardB <> 0w then s.EX.EX_dataB_updated
+             if s'.EX.EX_ForwardB <> 0w then s'.EX.EX_dataB_updated
              else s'.EX.EX_dataB_rec in
       s' with EX := s'.EX with EX_dataW_rec :=
-      if s.EX.EX_ForwardW <> 0w then s.EX.EX_dataW_updated
+      if s'.EX.EX_ForwardW <> 0w then s'.EX.EX_dataW_updated
       else s'.EX.EX_dataW_rec
   else s'
 End
@@ -271,7 +271,7 @@ End
 (** Set up flags of MEM stage **)
 Definition MEM_ctrl_update_def:
   MEM_ctrl_update (fext:ext) s s' =
-  if (s.EX.EX_write_enable /\ s.MEM.MEM_state_flag) \/ s.MEM.MEM_enable then
+  if (s.EX.EX_write_enable /\ s'.MEM.MEM_state_flag) \/ s.MEM.MEM_enable then
     let s' = s' with MEM := s'.MEM with MEM_read_mem := (s.MEM.MEM_opc = 4w \/ s.MEM.MEM_opc = 5w);
         s' = s' with MEM := s'.MEM with MEM_write_mem := (s.MEM.MEM_opc = 2w);
         s' = s' with MEM := s'.MEM with MEM_write_mem_byte := (s.MEM.MEM_opc = 3w) in
@@ -290,14 +290,14 @@ Theorem MEM_imm_update_trans = REWRITE_RULE [MUX_21_def] MEM_imm_update_def
 
 (** update components for WB stage **)
 Definition WB_update_def:
-  WB_update fext (s:state_circuit) s' =
+  WB_update fext s s' =
   let s' = s' with WB := s'.WB with WB_read_data := fext.data_rdata;
       s' = s' with WB := s'.WB with WB_read_data_byte := MUX_41 ((1 >< 0) s'.WB.WB_dataA)
                                                                 (w2w ((7 >< 0) s'.WB.WB_read_data))
                                                                 (w2w ((15 >< 8) s'.WB.WB_read_data))
                                                                 (w2w ((23 >< 16) s'.WB.WB_read_data))
                                                                 (w2w ((31 >< 24) s'.WB.WB_read_data));
-      s' = (if (s.MEM.MEM_write_enable /\ s.WB.WB_state_flag) \/ s.WB.WB_enable then
+      s' = (if (s.MEM.MEM_write_enable /\ s'.WB.WB_state_flag) \/ s.WB.WB_enable then
               let s' = s' with WB := s'.WB with WB_isOut := (s'.WB.WB_opc = 6w) in
                 s' with WB := s'.WB with WB_data_sel :=
                 if s'.WB.WB_opc = 0w \/ s'.WB.WB_opc = 6w then 0w
@@ -311,13 +311,13 @@ Definition WB_update_def:
                 else 0w
             else s') in
      s' with WB := s'.WB with WB_write_data := MUX_81 s'.WB.WB_data_sel s'.WB.WB_ALU_res
-                                                   s'.WB.WB_SHIFT_res (w2w fext.data_in)
-                                                   (s'.WB.WB_PC + 4w) s'.WB.WB_imm
-                                                   s'.WB.WB_read_data s'.WB.WB_read_data_byte
-                                                   s.acc_res                      
+                                                      s'.WB.WB_SHIFT_res (w2w fext.data_in)
+                                                      (s'.WB.WB_PC + 4w) s'.WB.WB_imm
+                                                      s'.WB.WB_read_data s'.WB.WB_read_data_byte
+                                                      s.acc_res
 End
 
-Theorem WB_update_trans = REWRITE_RULE [MUX_81_def,MUX_41_def] WB_update_def
+Theorem WB_update_trans = REWRITE_RULE [MUX_41_def,MUX_81_def] WB_update_def
 
 (** hazard handling **)
 Definition Hazard_ctrl_def:
@@ -368,7 +368,7 @@ Definition Hazard_ctrl_def:
         s' = s' with MEM := s'.MEM with MEM_state_flag := F;
         s' = s' with MEM := s'.MEM with MEM_NOP_flag := T in
     s' with WB := s'.WB with WB_state_flag := T
-  else if s.IF.PC_sel <> 0w then
+  else if s'.IF.PC_sel <> 0w then
     let s' = s' with IF := s'.IF with IF_PC_write_enable := T;
         s' = s' with ID := s'.ID with ID_ID_write_enable := F;
         s' = s' with ID := s'.ID with ID_flush_flag := T;
@@ -459,15 +459,15 @@ End
 (** register write **)
 Definition REG_write_def:
   REG_write (fext:ext) s s' =
-  if s.WB.WB_write_reg /\ s.WB.WB_state_flag then
-    s' with R := (s.WB.WB_addrW =+ s.WB.WB_write_data) s'.R
+  if s.WB.WB_write_reg /\ s'.WB.WB_state_flag then
+    s' with R := (s.WB.WB_addrW =+ s'.WB.WB_write_data) s'.R
   else s'
 End
 
 (** execute: ID -> EX **)
 Definition EX_pipeline_def:
   EX_pipeline (fext:ext) s s' =
-  if s.ID.ID_EX_write_enable then
+  if s'.ID.ID_EX_write_enable then
     let s' = s' with EX := s'.EX with EX_PC := s.ID.ID_PC;
         s' = s' with EX := s'.EX with EX_dataA := s'.ID.ID_dataA;
         s' = s' with EX := s'.EX with EX_dataB := s'.ID.ID_dataB;
@@ -489,7 +489,7 @@ End
 (** memory: EX -> MEM **)
 Definition MEM_pipeline_def:
   MEM_pipeline (fext:ext) s s' =
-  let s' = (if (s.EX.EX_write_enable /\ s.MEM.MEM_state_flag) \/ s.MEM.MEM_enable then
+  let s' = (if (s.EX.EX_write_enable /\ s'.MEM.MEM_state_flag) \/ s.MEM.MEM_enable then
               let s' = s' with MEM := s'.MEM with MEM_PC := s.EX.EX_PC;
                   s' = s' with MEM := s'.MEM with MEM_dataA := s'.EX.EX_dataA_rec;
                   s' = s' with MEM := s'.MEM with MEM_dataB := s'.EX.EX_dataB_rec;
@@ -515,10 +515,10 @@ End
 (** write back: MEM -> WB **)
 Definition WB_pipeline_def:
   WB_pipeline (fext:ext) s s' =
-  if (s.MEM.MEM_write_enable /\ s.WB.WB_state_flag) \/ s.WB.WB_enable then
+  if (s.MEM.MEM_write_enable /\ s'.WB.WB_state_flag) \/ s.WB.WB_enable then
     let s' = s' with WB := s'.WB with WB_PC := s.MEM.MEM_PC;
         s' = s' with WB := s'.WB with WB_dataA := s.MEM.MEM_dataA;
-        s' = s' with WB := s'.WB with WB_imm := s.MEM.MEM_imm_updated;
+        s' = s' with WB := s'.WB with WB_imm := s'.MEM.MEM_imm_updated;
         s' = s' with WB := s'.WB with WB_ALU_res := s.MEM.MEM_ALU_res;
         s' = s' with WB := s'.WB with WB_SHIFT_res := s.MEM.MEM_SHIFT_res;
         s' = s' with WB := s'.WB with WB_write_reg :=
@@ -566,13 +566,13 @@ Definition agp32_next_state_def:
                | 1w => s' with data_wdata := bit_field_insert 15 8 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
                | 2w => s' with data_wdata := bit_field_insert 23 16 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
                | 3w => s' with data_wdata := bit_field_insert 31 24 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
-              else if (s.IF.PC_sel <> 0w) then
+              else if (s'.IF.PC_sel <> 0w) then
                 let s' = s' with state := 1w in
                   s' with command := 1w
               else if s'.EX.EX_isAcc then
                 let s' = s' with state := 2w;
                     s' = s' with command := 0w;
-                s' = s' with acc_arg := s.EX.EX_dataA_updated in
+                s' = s' with acc_arg := s'.EX.EX_dataA_updated in
                   s' with acc_arg_ready := T
               else s')
     | 1w => (let s' = if fext.ready /\ s.command = 0w then s' with state := 6w           
@@ -649,12 +649,12 @@ End
 Definition agp32_def:
   agp32 = mk_module (procs [agp32_next_state; WB_pipeline; MEM_pipeline;
                             EX_pipeline; REG_write; ID_pipeline; IF_PC_update; Acc_compute])
-                    (procs [WB_update; MEM_imm_update; MEM_ctrl_update; EX_data_rec_update;
+                    (procs [MEM_imm_update; MEM_ctrl_update; EX_data_rec_update;
                             EX_SHIFT_update; EX_ALU_update; EX_compute_enable_update;
                             EX_ALU_input_update; EX_forward_data; EX_ctrl_update;
                             ID_data_update; ID_imm_update; ID_opc_func_update;
-                            IF_PC_input_update; ForwardW; ForwardB; ForwardA;
-                            Hazard_ctrl; IF_PC_sel_update; IF_instr_update])
+                            IF_PC_input_update; IF_PC_sel_update; IF_instr_update; 
+                            ForwardW; ForwardB; ForwardA; Hazard_ctrl; WB_update])
                     agp32_init
 End
 

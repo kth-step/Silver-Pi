@@ -256,15 +256,15 @@ Definition EX_data_rec_update_def:
         s' = s' with EX := s'.EX with EX_dataB_rec := s'.EX.EX_dataB_updated in
       s' with EX := s'.EX with EX_dataW_rec := s'.EX.EX_dataW_updated
   else if s'.state = 0w /\ s.MEM.MEM_opc = 16w then
-    let s' = s' with EX := s'.EX with EX_dataA_rec :=
-             if s'.EX.EX_ForwardA <> 0w then s'.EX.EX_dataA_updated
-             else s'.EX.EX_dataA_rec;
-        s' = s' with EX := s'.EX with EX_dataB_rec :=
-             if s'.EX.EX_ForwardB <> 0w then s'.EX.EX_dataB_updated
-             else s'.EX.EX_dataB_rec in
-      s' with EX := s'.EX with EX_dataW_rec :=
-      if s'.EX.EX_ForwardW <> 0w then s'.EX.EX_dataW_updated
-      else s'.EX.EX_dataW_rec
+    let s' = if s'.EX.EX_ForwardA <> 0w then
+               s' with EX := s'.EX with EX_dataA_rec := s'.EX.EX_dataA_updated
+             else s';
+        s' = if s'.EX.EX_ForwardB <> 0w then
+               s' with EX := s'.EX with EX_dataB_rec := s'.EX.EX_dataB_updated
+             else s' in
+      if s'.EX.EX_ForwardW <> 0w then
+        s' with EX := s'.EX with EX_dataW_rec := s'.EX.EX_dataW_updated
+      else s'
   else s'
 End
 
@@ -343,7 +343,7 @@ Definition Hazard_ctrl_def:
   else if s'.state = 1w then
     let s' = s' with IF := s'.IF with IF_PC_write_enable := F;
         s' = s' with ID := s'.ID with ID_ID_write_enable := F;
-        s' = s' with ID := s'.ID with ID_flush_flag := T;
+        s' = s' with ID := s'.ID with ID_flush_flag := F;
         s' = s' with ID := s'.ID with ID_EX_write_enable := F;
         s' = s' with EX := s'.EX with EX_NOP_flag := F;
         s' = s' with MEM := s'.MEM with MEM_state_flag := T;

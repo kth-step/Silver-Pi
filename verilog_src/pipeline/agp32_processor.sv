@@ -135,83 +135,6 @@ logic[5:0] WB_addrW = 'x;
 logic[5:0] WB_opc = 'x;
 
 always_comb begin
-if ((state == 3'd3) || (state == 3'd5)) begin
-IF_PC_write_enable = 0;
-ID_ID_write_enable = 0;
-ID_flush_flag = 1;
-ID_EX_write_enable = 0;
-EX_NOP_flag = 0;
-MEM_state_flag = 0;
-MEM_NOP_flag = 0;
-WB_state_flag = 0;
-end else begin
-if ((state == 3'd2) || ((state == 3'd4) || ((state == 3'd6) || (state == 3'd7)))) begin
-IF_PC_write_enable = 0;
-ID_ID_write_enable = 0;
-ID_flush_flag = 0;
-ID_EX_write_enable = 0;
-EX_NOP_flag = 0;
-MEM_state_flag = 0;
-MEM_NOP_flag = 0;
-WB_state_flag = 0;
-end else begin
-if (state == 3'd1) begin
-IF_PC_write_enable = 0;
-ID_ID_write_enable = 0;
-ID_flush_flag = 1;
-ID_EX_write_enable = 0;
-EX_NOP_flag = 0;
-MEM_state_flag = 1;
-MEM_NOP_flag = 0;
-WB_state_flag = 1;
-end else begin
-if (!ready) begin
-IF_PC_write_enable = 0;
-ID_ID_write_enable = 0;
-ID_flush_flag = 0;
-ID_EX_write_enable = 0;
-EX_NOP_flag = 0;
-MEM_state_flag = 0;
-MEM_NOP_flag = 0;
-WB_state_flag = 0;
-end else begin
-if ((MEM_opc == 6'd2) || ((MEM_opc == 6'd3) || ((MEM_opc == 6'd4) || ((MEM_opc == 6'd5) || (MEM_opc == 6'd12))))) begin
-IF_PC_write_enable = 0;
-ID_ID_write_enable = 0;
-ID_flush_flag = 0;
-ID_EX_write_enable = 0;
-EX_NOP_flag = 0;
-MEM_state_flag = 0;
-MEM_NOP_flag = 1;
-WB_state_flag = 1;
-end else begin
-if (!(PC_sel == 2'd0)) begin
-IF_PC_write_enable = 1;
-ID_ID_write_enable = 0;
-ID_flush_flag = 1;
-ID_EX_write_enable = 1;
-EX_NOP_flag = 1;
-MEM_state_flag = 1;
-MEM_NOP_flag = 0;
-WB_state_flag = 1;
-end else begin
-IF_PC_write_enable = 1;
-ID_ID_write_enable = 1;
-ID_flush_flag = 0;
-ID_EX_write_enable = 1;
-EX_NOP_flag = 0;
-MEM_state_flag = 1;
-MEM_NOP_flag = 0;
-WB_state_flag = 1;
-end
-end
-end
-end
-end
-end
-end
-
-always_comb begin
 checkA = (EX_opc == 6'd0) || ((EX_opc == 6'd1) || ((EX_opc == 6'd2) || ((EX_opc == 6'd3) || ((EX_opc == 6'd4) || ((EX_opc == 6'd5) || ((EX_opc == 6'd6) || ((EX_opc == 6'd8) || ((EX_opc == 6'd9) || ((EX_opc == 6'd10) || (EX_opc == 6'd11))))))))));
 EX_ForwardA = ((EX_addrA == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd13) || (MEM_opc == 6'd14)) && ((!EX_addrA_enable) && checkA)))) ? 3'd5 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd9) && ((!EX_addrA_enable) && checkA)))) ? 3'd4 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd1) && ((!EX_addrA_enable) && checkA)))) ? 3'd3 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd0) || (MEM_opc == 6'd6)) && ((!EX_addrA_enable) && checkA)))) ? 3'd2 : (((EX_addrA == WB_addrW) && (WB_write_reg && ((!EX_addrA_enable) && checkA))) ? 3'd1 : 3'd0))));
 end
@@ -364,7 +287,7 @@ end
 4'd8 : EX_ALU_res = ALU_prod[63:32];
 4'd9 : EX_ALU_res = EX_ALU_input1 & EX_ALU_input2;
 4'd10 : EX_ALU_res = EX_ALU_input1 | EX_ALU_input2;
-4'd11 : EX_ALU_res = EX_ALU_input1 ^^ EX_ALU_input2;
+4'd11 : EX_ALU_res = EX_ALU_input1 ^ EX_ALU_input2;
 4'd12 : EX_ALU_res = 32'({EX_ALU_input1 == EX_ALU_input2});
 4'd13 : EX_ALU_res = 32'({{$signed(EX_ALU_input1) < $signed(EX_ALU_input2)}});
 4'd14 : EX_ALU_res = 32'({EX_ALU_input1 < EX_ALU_input2});
@@ -380,7 +303,7 @@ case (EX_func[1:0])
 2'd1 : EX_SHIFT_res = EX_dataA_updated >> EX_dataB_updated;
 2'd2 : EX_SHIFT_res = {$signed(EX_dataA_updated) >>> (EX_dataB_updated)};
 2'd3 : begin
-shift_sh = 32'({EX_dataB_updated[4:0]});
+shift_sh = EX_dataB_updated[4:0] % 32'd32;
 EX_SHIFT_res = (EX_dataA_updated >> shift_sh) | (EX_dataA_updated << (32'd32 - shift_sh));
 end
 endcase
@@ -394,9 +317,15 @@ EX_dataB_rec = EX_dataB_updated;
 EX_dataW_rec = EX_dataW_updated;
 end else begin
 if ((state == 3'd0) && (MEM_opc == 6'd16)) begin
-EX_dataA_rec = (!(EX_ForwardA == 3'd0)) ? EX_dataA_updated : EX_dataA_rec;
-EX_dataB_rec = (!(EX_ForwardB == 3'd0)) ? EX_dataB_updated : EX_dataB_rec;
-EX_dataW_rec = (!(EX_ForwardW == 3'd0)) ? EX_dataW_updated : EX_dataW_rec;
+if (!(EX_ForwardA == 3'd0)) begin
+EX_dataA_rec = EX_dataA_updated;
+end
+if (!(EX_ForwardB == 3'd0)) begin
+EX_dataB_rec = EX_dataB_updated;
+end
+if (!(EX_ForwardW == 3'd0)) begin
+EX_dataW_rec = EX_dataW_updated;
+end
 end
 end
 end
@@ -422,6 +351,83 @@ WB_isOut = WB_opc == 6'd6;
 WB_data_sel = ((WB_opc == 6'd0) || (WB_opc == 6'd6)) ? 3'd0 : ((WB_opc == 6'd1) ? 3'd1 : ((WB_opc == 6'd7) ? 3'd2 : ((WB_opc == 6'd9) ? 3'd3 : (((WB_opc == 6'd13) || (WB_opc == 6'd14)) ? 3'd4 : ((WB_opc == 6'd4) ? 3'd5 : ((WB_opc == 6'd5) ? 3'd6 : ((WB_opc == 6'd8) ? 3'd7 : 3'd0)))))));
 end
 WB_write_data = (WB_data_sel == 3'd0) ? WB_ALU_res : ((WB_data_sel == 3'd1) ? WB_SHIFT_res : ((WB_data_sel == 3'd2) ? 32'({data_in}) : ((WB_data_sel == 3'd3) ? (WB_PC + 32'd4) : ((WB_data_sel == 3'd4) ? WB_imm : ((WB_data_sel == 3'd5) ? WB_read_data : ((WB_data_sel == 3'd6) ? WB_read_data_byte : acc_res))))));
+end
+
+always_comb begin
+if ((state == 3'd3) || (state == 3'd5)) begin
+IF_PC_write_enable = 0;
+ID_ID_write_enable = 0;
+ID_flush_flag = 1;
+ID_EX_write_enable = 0;
+EX_NOP_flag = 0;
+MEM_state_flag = 0;
+MEM_NOP_flag = 0;
+WB_state_flag = 0;
+end else begin
+if ((state == 3'd2) || ((state == 3'd4) || ((state == 3'd6) || (state == 3'd7)))) begin
+IF_PC_write_enable = 0;
+ID_ID_write_enable = 0;
+ID_flush_flag = 0;
+ID_EX_write_enable = 0;
+EX_NOP_flag = 0;
+MEM_state_flag = 0;
+MEM_NOP_flag = 0;
+WB_state_flag = 0;
+end else begin
+if (state == 3'd1) begin
+IF_PC_write_enable = 0;
+ID_ID_write_enable = 0;
+ID_flush_flag = 0;
+ID_EX_write_enable = 0;
+EX_NOP_flag = 0;
+MEM_state_flag = 1;
+MEM_NOP_flag = 0;
+WB_state_flag = 1;
+end else begin
+if (!ready) begin
+IF_PC_write_enable = 0;
+ID_ID_write_enable = 0;
+ID_flush_flag = 0;
+ID_EX_write_enable = 0;
+EX_NOP_flag = 0;
+MEM_state_flag = 0;
+MEM_NOP_flag = 0;
+WB_state_flag = 0;
+end else begin
+if ((MEM_opc == 6'd2) || ((MEM_opc == 6'd3) || ((MEM_opc == 6'd4) || ((MEM_opc == 6'd5) || (MEM_opc == 6'd12))))) begin
+IF_PC_write_enable = 0;
+ID_ID_write_enable = 0;
+ID_flush_flag = 0;
+ID_EX_write_enable = 0;
+EX_NOP_flag = 0;
+MEM_state_flag = 0;
+MEM_NOP_flag = 1;
+WB_state_flag = 1;
+end else begin
+if (!(PC_sel == 2'd0)) begin
+IF_PC_write_enable = 1;
+ID_ID_write_enable = 0;
+ID_flush_flag = 1;
+ID_EX_write_enable = 1;
+EX_NOP_flag = 1;
+MEM_state_flag = 1;
+MEM_NOP_flag = 0;
+WB_state_flag = 1;
+end else begin
+IF_PC_write_enable = 1;
+ID_ID_write_enable = 1;
+ID_flush_flag = 0;
+ID_EX_write_enable = 1;
+EX_NOP_flag = 0;
+MEM_state_flag = 1;
+MEM_NOP_flag = 0;
+WB_state_flag = 1;
+end
+end
+end
+end
+end
+end
 end
 
 always_ff @ (posedge clk) begin

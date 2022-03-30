@@ -303,7 +303,7 @@ case (EX_func[1:0])
 2'd1 : EX_SHIFT_res = EX_dataA_updated >> EX_dataB_updated;
 2'd2 : EX_SHIFT_res = {$signed(EX_dataA_updated) >>> (EX_dataB_updated)};
 2'd3 : begin
-shift_sh = EX_dataB_updated[4:0] % 32'd32;
+shift_sh = 32'({EX_dataB_updated[4:0]});
 EX_SHIFT_res = (EX_dataA_updated >> shift_sh) | (EX_dataA_updated << (32'd32 - shift_sh));
 end
 endcase

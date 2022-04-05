@@ -5,10 +5,8 @@ val _ = new_theory "agp32State";
 (** IF_state: fetch related **)
 Datatype:
   IF_state = <| IF_PC_input: word32;
-                (* IF_PC_output: word32; *)
                 IF_instr: word32;
-                IF_PC_write_enable: bool;
-                PC_sel: word2
+                IF_PC_write_enable: bool
              |>
 End
 
@@ -73,6 +71,8 @@ Datatype:
                  EX_NOP_flag: bool;
                  EX_compute_enable: bool;
                  EX_PC_sel: word2;
+                 EX_jump_sel: bool;
+                 EX_jump_addr: word32;
                  EX_ForwardA: word3;
                  EX_ForwardB: word3;
                  EX_ForwardW: word3;

@@ -42,23 +42,13 @@ Definition IF_instr_update_def:
 End
    
 (** compute PC **)
-Definition IF_PC_sel_update_def:
-  IF_PC_sel_update (fext:ext) (s:state_circuit) s' =
-  if (s'.EX.EX_PC_sel = 1w) \/ ((s'.EX.EX_PC_sel = 2w) /\ (s'.EX.EX_ALU_res = 0w)) \/
-     ((s'.EX.EX_PC_sel = 3w) /\ (s'.EX.EX_ALU_res <> 0w)) then
-    s' with IF := s'.IF with PC_sel := s'.EX.EX_PC_sel
-  else s' with IF := s'.IF with PC_sel := 0w  
-End
-   
 Definition IF_PC_input_update_def:
   IF_PC_input_update (fext:ext) s s' =
   s' with IF := s'.IF with
-                  IF_PC_input := MUX_41 s'.IF.PC_sel (s.PC + 4w) s'.EX.EX_ALU_res
-                                        (s.EX.EX_PC + s'.EX.EX_dataW_updated)
-                                        (s.EX.EX_PC + s'.EX.EX_dataW_updated)
+                  IF_PC_input := MUX_21 s'.EX.EX_jump_sel (s.PC + 4w) s'.EX.EX_jump_addr
 End
 
-Theorem IF_PC_input_update_trans = REWRITE_RULE [MUX_41_def] IF_PC_input_update_def
+Theorem IF_PC_input_update_trans = REWRITE_RULE [MUX_21_def] IF_PC_input_update_def
 
 (** decode instr **)
 Definition ID_opc_func_update_def:
@@ -248,6 +238,20 @@ QED
 
 Theorem EX_SHIFT_update_trans = REWRITE_RULE [word_mod_32] EX_SHIFT_update_def
 
+(** handling jumps **)
+Definition EX_jump_sel_addr_update_def:
+  EX_jump_sel_addr_update (fext:ext) s s' =
+  if (s'.EX.EX_PC_sel = 1w) then
+    let s' = s' with EX := s'.EX with EX_jump_sel := T in
+      s' with EX := s'.EX with EX_jump_addr := s'.EX.EX_ALU_res
+  else if ((s'.EX.EX_PC_sel = 2w) /\ (s'.EX.EX_ALU_res = 0w)) \/
+          ((s'.EX.EX_PC_sel = 3w) /\ (s'.EX.EX_ALU_res <> 0w)) then
+    let s' = s' with EX := s'.EX with EX_jump_sel := T in
+      s' with EX := s'.EX with EX_jump_addr := s.EX.EX_PC + s'.EX.EX_dataW_updated
+  else let s' = s' with EX := s'.EX with EX_jump_sel := F in
+         s' with EX := s'.EX with EX_jump_addr := 0w
+End
+
 (** record data **)
 Definition EX_data_rec_update_def:
   EX_data_rec_update (fext:ext) s s' =
@@ -331,7 +335,7 @@ Definition Hazard_ctrl_def:
         s' = s' with MEM := s'.MEM with MEM_state_flag := F;
         s' = s' with MEM := s'.MEM with MEM_NOP_flag := F in
     s' with WB := s'.WB with WB_state_flag := F
-  else if s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w \/ s'.state = 7w then
+  else if s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w then
     let s' = s' with IF := s'.IF with IF_PC_write_enable := F;
         s' = s' with ID := s'.ID with ID_ID_write_enable := F;
         s' = s' with ID := s'.ID with ID_flush_flag := F;
@@ -340,15 +344,6 @@ Definition Hazard_ctrl_def:
         s' = s' with MEM := s'.MEM with MEM_state_flag := F;
         s' = s' with MEM := s'.MEM with MEM_NOP_flag := F in
     s' with WB := s'.WB with WB_state_flag := F
-  else if s'.state = 1w then
-    let s' = s' with IF := s'.IF with IF_PC_write_enable := F;
-        s' = s' with ID := s'.ID with ID_ID_write_enable := F;
-        s' = s' with ID := s'.ID with ID_flush_flag := F;
-        s' = s' with ID := s'.ID with ID_EX_write_enable := F;
-        s' = s' with EX := s'.EX with EX_NOP_flag := F;
-        s' = s' with MEM := s'.MEM with MEM_state_flag := T;
-        s' = s' with MEM := s'.MEM with MEM_NOP_flag := F in
-    s' with WB := s'.WB with WB_state_flag := T
   else if ~fext.ready then
     let s' = s' with IF := s'.IF with IF_PC_write_enable := F;
         s' = s' with ID := s'.ID with ID_ID_write_enable := F;
@@ -368,7 +363,7 @@ Definition Hazard_ctrl_def:
         s' = s' with MEM := s'.MEM with MEM_state_flag := F;
         s' = s' with MEM := s'.MEM with MEM_NOP_flag := T in
     s' with WB := s'.WB with WB_state_flag := T
-  else if s'.IF.PC_sel <> 0w then
+  else if s'.EX.EX_jump_sel then
     let s' = s' with IF := s'.IF with IF_PC_write_enable := T;
         s' = s' with ID := s'.ID with ID_ID_write_enable := F;
         s' = s' with ID := s'.ID with ID_flush_flag := T;
@@ -540,24 +535,24 @@ Definition agp32_next_state_def:
                                           else s.data_out;
                  s' = s' with MEM := s'.MEM with MEM_enable := F;
                  s' = s' with WB := s'.WB with WB_enable := F in
-              if ~fext.ready then s' with state := 7w
+              if ~fext.ready then s' with state := 1w
               else if s'.MEM.MEM_isInterrupt then
-                let s' = s' with state := 7w;
+                let s' = s' with state := 1w;
                     s' = s' with command := 4w;
                     s' = s' with do_interrupt := T in
-                  s' with data_addr := 0w                                       
+                  s' with data_addr := 0w                            
               else if s'.MEM.MEM_read_mem then
-                let s' = s' with state := 7w;
+                let s' = s' with state := 1w;
                     s' = s' with command := 2w in
                   s' with data_addr := s.MEM.MEM_dataA
               else if s'.MEM.MEM_write_mem then
-                let s' = s' with state := 7w;
+                let s' = s' with state := 1w;
                     s' = s' with command := 3w;
                     s' = s' with data_addr := s.MEM.MEM_dataB;
                     s' = s' with data_wdata := s.MEM.MEM_dataA in
                   s' with data_wstrb := 15w
               else if s'.MEM.MEM_write_mem_byte then
-                let s' = s' with state := 7w;
+                let s' = s' with state := 1w;
                     s' = s' with command := 3w;
                     s' = s' with data_addr := s.MEM.MEM_dataB;
                     s' = s' with data_wstrb := 1w <<~ w2w ((1 >< 0) s.MEM.MEM_dataB) in
@@ -566,16 +561,20 @@ Definition agp32_next_state_def:
                | 1w => s' with data_wdata := bit_field_insert 15 8 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
                | 2w => s' with data_wdata := bit_field_insert 23 16 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
                | 3w => s' with data_wdata := bit_field_insert 31 24 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
-              else if (s'.IF.PC_sel <> 0w) then
-                let s' = s' with state := 1w in
-                  s' with command := 1w
               else if s'.EX.EX_isAcc then
                 let s' = s' with state := 2w;
                     s' = s' with command := 0w;
                 s' = s' with acc_arg := s'.EX.EX_dataA_updated in
                   s' with acc_arg_ready := T
               else s')
-    | 1w => (let s' = if fext.ready /\ s.command = 0w then s' with state := 6w           
+    | 1w => (let s' = if fext.ready /\ s.command = 0w then
+                        if s'.do_interrupt then let
+                          s' = s' with state := 4w;
+                          s' = s' with do_interrupt := F;
+                          s' = s' with interrupt_req := T in
+                         s'
+                        else
+                         s' with state := 6w
                       else s' in
                s' with command := 0w)
     | 2w => (let s' = if s.acc_res_ready /\ ~s.acc_arg_ready then s' with state := 6w
@@ -593,16 +592,6 @@ Definition agp32_next_state_def:
                 s' = s' with command := 1w;
                 s' = s' with MEM := s'.MEM with MEM_enable := T in
               s' with WB := s'.WB with WB_enable := T
-    | 7w => (let s' = if fext.ready /\ s.command = 0w then
-                        if s'.do_interrupt then let
-                          s' = s' with state := 4w;
-                          s' = s' with do_interrupt := F;
-                          s' = s' with interrupt_req := T in
-                         s'
-                        else
-                         s' with state := 6w
-                      else s' in
-               s' with command := 0w)
     | _ => s'                      
   else
     s' with state := 5w
@@ -633,11 +622,11 @@ val init_tm = add_x_inits ``<| R := K 0w;
                                data_addr := 0xffffffffw;         
                                do_interrupt := F;           
                                interrupt_req := F;           
-                               IF := <| PC_sel := 0w |>;           
+                               IF := <| IF_instr := 0x0000003Fw |>;           
                                ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F;                   
                                         ID_ForwardB := F; ID_ForwardW := F |>;
                                EX := <| EX_ForwardA := 0w; EX_ForwardB := 0w; EX_ForwardW := 0w;
-                                        EX_PC_sel := 0w; EX_opc := 15w |>;
+                                        EX_PC_sel := 0w; EX_jump_sel := F; EX_opc := 15w |>;
                                MEM := <| MEM_enable := F; MEM_write_reg := F; MEM_opc := 15w |>;
                                WB := <| WB_enable := F; WB_write_reg := F |> |>``;
 
@@ -650,10 +639,11 @@ Definition agp32_def:
   agp32 = mk_module (procs [agp32_next_state; WB_pipeline; MEM_pipeline;
                             EX_pipeline; REG_write; ID_pipeline; IF_PC_update; Acc_compute])
                     (procs [WB_update; MEM_imm_update; MEM_ctrl_update; EX_data_rec_update;
-                            EX_SHIFT_update; EX_ALU_update; EX_compute_enable_update;
+                            EX_jump_sel_addr_update; EX_SHIFT_update;
+                            EX_ALU_update; EX_compute_enable_update;
                             EX_ALU_input_update; EX_forward_data; EX_ctrl_update;
                             ID_data_update; ID_imm_update; ID_opc_func_update;
-                            IF_PC_input_update; IF_PC_sel_update; IF_instr_update; 
+                            IF_PC_input_update; IF_instr_update; 
                             ForwardW; ForwardB; ForwardA; Hazard_ctrl])
                     agp32_init
 End

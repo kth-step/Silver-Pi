@@ -6,7 +6,7 @@ Here is the TODO list.
   - [x] simplify the Jump related instructions, produce a signal (Jump:bool) and an address (if jump is T) in the EX stage, instead of doing in IF.
  
 - HOL4 processor model.
-  - [ ] use non-blocking assignment for most variables, because of the single module. 
+  - [x] use non-blocking assignment for most variables, because of the single module. (Ning: may create violations for BRAM realted, https://github.com/kth-step/hw-verification-silver/blob/main/verilog_src/pipeline/agp32_bram_75MHz.sv#L452) 
 
 ### Long term
 - [ ] optimize the compilation time (mainly generate the *tstate*), which now uses more than 500s.

@@ -30,9 +30,9 @@ Datatype:
                  ID_ID_write_enable: bool;
                  ID_EX_write_enable: bool;
                  ID_flush_flag: bool;
-                 ID_addrA_enable: bool;
-                 ID_addrB_enable: bool;
-                 ID_addrW_enable: bool;
+                 ID_addrA_disable: bool;
+                 ID_addrB_disable: bool;
+                 ID_addrW_disable: bool;
                  ID_ForwardA: bool;
                  ID_ForwardB: bool;
                  ID_ForwardW: bool;
@@ -64,9 +64,9 @@ Datatype:
                  EX_ALU_res: word32;
                  EX_SHIFT_res: word32;
                  EX_write_enable: bool;
-                 EX_addrA_enable: bool;
-                 EX_addrB_enable: bool;
-                 EX_addrW_enable: bool;
+                 EX_addrA_disable: bool;
+                 EX_addrB_disable: bool;
+                 EX_addrW_disable: bool;
                  EX_isAcc: bool;
                  EX_NOP_flag: bool;
                  EX_compute_enable: bool;

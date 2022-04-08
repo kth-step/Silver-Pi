@@ -82,9 +82,9 @@ Definition ID_data_update_def:
   let s' = s' with ID := s'.ID with ID_addrA := (22 >< 17) s'.ID.ID_instr;
       s' = s' with ID := s'.ID with ID_addrB := (15 >< 10) s'.ID.ID_instr;
       s' = s' with ID := s'.ID with ID_addrW := (30 >< 25) s'.ID.ID_instr;
-      s' = s' with ID := s'.ID with ID_addrA_enable := word_bit 23 s'.ID.ID_instr;
-      s' = s' with ID := s'.ID with ID_addrB_enable := word_bit 16 s'.ID.ID_instr;
-      s' = s' with ID := s'.ID with ID_addrW_enable := word_bit 31 s'.ID.ID_instr;
+      s' = s' with ID := s'.ID with ID_addrA_disable := word_bit 23 s'.ID.ID_instr;
+      s' = s' with ID := s'.ID with ID_addrB_disable := word_bit 16 s'.ID.ID_instr;
+      s' = s' with ID := s'.ID with ID_addrW_disable := word_bit 31 s'.ID.ID_instr;
       s' = s' with ID := s'.ID with ID_read_dataA := s'.R s'.ID.ID_addrA;
       s' = s' with ID := s'.ID with ID_read_dataB := s'.R s'.ID.ID_addrB;
       s' = s' with ID := s'.ID with ID_read_dataW := s'.R s'.ID.ID_addrW;
@@ -405,7 +405,7 @@ Definition ForwardA_def:
             s.EX.EX_opc = 4w \/ s.EX.EX_opc = 5w \/ s.EX.EX_opc = 6w \/ s.EX.EX_opc = 8w \/
             s.EX.EX_opc = 9w \/ s.EX.EX_opc = 10w \/ s.EX.EX_opc = 11w) in
     s' with EX := s'.EX with EX_ForwardA :=
-    Forward_update s'.EX.EX_addrA s'.EX.EX_addrA_enable s'.checkA s s'
+    Forward_update s'.EX.EX_addrA s'.EX.EX_addrA_disable s'.checkA s s'
 End
 
 Theorem ForwardA_trans = REWRITE_RULE [Forward_update_def] ForwardA_def
@@ -416,7 +416,7 @@ Definition ForwardB_def:
            (s.EX.EX_opc = 0w \/ s.EX.EX_opc = 1w \/ s.EX.EX_opc = 2w \/ s.EX.EX_opc = 3w \/
             s.EX.EX_opc = 6w \/ s.EX.EX_opc = 10w \/ s.EX.EX_opc = 11w) in
     s' with EX := s'.EX with EX_ForwardB :=
-    Forward_update s'.EX.EX_addrB s'.EX.EX_addrB_enable s'.checkB s s'
+    Forward_update s'.EX.EX_addrB s'.EX.EX_addrB_disable s'.checkB s s'
 End
 
 Theorem ForwardB_trans = REWRITE_RULE [Forward_update_def] ForwardB_def
@@ -425,7 +425,7 @@ Definition ForwardW_def:
   ForwardW (fext:ext) s s' =
   let s' = s' with checkW := (s.EX.EX_opc = 10w \/ s.EX.EX_opc = 11w \/ s.EX.EX_opc = 14w) in
     s' with EX := s'.EX with EX_ForwardW :=
-    Forward_update s.EX.EX_addrW s'.EX.EX_addrW_enable s'.checkW s s'
+    Forward_update s.EX.EX_addrW s'.EX.EX_addrW_disable s'.checkW s s'
 End
 
 Theorem ForwardW_trans = REWRITE_RULE [Forward_update_def] ForwardW_def
@@ -469,9 +469,9 @@ Definition EX_pipeline_def:
         s' = s' with EX := s'.EX with EX_dataW := s'.ID.ID_dataW;
         s' = s' with EX := s'.EX with EX_imm := s'.ID.ID_imm;
         s' = s' with EX := s'.EX with EX_write_enable := T;
-        s' = s' with EX := s'.EX with EX_addrA_enable := s'.ID.ID_addrA_enable;
-        s' = s' with EX := s'.EX with EX_addrB_enable := s'.ID.ID_addrB_enable;
-        s' = s' with EX := s'.EX with EX_addrW_enable := s'.ID.ID_addrW_enable;
+        s' = s' with EX := s'.EX with EX_addrA_disable := s'.ID.ID_addrA_disable;
+        s' = s' with EX := s'.EX with EX_addrB_disable := s'.ID.ID_addrB_disable;
+        s' = s' with EX := s'.EX with EX_addrW_disable := s'.ID.ID_addrW_disable;
         s' = s' with EX := s'.EX with EX_addrA := s'.ID.ID_addrA;
         s' = s' with EX := s'.EX with EX_addrB := s'.ID.ID_addrB;
         s' = s' with EX := s'.EX with EX_addrW := s'.ID.ID_addrW;

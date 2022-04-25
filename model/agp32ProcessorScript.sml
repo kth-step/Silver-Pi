@@ -638,13 +638,13 @@ End
 Definition agp32_def:
   agp32 = mk_module (procs [agp32_next_state; WB_pipeline; MEM_pipeline;
                             EX_pipeline; REG_write; ID_pipeline; IF_PC_update; Acc_compute])
-                    (procs [WB_update; MEM_imm_update; MEM_ctrl_update; EX_data_rec_update;
-                            EX_jump_sel_addr_update; EX_SHIFT_update;
-                            EX_ALU_update; EX_compute_enable_update;
-                            EX_ALU_input_update; EX_forward_data; EX_ctrl_update;
-                            ID_data_update; ID_imm_update; ID_opc_func_update;
-                            IF_PC_input_update; IF_instr_update; 
-                            ForwardW; ForwardB; ForwardA; Hazard_ctrl])
+                    (procs [Hazard_ctrl; ForwardA; ForwardB; ForwardW;
+                            IF_instr_update; IF_PC_input_update;
+                            ID_opc_func_update; ID_imm_update; ID_data_update;
+                            EX_ctrl_update; EX_forward_data; EX_ALU_input_update;
+                            EX_compute_enable_update; EX_ALU_update; EX_SHIFT_update; 
+                            EX_jump_sel_addr_update; EX_data_rec_update;
+                            MEM_ctrl_update; MEM_imm_update; WB_update])
                     agp32_init
 End
 

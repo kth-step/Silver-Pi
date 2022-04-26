@@ -13,7 +13,7 @@ Here is the TODO list.
  Step 1: proof goal and the relation between the ISA state and pipelined Silver.
  
 - Translator correctness
- - [ ] Unproved theorems in `verilog/verilogMetaScript.sml`, *nd_reset_type_preserving* and *nd_reset_const*.
+ - [x] Unproved theorems in `verilog/verilogMetaScript.sml`, *nd_reset_type_preserving* and *nd_reset_const*.
 
 ### Long term
 - [ ] optimize the compilation time (mainly generate the *tstate*), which now uses more than 500s.

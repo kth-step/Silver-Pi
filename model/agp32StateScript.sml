@@ -136,8 +136,6 @@ Datatype:
     PC: word32;
     R: word6 -> word32;
     data_out: word10;
-    acc_arg: word32;
-    acc_arg_ready: bool;
     interrupt_req: bool;
     do_interrupt: bool;
 
@@ -148,6 +146,8 @@ Datatype:
     data_wstrb: word4;
 
     (** accelerator **)
+    acc_arg: word32;
+    acc_arg_ready: bool;
     acc_res: word32;
     acc_res_ready: bool;
     acc_state: word2;

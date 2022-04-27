@@ -623,10 +623,8 @@ val init_tm = add_x_inits ``<| R := K 0w;
                                do_interrupt := F;           
                                interrupt_req := F;           
                                IF := <| IF_instr := 0x0000003Fw |>;           
-                               ID := <| ID_instr := 0x0000003Fw; ID_ForwardA := F;                   
-                                        ID_ForwardB := F; ID_ForwardW := F |>;
-                               EX := <| EX_ForwardA := 0w; EX_ForwardB := 0w; EX_ForwardW := 0w;
-                                        EX_PC_sel := 0w; EX_jump_sel := F; EX_opc := 15w |>;
+                               ID := <| ID_instr := 0x0000003Fw |>;
+                               EX := <| EX_PC_sel := 0w; EX_jump_sel := F; EX_opc := 15w |>;
                                MEM := <| MEM_enable := F; MEM_write_reg := F; MEM_opc := 15w |>;
                                WB := <| WB_enable := F; WB_write_reg := F |> |>``;
 

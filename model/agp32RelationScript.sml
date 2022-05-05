@@ -3,7 +3,7 @@ open hardwarePreamble agp32StateTheory agp32EnvironmentTheory ag32Theory;
 val _ = new_theory "agp32Relation";
 
 (** general variables used in this file:
-    k: pipeline stage, 1-5 for IF to WB.
+    k: pipeline stage.
     t: cycle for the hw.
     i: cycle (instr index) for the ISA.
  **)

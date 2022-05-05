@@ -8,12 +8,12 @@ val _ = prefer_num ();
 val _ = guess_lengths ();
 
 (* current instruction processed by Silver ISA *)
-Definition instr:
+Definition instr_def:
   instr (a:ag32_state) = word_at_addr a.MEM (align_addr a.PC)
 End
 
 (* decode the opc, func and data ports based on the instr *)
-Definition opc:
+Definition opc_def:
   opc a :word6 =
   let i = instr a in
     if word_bit 24 i then
@@ -28,7 +28,7 @@ Definition opc:
     else 15w
 End
 
-Definition func:
+Definition func_def:
   func a :word4 =
   let opc = opc a in
     if opc = 0w \/ opc = 6w \/ opc = 9w \/ opc = 10w \/ opc = 11w then
@@ -36,69 +36,69 @@ Definition func:
     else 9w
 End
 
-Definition addrA:
+Definition addrA_def:
   addrA a = (22 >< 17) (instr a)
 End
 
-Definition addrB:
+Definition addrB_def:
   addrB a = (15 >< 10) (instr a)
 End
 
-Definition addrW:
+Definition addrW_def:
   addrW a = (30 >< 25) (instr a)
 End
 
-Definition flagA:
+Definition flagA_def:
   flagA a = word_bit 23 (instr a)
 End
 
-Definition flagB:
+Definition flagB_def:
   flagB a = word_bit 16 (instr a)
 End
 
-Definition flagW:
+Definition flagW_def:
   flagW a = word_bit 31 (instr a)
 End
 
 (* generate the correct data for A/B/W ports *)
-Definition reg_dataA:
+Definition reg_dataA_def:
   reg_dataA a = a.R (addrA a)
 End
 
-Definition reg_dataB:
+Definition reg_dataB_def:
   reg_dataB a = a.R (addrB a)
 End
 
-Definition reg_dataW:
+Definition reg_dataW_def:
   reg_dataW a = a.R (addrW a)
 End
 
-Definition immA:
+Definition immA_def:
   immA a :word32 = sw2sw ((22 >< 17) (instr a))
 End
 
-Definition immB:
+Definition immB_def:
   immB a :word32 = sw2sw ((15 >< 10) (instr a))
 End
 
-Definition immW:
+Definition immW_def:
   immW a :word32 = sw2sw ((30 >< 25) (instr a))
 End
 
-Definition dataA:
+Definition dataA_def:
   dataA a = if (flagA a) then (immA a) else (reg_dataA a)
 End
 
-Definition dataB:
+Definition dataB_def:
   dataB a = if (flagB a) then (immB a) else (reg_dataB a)
 End
 
-Definition dataW:
+Definition dataW_def:
   dataW a = if (flagW a) then (immW a) else (reg_dataW a)
 End
 
 (* immediate *)
-Definition imm:
+Definition imm_def:
   imm a :word32 =
   let i = instr a in
     if (word_bit 31 i) /\ (word_bit 24 i) then
@@ -110,7 +110,7 @@ Definition imm:
 End
 
 (* compute the ALU result *)
-Definition ALU_res:
+Definition ALU_res_def:
   ALU_res a =
   let opc = opc a;
       func = func a;
@@ -121,7 +121,7 @@ Definition ALU_res:
 End
 
 (* compute the shift result *)
-Definition shift_res:
+Definition shift_res_def:
   shift_res a =
   let instr = instr a;
       shiftOp = num2shiftT (w2n ((7 >< 6) instr)) in
@@ -129,16 +129,16 @@ Definition shift_res:
 End
 
 (* singals related to the accelerator *)
-Definition acc_arg:
+Definition acc_arg_def:
   acc_arg a = dataA a
 End
 
-Definition acc_res:
+Definition acc_res_def:
   acc_res a = accelerator_f (acc_arg a)
 End
 
 (* singals related to memory operations *)
-Definition mem_data_addr:
+Definition mem_data_addr_def:
   mem_data_addr a =
   let opc = opc a;
       dataA = dataA a;
@@ -150,7 +150,7 @@ Definition mem_data_addr:
     else 0w
 End
 
-Definition mem_data_wstrb:
+Definition mem_data_wstrb_def:
   mem_data_wstrb a :word4 =
   let opc = opc a;
       dataB = dataB a in
@@ -159,7 +159,7 @@ Definition mem_data_wstrb:
     else 0w     
 End
 
-Definition mem_data_wdata:
+Definition mem_data_wdata_def:
   mem_data_wdata a =
   let opc = opc a;
       dataA = dataA a in
@@ -168,7 +168,7 @@ Definition mem_data_wdata:
     else 0w
 End
 
-Definition mem_data_rdata:
+Definition mem_data_rdata_def:
   mem_data_rdata a =
   let opc = opc a;
       mem_data_addr = mem_data_addr a in
@@ -178,14 +178,14 @@ Definition mem_data_rdata:
 End
 
 (* singals related to update Silver register R *)
-Definition reg_ifwrite:
+Definition reg_ifwrite_def:
   reg_ifwrite a =
   let opc = opc a in
     (opc = 0w) \/ (opc = 1w) \/ (opc = 4w) \/ (opc = 5w) \/ (opc = 6w) \/
     (opc = 7w) \/ (opc = 8w) \/ (opc = 9w) \/ (opc = 13w) \/ (opc = 14w)
 End
 
-Definition reg_wdata:
+Definition reg_wdata_def:
   reg_wdata a =
   let opc = opc a in
     if opc = 0w then ALU_res a

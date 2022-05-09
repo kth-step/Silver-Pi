@@ -170,9 +170,10 @@ Datatype:
   |>
 End
 
-(* pipeline stages *)
+(* pipeline stages 
 Datatype:
   pi_stg = IF | ID | EX | MEM | WB
 End
+*)
 
 val _ = export_theory ();

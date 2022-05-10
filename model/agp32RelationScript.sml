@@ -71,14 +71,15 @@ End
 (* relation between the pipelined Silver circuit and ISA state *)
 Definition Rel_def:
   Rel (fext:ext) (s:state_circuit) (k:num) (a:ag32_state) (i:num) <=>
-  fext.ready /\ (* to remove *)
-  (fext.data_in = a.data_in) /\
+  (fext.data_in = (FUNPOW Next i a).data_in) /\
   (** visible part: directly seen by ISA **)
   (** no visible registers in IF and ID **)
   (k = 3 ==>
+   enable_stg 3 s ==>
    (s.EX.EX_carry_flag <=> (FUNPOW Next i a).CarryFlag) /\
    (s.EX.EX_overflow_flag <=> (FUNPOW Next i a).OverflowFlag) /\
-   (s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next i a).PC)) /\
+   (s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next i a).PC) /\
+   (~s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next i a).PC + 4w)) /\
   (k = 4 ==>
    fext.mem = (FUNPOW Next i a).MEM) /\
   (k = 5 ==>
@@ -86,8 +87,10 @@ Definition Rel_def:
    (s.R = (FUNPOW Next i a).R)) /\
   (** invisible part **)
   (k = 1 ==>
-   (s.IF.IF_instr = instr (FUNPOW Next (i-1) a))) /\
+   (fext.ready ==> s.IF.IF_instr = instr (FUNPOW Next (i-1) a)) /\
+   (~fext.ready ==> s.IF.IF_instr = 63w)) /\
   (k = 2 ==>
+   enable_stg 2 s ==>
    (s.ID.ID_PC = (FUNPOW Next (i-1) a).PC) /\
    (s.ID.ID_instr = instr (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_addrA = addrA (FUNPOW Next (i - 1) a)) /\
@@ -109,6 +112,7 @@ Definition Rel_def:
    (s.ID.ID_opc = opc (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_func = func (FUNPOW Next (i - 1) a))) /\
   (k = 3 ==>
+   enable_stg 3 s ==>
    (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next i a).PC) /\
    (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next i a).PC + 4w) /\
    (s.EX.EX_PC = (FUNPOW Next (i-1) a).PC) /\
@@ -131,6 +135,7 @@ Definition Rel_def:
    (s.EX.EX_opc = opc (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_func = func (FUNPOW Next (i-1) a))) /\
   (k = 4 ==>
+   enable_stg 4 s ==>
    (s.MEM.MEM_PC = (FUNPOW Next (i-1) a).PC) /\
    (s.MEM.MEM_addrW = addrW (FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_dataA = dataA (FUNPOW Next (i-1) a)) /\
@@ -148,6 +153,7 @@ Definition Rel_def:
    (s.data_wdata = mem_data_wdata (FUNPOW Next (i-1) a)) /\
    (fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a))) /\
   (k = 5 ==>
+   enable_stg 5 s ==>
    (s.WB.WB_PC = (FUNPOW Next (i-1) a).PC) /\
    (s.WB.WB_addrW = addrW (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_dataA = dataA (FUNPOW Next (i-1) a)) /\

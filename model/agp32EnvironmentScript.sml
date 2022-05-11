@@ -169,6 +169,11 @@ val is_interrupt_interface_def = Define `
          (fext (SUC n)).io_events = (fext n).io_events /\
          ~(fext (SUC n)).interrupt_ack)`;
 
+(* data_in: keep unchanged based on the ISA *)
+val is_data_in_def = Define `
+ is_data_in fext =
+ (!n. (fext (SUC n)).data_in = (fext n).data_in)`
+
 (* Collection of all interfaces in the current "laboratory environment" *)
 val is_lab_env_def = Define `
  is_lab_env accessors step fext <=>

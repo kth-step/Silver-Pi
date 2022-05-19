@@ -208,25 +208,25 @@ Definition WB_Rel_def:
 End
 
 Definition Rel_def:
-  Rel (fext:ext) (s:state_circuit) (k:num) (a:ag32_state) (i:num) <=>
+  Rel (fext:ext) (s:state_circuit) (I:num # num -> num) (t:num) (a:ag32_state) (i:num) <=>
   (fext.data_in = (FUNPOW Next i a).data_in) /\
   (** visible part: directly seen by ISA **)
-  (k = 3 ==>
+  (I(3,t) = i ==>
    (s.EX.EX_carry_flag <=> (FUNPOW Next i a).CarryFlag) /\
    (s.EX.EX_overflow_flag <=> (FUNPOW Next i a).OverflowFlag) /\
    (s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next i a).PC) /\
    (~s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next i a).PC + 8w)) /\
-  (k = 4 ==>
+  (I(4,t) = i ==>
    fext.mem = (FUNPOW Next i a).MEM) /\
-  (k = 5 ==>
+  (I(5,t) = i ==>
    (s.data_out = (FUNPOW Next i a).data_out) /\
    (s.R = (FUNPOW Next i a).R)) /\
   (** invisible part **)
-  (k = 1 ==> enable_stg k s ==> IF_Rel fext s a i) /\
-  (k = 2 ==> enable_stg k s ==> ID_Rel fext s a i) /\
-  (k = 3 ==> enable_stg k s ==> EX_Rel fext s a i) /\
-  (k = 4 ==> enable_stg k s ==> MEM_Rel fext s a i) /\
-  (k = 5 ==> enable_stg k s ==> WB_Rel fext s a i)
+  (I(1,t) = i ==> enable_stg 1 s ==> IF_Rel fext s a i) /\
+  (I(2,t) = i ==> enable_stg 2 s ==> ID_Rel fext s a i) /\
+  (I(3,t) = i ==> enable_stg 3 s ==> EX_Rel fext s a i) /\
+  (I(4,t) = i ==> enable_stg 4 s ==> MEM_Rel fext s a i) /\
+  (I(5,t) = i ==> enable_stg 5 s ==> WB_Rel fext s a i)
 End
 
 val _ = export_theory ();

@@ -208,25 +208,22 @@ Definition WB_Rel_def:
 End
 
 Definition Rel_def:
-  Rel (fext:ext) (s:state_circuit) (I:num # num -> num) (t:num) (a:ag32_state) (i:num) <=>
-  (fext.data_in = (FUNPOW Next i a).data_in) /\
+  Rel (I:num # num -> num) (fext:ext) (s:state_circuit) (a:ag32_state) (t:num) <=>
+  (fext.data_in = (FUNPOW Next (I(5,t)) a).data_in) /\
   (** visible part: directly seen by ISA **)
-  (I(3,t) = i ==>
-   (s.EX.EX_carry_flag <=> (FUNPOW Next i a).CarryFlag) /\
-   (s.EX.EX_overflow_flag <=> (FUNPOW Next i a).OverflowFlag) /\
-   (s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next i a).PC) /\
-   (~s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next i a).PC + 8w)) /\
-  (I(4,t) = i ==>
-   fext.mem = (FUNPOW Next i a).MEM) /\
-  (I(5,t) = i ==>
-   (s.data_out = (FUNPOW Next i a).data_out) /\
-   (s.R = (FUNPOW Next i a).R)) /\
+  (s.EX.EX_carry_flag <=> (FUNPOW Next (I(3,t)) a).CarryFlag) /\
+  (s.EX.EX_overflow_flag <=> (FUNPOW Next (I(3,t)) a).OverflowFlag) /\
+  (s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next (I(3,t)) a).PC) /\                 
+  (~s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next (I(3,t)) a).PC + 8w) /\
+  (fext.mem = (FUNPOW Next (I(4,t)) a).MEM) /\                                     
+  (s.data_out = (FUNPOW Next (I(5,t)) a).data_out) /\
+  (s.R = (FUNPOW Next (I(5,t)) a).R) /\
   (** invisible part **)
-  (I(1,t) = i ==> enable_stg 1 s ==> IF_Rel fext s a i) /\
-  (I(2,t) = i ==> enable_stg 2 s ==> ID_Rel fext s a i) /\
-  (I(3,t) = i ==> enable_stg 3 s ==> EX_Rel fext s a i) /\
-  (I(4,t) = i ==> enable_stg 4 s ==> MEM_Rel fext s a i) /\
-  (I(5,t) = i ==> enable_stg 5 s ==> WB_Rel fext s a i)
+  (enable_stg 1 s ==> IF_Rel fext s a (I(1,t))) /\
+  (enable_stg 2 s ==> ID_Rel fext s a (I(2,t))) /\
+  (enable_stg 3 s ==> EX_Rel fext s a (I(3,t))) /\
+  (enable_stg 4 s ==> MEM_Rel fext s a (I(4,t))) /\
+  (enable_stg 5 s ==> WB_Rel fext s a (I(5,t)))
 End
 
 val _ = export_theory ();

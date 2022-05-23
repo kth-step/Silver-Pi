@@ -39,8 +39,8 @@ Proof
   rw [ALU_def] >> Cases_on `func'` >> fs [] >> rw []
 QED
 
-(* data_in is unchanged in the ISA state *)
-Theorem ag32_data_in_unchanged:
+(* data_in is unchanged *)
+Theorem ag32_data_in_unchanged_next:
   !a n. (FUNPOW Next n a).data_in = (FUNPOW Next (SUC n) a).data_in
 Proof
   rw [FUNPOW_SUC] >>
@@ -71,6 +71,13 @@ Proof
   qpat_abbrev_tac `alu = ALU _ _` >>
   Cases_on `alu` >> rw [] >>
   METIS_TAC [ALU_state_eq_after]
+QED
+
+Theorem ag32_data_in_unchanged_all:
+  !a n m. (FUNPOW Next n a).data_in = (FUNPOW Next m a).data_in
+Proof
+  rw [] >> Induct_on `n` >> Induct_on `m` >> rw [] >>
+  METIS_TAC [ag32_data_in_unchanged_next]  
 QED
 
 val _ = export_theory ();

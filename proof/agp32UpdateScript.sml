@@ -142,6 +142,116 @@ Proof
   rw [WB_update_def]
 QED
 
+(* EX_jump_sel/addr are not affected by irrelevant functions *)
+Theorem Hazard_ctrl_unchanged_EX_jump:
+  !fext s s'.
+    ((Hazard_ctrl fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((Hazard_ctrl fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [Hazard_ctrl_def]
+QED
+
+(* show the unchanged part of EX_state for functions used in the sequential logic *)
+Theorem Acc_compute_unchanged_EX_jump:
+  !fext s s'.
+    ((Acc_compute fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((Acc_compute fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [Acc_compute_def]
+QED
+
+Theorem IF_PC_update_unchanged_EX_jump:
+  !fext s s'.
+    ((IF_PC_update fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((IF_PC_update fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [IF_PC_update_def]
+QED
+
+Theorem ID_pipeline_unchanged_EX_jump:
+  !fext s s'.
+    ((ID_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((ID_pipeline fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [ID_pipeline_def]
+QED
+
+Theorem REG_write_unchanged_EX_jump:
+  !fext s s'.
+    ((REG_write fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((REG_write fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [REG_write_def]
+QED
+
+Theorem EX_pipeline_unchanged_EX_jump:
+  !fext s s'.
+    ((EX_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((EX_pipeline fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [EX_pipeline_def]
+QED
+
+Theorem MEM_pipeline_unchanged_EX_jump:
+  !fext s s'.
+    ((MEM_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((MEM_pipeline fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [MEM_pipeline_def]
+QED
+
+Theorem WB_pipeline_unchanged_EX_jump:
+  !fext s s'.
+    ((WB_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((WB_pipeline fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [WB_pipeline_def]
+QED
+
+Theorem agp32_next_state_unchanged_EX_jump:
+  !fext s s'.
+    ((agp32_next_state fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((agp32_next_state fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+     
+Theorem slist_unchanged_EX_jump:
+  !fext s s'.
+    ((procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+             REG_write;ID_pipeline;IF_PC_update;Acc_compute]
+      fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
+    ((procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+             REG_write;ID_pipeline;IF_PC_update;Acc_compute]
+      fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [] >> rw [Once procs_def] >>
+  Q.ABBREV_TAC `s1 = agp32_next_state fext s s'` >>
+  rw [Once procs_def] >>
+  Q.ABBREV_TAC `s2 = WB_pipeline fext s s1` >>
+  rw [Once procs_def] >>
+  Q.ABBREV_TAC `s3 = MEM_pipeline fext s s2` >>
+  rw [Once procs_def] >>
+  Q.ABBREV_TAC `s4 = EX_pipeline fext s s3` >>
+  rw [Once procs_def] >>
+  Q.ABBREV_TAC `s5 = REG_write fext s s4` >>
+  rw [Once procs_def] >>
+  Q.ABBREV_TAC `s6 = ID_pipeline fext s s5` >>
+  rw [Once procs_def] >>
+  Q.ABBREV_TAC `s7 = IF_PC_update fext s s6` >>
+  rw [Once procs_def] >>
+  Q.ABBREV_TAC `s8 = Acc_compute fext s s7` >>
+  fs [procs_def,Abbr `s8`,Acc_compute_unchanged_EX_jump,
+      Abbr `s7`,IF_PC_update_unchanged_EX_jump,
+      Abbr `s6`,ID_pipeline_unchanged_EX_jump,
+      Abbr `s5`,REG_write_unchanged_EX_jump,
+      Abbr `s4`,EX_pipeline_unchanged_EX_jump,
+      Abbr `s3`,MEM_pipeline_unchanged_EX_jump,
+      Abbr `s2`,WB_pipeline_unchanged_EX_jump,
+      Abbr `s1`,agp32_next_state_unchanged_EX_jump]
+QED
+
 (* IF_PC_input is only changed by the IF_PC_input_update function *)
 Theorem agp32_IF_PC_input_updated_by_IF_PC_input_update:
   !fext fbits t s s'.
@@ -209,7 +319,11 @@ Proof
       Abbr `s8`,ID_data_update_unchanged_IF,
       Abbr `s7`,ID_imm_update_unchanged_IF,
       Abbr `s6`,ID_opc_func_update_unchanged_IF,
-      Abbr `s5`,IF_PC_input_update_def] >> cheat
+      Abbr `s5`,IF_PC_input_update_def,
+      Abbr `s4'`,IF_instr_update_def,
+      Abbr `s4`,ForwardW_def,Abbr `s3`,ForwardB_def,Abbr `s2`,ForwardA_def,
+      Abbr `s1`,Hazard_ctrl_unchanged_EX_jump,
+      Abbr `s0`,slist_unchanged_EX_jump]
 QED
 
 (* IF_instr is only changed by the IF_instr_update function *)

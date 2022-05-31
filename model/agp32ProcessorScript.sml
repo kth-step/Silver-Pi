@@ -69,9 +69,11 @@ Definition ID_opc_func_update_def:
              s' with ID := s'.ID with ID_opc := (5 >< 0) s'.ID.ID_instr
            else
              s' with ID := s'.ID with ID_opc := 15w in
-  if s'.ID.ID_opc = 0w \/ s'.ID.ID_opc = 1w \/ s'.ID.ID_opc = 6w \/
-     s'.ID.ID_opc = 9w \/ s'.ID.ID_opc = 10w \/ s'.ID.ID_opc = 11w then
+  if s'.ID.ID_opc = 0w \/ s'.ID.ID_opc = 6w \/ s'.ID.ID_opc = 9w \/ 
+     s'.ID.ID_opc = 10w \/ s'.ID.ID_opc = 11w then
     s' with ID := s'.ID with ID_func := (9 >< 6) s'.ID.ID_instr
+  else if s'.ID.ID_opc = 1w then
+    s' with ID := s'.ID with ID_func := ((3w:word2) @@ ((7 >< 6) s'.ID.ID_instr))
   else
     s' with ID := s'.ID with ID_func := 9w
 End

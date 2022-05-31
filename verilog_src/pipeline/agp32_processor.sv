@@ -20,9 +20,9 @@ module agp32_processor(
 
 logic[2:0] state = 3'd3;
 logic[31:0] R[63:0] = '{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+logic do_interrupt = 0;
 logic[31:0] acc_arg = 'x;
 logic acc_arg_ready = 0;
-logic do_interrupt = 0;
 logic[31:0] acc_res = 'x;
 logic acc_res_ready = 'x;
 logic[1:0] acc_state = 'x;
@@ -34,8 +34,8 @@ logic checkA = 'x;
 logic checkB = 'x;
 logic checkW = 'x;
 logic[31:0] IF_PC_input = 'x;
-logic[31:0] IF_instr = 32'd63;
-logic IF_PC_write_enable = 'x;
+logic[31:0] IF_instr = 'x;
+logic IF_PC_write_enable = 0;
 logic[31:0] ID_PC = 'x;
 logic[31:0] ID_instr = 32'd63;
 logic[31:0] ID_read_dataA = 'x;
@@ -57,9 +57,9 @@ logic ID_flush_flag = 'x;
 logic ID_addrA_disable = 'x;
 logic ID_addrB_disable = 'x;
 logic ID_addrW_disable = 'x;
-logic ID_ForwardA = 0;
-logic ID_ForwardB = 0;
-logic ID_ForwardW = 0;
+logic ID_ForwardA = 'x;
+logic ID_ForwardB = 'x;
+logic ID_ForwardW = 'x;
 logic[5:0] ID_addrA = 'x;
 logic[5:0] ID_addrB = 'x;
 logic[5:0] ID_addrW = 'x;
@@ -92,9 +92,9 @@ logic EX_compute_enable = 'x;
 logic[1:0] EX_PC_sel = 2'd0;
 logic EX_jump_sel = 0;
 logic[31:0] EX_jump_addr = 'x;
-logic[2:0] EX_ForwardA = 3'd0;
-logic[2:0] EX_ForwardB = 3'd0;
-logic[2:0] EX_ForwardW = 3'd0;
+logic[2:0] EX_ForwardA = 'x;
+logic[2:0] EX_ForwardB = 'x;
+logic[2:0] EX_ForwardW = 'x;
 logic[5:0] EX_addrA = 'x;
 logic[5:0] EX_addrB = 'x;
 logic[5:0] EX_addrW = 'x;
@@ -321,10 +321,14 @@ end
 end
 end
 end
-if ((ID_opc == 6'd0) || ((ID_opc == 6'd1) || ((ID_opc == 6'd6) || ((ID_opc == 6'd9) || ((ID_opc == 6'd10) || (ID_opc == 6'd11)))))) begin
+if ((ID_opc == 6'd0) || ((ID_opc == 6'd6) || ((ID_opc == 6'd9) || ((ID_opc == 6'd10) || (ID_opc == 6'd11))))) begin
 ID_func = ID_instr[9:6];
 end else begin
+if (ID_opc == 6'd1) begin
+ID_func = {2'd3, ID_instr[7:6]};
+end else begin
 ID_func = 4'd9;
+end
 end
 end
 

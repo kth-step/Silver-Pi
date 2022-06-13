@@ -1,0 +1,19 @@
+Program:
+0: JumpIf0: R0+0=0 (⇔ R0=0): PC + 12w
+branch 2:
+4: LoadConstant: R1 = 1
+8: Jump: 100w
+branch 1
+12: LoadConstant: R1 = 2
+16: Jump: 100w
+
+
+ISA level
+0 -> 12 -> 16 -> 100 (if r0 is 0) tr1
+0 -> 4 -> 8 -> 100 (if r0 is not 0) tr2
+Using the same amount of time
+
+Pipeline:
+Same trace,
+But if the conditional jump happened, tr1 will take 2 more cycles than tr2, so r0 is 0.
+If we want the delay to be observed (for example via cache), we need the memory operation at locations 4 and 12, right?

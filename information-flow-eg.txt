@@ -17,3 +17,25 @@ Pipeline:
 Same trace,
 But if the conditional jump happened, tr1 will take 2 more cycles than tr2, so r0 is 0.
 If we want the delay to be observed (for example via cache), we need the memory operation at locations 4 and 12, right?
+
+RG: I don't think we need memory operations, we just assume that we have a timing channel:
+  i.e. the attacker can observe when the process can observe how long it takes to terminate the program
+
+RG: I would consider another example also
+Program:
+0: JumpIf0: R0+0=0 (⇔ R0=0): PC + R2
+branch 2:
+4: LoadConstant: R1 = 1
+8: Jump: 100w
+branch 1
+PC+R2: LoadConstant: R1 = 1
+PC+R2+4: Jump: 100w
+
+This is an artificial example, but points out something important. Notice that we don't fix R2. R2 can be any address, and it can anctually also be PC+4.
+We can now develop as demonstration a new pipeline that in case of conditional jump does not flush the pipeline if the target of the jump is equal to PC+4.
+
+What is interesting here is that it is not trivial to compute the time needed for each instruction (i.e. time becomes a function of the state).
+Therefore one could be interested to prove three different properties that can have different impact on verification:
+- express explicitely the execution time in term of the state: making explicit that this instruction will take x clock cycles if you take the branch and R2 <> 4 and 1 clock cycle otherwise
+- prove WCET: i.e. that clock cycles for this instrcution is less than x clocks
+- prove information flows: i.e. that clock cycles for this instructions depends on R2 and R0

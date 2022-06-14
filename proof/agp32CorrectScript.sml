@@ -47,10 +47,21 @@ Proof
    METIS_TAC [agp32_Init_implies_Rel] >>
   `Rel I' (fext t) (s t) a t` by METIS_TAC [] >>
   fs [Rel_def] >> rw [] >-
-     (** data_in **)
+   (** data_in **)
    fs [is_data_in_def,ag32_data_in_unchanged_all] >-
-     (** carryflag **)
-   cheat >-
+   (** carryflag **)
+   (Cases_on `enable_stg 3 (agp32 fext fbits (SUC t))` >-
+    (** EX stage is enabled **)
+     (`I'(3,SUC t) = SUC (I'(3,t))` by fs [] >>
+      rw [FUNPOW_SUC] >>
+      Q.ABBREV_TAC `ai = FUNPOW Next (I' (3,t)) a` >>
+      rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+      Cases_on `Decode (word_at_addr ai.MEM (align_addr ai.PC))` >-
+       ((** Accelerator **)
+       PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def] >>
+       cheat) >>
+      cheat) >>
+    cheat) >-
    (** overflow flag **)
    cheat >-
    (** PC when jump **)

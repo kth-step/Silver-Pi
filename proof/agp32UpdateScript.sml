@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory;
+open hardwarePreamble translatorTheory arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory;
 
 val _ = new_theory "agp32Update";
 
@@ -97,6 +97,16 @@ Proof
   Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
 QED
 
+Theorem EX_SHIFT_update_unchanged_EX_ALU:
+  !fext s s'.
+    ((EX_SHIFT_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
+    ((EX_SHIFT_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
+    ((EX_SHIFT_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
+Proof
+  rw [EX_SHIFT_update_def] >>
+  Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
+QED
+
 Theorem EX_jump_sel_addr_update_unchanged_IF:
   !fext s s'.
     ((EX_jump_sel_addr_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
@@ -106,11 +116,29 @@ Proof
   rw [EX_jump_sel_addr_update_def]
 QED
 
+Theorem EX_jump_sel_addr_update_unchanged_EX_ALU:
+  !fext s s'.
+    ((EX_jump_sel_addr_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
+    ((EX_jump_sel_addr_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
+    ((EX_jump_sel_addr_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
+Proof
+  rw [EX_jump_sel_addr_update_def]
+QED
+     
 Theorem EX_data_rec_update_unchanged_IF:
   !fext s s'.
     ((EX_data_rec_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\   
     ((EX_data_rec_update fext s s').IF.IF_instr = s'.IF.IF_instr) /\
     ((EX_data_rec_update fext s s').IF.IF_PC_write_enable = s'.IF.IF_PC_write_enable)
+Proof
+  rw [EX_data_rec_update_def]
+QED
+
+Theorem EX_data_rec_update_unchanged_EX_ALU:
+  !fext s s'.
+    ((EX_data_rec_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\   
+    ((EX_data_rec_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
+    ((EX_data_rec_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
 Proof
   rw [EX_data_rec_update_def]
 QED
@@ -124,6 +152,15 @@ Proof
   rw [MEM_ctrl_update_def]
 QED
 
+Theorem MEM_ctrl_update_unchanged_EX_ALU:
+  !fext s s'.
+    ((MEM_ctrl_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
+    ((MEM_ctrl_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
+    ((MEM_ctrl_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
+Proof
+  rw [MEM_ctrl_update_def]
+QED
+
 Theorem MEM_imm_update_unchanged_IF:
   !fext s s'.
     ((MEM_imm_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
@@ -133,11 +170,29 @@ Proof
   rw [MEM_imm_update_def]
 QED
 
+Theorem MEM_imm_update_unchanged_EX_ALU:
+  !fext s s'.
+    ((MEM_imm_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
+    ((MEM_imm_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
+    ((MEM_imm_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
+Proof
+  rw [MEM_imm_update_def]
+QED
+
 Theorem WB_update_unchanged_IF:
   !fext s s'.
     ((WB_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
     ((WB_update fext s s').IF.IF_instr = s'.IF.IF_instr) /\
     ((WB_update fext s s').IF.IF_PC_write_enable = s'.IF.IF_PC_write_enable)
+Proof
+  rw [WB_update_def]
+QED
+
+Theorem WB_update_unchanged_EX_ALU:
+  !fext s s'.
+    ((WB_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
+    ((WB_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
+    ((WB_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
 Proof
   rw [WB_update_def]
 QED
@@ -389,6 +444,72 @@ Proof
       Abbr `s7`,ID_imm_update_unchanged_IF,
       Abbr `s6`,ID_opc_func_update_unchanged_IF,
       Abbr `s5`,IF_PC_input_update_unchanged_IF]
+QED
+
+(* EX_carry/overflow_flag, EX_ALU_res are only changed by the EX_ALU_update function *)
+Theorem agp32_EX_ALU_items_updated_by_EX_ALU_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute]
+               (fext t) s s ==>
+    s'' = procs [Hazard_ctrl; ForwardA; ForwardB; ForwardW; IF_instr_update;
+                 IF_PC_input_update; ID_opc_func_update; ID_imm_update;
+                 ID_data_update; EX_ctrl_update; EX_forward_data;
+                 EX_ALU_input_update; EX_compute_enable_update]
+                (fext (SUC t)) s' s' ==>
+    (agp32 fext fbits (SUC t)).EX.EX_carry_flag =
+    (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_carry_flag
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s1 = Hazard_ctrl _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s2 = ForwardA _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s3 = ForwardB _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s4 = ForwardW _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s5 = IF_instr_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s6 = IF_PC_input_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s7 = ID_opc_func_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s8 = ID_imm_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s9 = ID_data_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s10 = EX_ctrl_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s11 = EX_forward_data _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s12 = EX_ALU_input_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s13 = EX_compute_enable_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s14 = EX_ALU_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s15 = EX_SHIFT_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s16 = EX_jump_sel_addr_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s17 = EX_data_rec_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s18 = MEM_ctrl_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s19 = MEM_imm_update _ _ _` >>
+  rw [procs_def] >>
+  qpat_abbrev_tac `s20 = WB_update _ _ _` >>
+  fs [Abbr `s20`,WB_update_unchanged_EX_ALU,
+      Abbr `s19`,MEM_imm_update_unchanged_EX_ALU,
+      Abbr `s18`,MEM_ctrl_update_unchanged_EX_ALU,
+      Abbr `s17`,EX_data_rec_update_unchanged_EX_ALU,
+      Abbr `s16`,EX_jump_sel_addr_update_unchanged_EX_ALU,
+      Abbr `s15`,EX_SHIFT_update_unchanged_EX_ALU]
 QED
 
 val _ = export_theory ();

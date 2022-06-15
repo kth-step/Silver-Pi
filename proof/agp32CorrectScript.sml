@@ -24,6 +24,48 @@ Proof
   fs [enable_stg_def] >> fs []
 QED
 
+(* carry_flag between ISA and circuit states *)
+Theorem agp32_Rel_ag32_carry_flag_correct:
+  !fext fbits s a t I.
+    (!t k. enable_stg k (agp32 fext fbits (SUC t)) ==>
+           I (k,SUC t) = I (k,t) + 1) ==>
+    Rel I (fext t) (agp32 fext fbits t) a t ==>
+    ((agp32 fext fbits (SUC t)).EX.EX_carry_flag <=>
+     (FUNPOW Next (I (3,SUC t)) a).CarryFlag)
+Proof
+  rw [] >> Cases_on `enable_stg 3 (agp32 fext fbits (SUC t))` >-
+   (** EX stage is enabled **)
+   (`I'(3,SUC t) = SUC (I'(3,t))` by fs [] >>
+    rw [FUNPOW_SUC] >>
+    Q.ABBREV_TAC `ai = FUNPOW Next (I' (3,t)) a` >>             
+    rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+    Cases_on `Decode (word_at_addr ai.MEM (align_addr ai.PC))` >-
+     ((** Accelerator **)
+     PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def] >>
+     Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+     Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                               REG_write;ID_pipeline;IF_PC_update;Acc_compute]
+                              (fext t) s s` >>
+     Q.ABBREV_TAC `s'' = procs [Hazard_ctrl;ForwardA;ForwardB;ForwardW;IF_instr_update;
+                                IF_PC_input_update;ID_opc_func_update;ID_imm_update;
+                                ID_data_update;EX_ctrl_update;EX_forward_data;
+                                EX_ALU_input_update;EX_compute_enable_update]
+                               (fext (SUC t)) s' s'` >>                        
+     `(agp32 fext fbits (SUC t)).EX.EX_carry_flag =
+     (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_carry_flag`
+       by fs [agp32_EX_ALU_items_updated_by_EX_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >> rw [] >>
+     `opc ai = 8w` by fs [ag32_Decode_Acc_opc_8w] >>
+     `(agp32 fext fbits (SUC t)).EX.EX_opc = 8w` by cheat >>
+     `s''.EX.EX_opc = 8w` by cheat >>
+     `(s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
+     (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)` by cheat >>
+     `s''.EX.EX_carry_flag = s.EX.EX_carry_flag` by cheat (* can be proved *) >>
+     rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]) >>
+    cheat) >>
+  (** EX stage is disabled **)
+  cheat
+QED
+
 (* correctness of the pipelined Silver concerning the ISA *)
 Theorem agp32_Rel_ag32_correct:
   !fext fbits s a (t:num) I C.
@@ -46,27 +88,17 @@ Proof
   rpt strip_tac >-
    METIS_TAC [agp32_Init_implies_Rel] >>
   `Rel I' (fext t) (s t) a t` by METIS_TAC [] >>
-  fs [Rel_def] >> rw [] >-
+  rw [Rel_def] >-
+   (* visible signals *)
    (** data_in **)
-   fs [is_data_in_def,ag32_data_in_unchanged_all] >-
+   fs [Rel_def,is_data_in_def,ag32_data_in_unchanged_all] >-
    (** carryflag **)
-   (Cases_on `enable_stg 3 (agp32 fext fbits (SUC t))` >-
-    (** EX stage is enabled **)
-     (`I'(3,SUC t) = SUC (I'(3,t))` by fs [] >>
-      rw [FUNPOW_SUC] >>
-      Q.ABBREV_TAC `ai = FUNPOW Next (I' (3,t)) a` >>
-      rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
-      Cases_on `Decode (word_at_addr ai.MEM (align_addr ai.PC))` >-
-       ((** Accelerator **)
-       PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def] >>
-       cheat) >>
-      cheat) >>
-    cheat) >-
+   fs [agp32_Rel_ag32_carry_flag_correct] >-
    (** overflow flag **)
    cheat >-
    (** PC when jump **)
    cheat >-
-   (** PC when not jump **)
+   (** PC when no jump **)
    cheat >-
    (** memory **)
    cheat >-

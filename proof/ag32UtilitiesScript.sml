@@ -1,4 +1,4 @@
-open hardwarePreamble arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax ag32Theory ag32ExtraTheory;
+open hardwarePreamble arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsExtraTheory ag32Theory ag32ExtraTheory;
 
 val _ = new_theory "ag32Utilities";
 
@@ -78,6 +78,23 @@ Theorem ag32_data_in_unchanged_all:
 Proof
   rw [] >> Induct_on `n` >> Induct_on `m` >> rw [] >>
   METIS_TAC [ag32_data_in_unchanged_next]  
+QED
+
+(* ISA: opc is correct with respect to the Decode *)
+(** if Deocde got Acc, then opc is 8w **)
+Theorem ag32_Decode_Acc_opc_8w:
+  !ag wi a.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Accelerator (wi,a) ==>
+    opc ag = 8w
+Proof
+  rpt GEN_TAC >> simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >>              
+  qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >> rw [] >>
+  Cases_on `dc` >> fs [] >>
+  Q.ABBREV_TAC `op = (5 >< 0) (word_at_addr ag.MEM (align_addr ag.PC))` >>
+  Cases_on_word_value `op` >> fs [] >>
+  rw [opc_def,instr_def] >>
+  fs [DecodeReg_imm_def,v2w_single_0w]
 QED
 
 val _ = export_theory ();

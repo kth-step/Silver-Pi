@@ -469,7 +469,7 @@ EX_addrA = ID_addrA;
 EX_addrB = ID_addrB;
 EX_addrW <= ID_addrW;
 EX_opc <= EX_NOP_flag ? 6'd16 : ID_opc;
-EX_func = ID_func;
+EX_func = EX_NOP_flag ? 4'd12 : ID_func;
 end else begin
 EX_write_enable <= 0;
 end

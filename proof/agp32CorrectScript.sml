@@ -56,14 +56,15 @@ Proof
        by fs [agp32_EX_ALU_items_updated_by_EX_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >> rw [] >>
      `opc ai = 8w` by fs [ag32_Decode_Acc_opc_8w] >>
      `(agp32 fext fbits (SUC t)).EX.EX_opc = 8w` by cheat >>
-     `s''.EX.EX_opc = 8w` by cheat >>
+     `s''.EX.EX_opc = 8w` by METIS_TAC [agp32_same_EX_opc_until_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+     `s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func` by cheat >>
      `(s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
      (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)` by cheat >>
      `s''.EX.EX_carry_flag = s.EX.EX_carry_flag` by cheat (* can be proved *) >>
      rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]) >>
     cheat) >>
   (** EX stage is disabled **)
-  cheat
+  fs [enable_stg_def] >> cheat
 QED
 
 (* correctness of the pipelined Silver concerning the ISA *)

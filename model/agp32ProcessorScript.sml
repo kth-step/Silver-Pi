@@ -478,7 +478,7 @@ Definition EX_pipeline_def:
         s' = s' with EX := s'.EX with EX_addrB := s'.ID.ID_addrB;
         s' = s' with EX := s'.EX with EX_addrW := s'.ID.ID_addrW;
         s' = s' with EX := s'.EX with EX_opc := if s'.EX.EX_NOP_flag then 16w else s'.ID.ID_opc in
-      s' with EX := s'.EX with EX_func := s'.ID.ID_func
+      s' with EX := s'.EX with EX_func := if s'.EX.EX_NOP_flag then 12w else s'.ID.ID_func
   else
     s' with EX := s'.EX with EX_write_enable := F
 End

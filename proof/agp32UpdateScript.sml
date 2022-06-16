@@ -5,6 +5,67 @@ val _ = new_theory "agp32Update";
 val _ = prefer_num ();
 val _ = guess_lengths ();
 
+(* tactic shorthand used for the proof *)
+val  clist_update_state_tac =
+ (rw [Once procs_def] >>
+  qpat_abbrev_tac `s1 = Hazard_ctrl _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s2 = ForwardA _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s3 = ForwardB _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s4 = ForwardW _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s5 = IF_instr_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s6 = IF_PC_input_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s7 = ID_opc_func_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s8 = ID_imm_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s9 = ID_data_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s10 = EX_ctrl_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s11 = EX_forward_data _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s12 = EX_ALU_input_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s13 = EX_compute_enable_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s14 = EX_ALU_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s15 = EX_SHIFT_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s16 = EX_jump_sel_addr_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s17 = EX_data_rec_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s18 = MEM_ctrl_update _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `s19 = MEM_imm_update _ _ _` >>
+  rw [procs_def] >>
+  qpat_abbrev_tac `s20 = WB_update _ _ _`);
+
+val slist_update_state_tac =
+ (rw [Once procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss2 = WB_pipeline _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss3 = MEM_pipeline _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss4 = EX_pipeline _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss5 = REG_write _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss6 = ID_pipeline _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss7 = IF_PC_update _ _ _` >>
+  rw [procs_def] >>
+  qpat_abbrev_tac `ss8 = Acc_compute _ _ _`);
+
 (* show the unchanged part of different circuit functions in the pipelined Silver *)
 (** unchanged items by IF_PC_input_update **)
 Theorem IF_PC_input_update_unchanged_IF:
@@ -607,30 +668,16 @@ Theorem slist_unchanged_EX_jump:
              REG_write;ID_pipeline;IF_PC_update;Acc_compute]
       fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
 Proof
-  rw [] >> rw [Once procs_def] >>
-  Q.ABBREV_TAC `s1 = agp32_next_state fext s s'` >>
-  rw [Once procs_def] >>
-  Q.ABBREV_TAC `s2 = WB_pipeline fext s s1` >>
-  rw [Once procs_def] >>
-  Q.ABBREV_TAC `s3 = MEM_pipeline fext s s2` >>
-  rw [Once procs_def] >>
-  Q.ABBREV_TAC `s4 = EX_pipeline fext s s3` >>
-  rw [Once procs_def] >>
-  Q.ABBREV_TAC `s5 = REG_write fext s s4` >>
-  rw [Once procs_def] >>
-  Q.ABBREV_TAC `s6 = ID_pipeline fext s s5` >>
-  rw [Once procs_def] >>
-  Q.ABBREV_TAC `s7 = IF_PC_update fext s s6` >>
-  rw [Once procs_def] >>
-  Q.ABBREV_TAC `s8 = Acc_compute fext s s7` >>
-  fs [procs_def,Abbr `s8`,Acc_compute_unchanged_EX_jump,
-      Abbr `s7`,IF_PC_update_unchanged_EX_jump,
-      Abbr `s6`,ID_pipeline_unchanged_EX_jump,
-      Abbr `s5`,REG_write_unchanged_EX_jump,
-      Abbr `s4`,EX_pipeline_unchanged_EX_jump,
-      Abbr `s3`,MEM_pipeline_unchanged_EX_jump,
-      Abbr `s2`,WB_pipeline_unchanged_EX_jump,
-      Abbr `s1`,agp32_next_state_unchanged_EX_jump]
+  rw [] >> 
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_EX_jump,
+      Abbr `ss7`,IF_PC_update_unchanged_EX_jump,
+      Abbr `ss6`,ID_pipeline_unchanged_EX_jump,
+      Abbr `ss5`,REG_write_unchanged_EX_jump,
+      Abbr `ss4`,EX_pipeline_unchanged_EX_jump,
+      Abbr `ss3`,MEM_pipeline_unchanged_EX_jump,
+      Abbr `ss2`,WB_pipeline_unchanged_EX_jump,
+      Abbr `ss1`,agp32_next_state_unchanged_EX_jump]
 QED
 
 
@@ -648,62 +695,23 @@ Proof
   rw [agp32_def,mk_module_def,mk_circuit_def] >>
   qpat_abbrev_tac `s = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s1 = Hazard_ctrl _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s2 = ForwardA _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s3 = ForwardB _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s4 = ForwardW _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s4' = IF_instr_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s5 = IF_PC_input_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s6 = ID_opc_func_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s7 = ID_imm_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s8 = ID_data_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s9 = EX_ctrl_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s10 = EX_forward_data _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s11 = EX_ALU_input_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s12 = EX_compute_enable_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s13 = EX_ALU_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s14 = EX_SHIFT_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s15 = EX_jump_sel_addr_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s16 = EX_data_rec_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s17 = MEM_ctrl_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s18 = MEM_imm_update _ _ _` >>
-  rw [procs_def] >>
-  qpat_abbrev_tac `s19 = WB_update _ _ _` >>
-  fs [Abbr `s19`,WB_update_unchanged_IF,
-      Abbr `s18`,MEM_imm_update_unchanged_IF,
-      Abbr `s17`,MEM_ctrl_update_unchanged_IF,
-      Abbr `s16`,EX_data_rec_update_unchanged_IF,
-      Abbr `s15`,EX_jump_sel_addr_update_unchanged_IF,
-      Abbr `s14`,EX_SHIFT_update_unchanged_IF,
-      Abbr `s13`,EX_ALU_update_unchanged_IF,
-      Abbr `s12`,EX_compute_enable_update_unchanged_IF,
-      Abbr `s11`,EX_ALU_input_update_unchanged_IF,
-      Abbr `s10`,EX_forward_data_unchanged_IF,
-      Abbr `s9`,EX_ctrl_update_unchanged_IF,
-      Abbr `s8`,ID_data_update_unchanged_IF,
-      Abbr `s7`,ID_imm_update_unchanged_IF,
-      Abbr `s6`,ID_opc_func_update_unchanged_IF,
-      Abbr `s5`,IF_PC_input_update_def,
-      Abbr `s4'`,IF_instr_update_def,
+  clist_update_state_tac >>
+  fs [Abbr `s20`,WB_update_unchanged_IF,
+      Abbr `s19`,MEM_imm_update_unchanged_IF,
+      Abbr `s18`,MEM_ctrl_update_unchanged_IF,
+      Abbr `s17`,EX_data_rec_update_unchanged_IF,
+      Abbr `s16`,EX_jump_sel_addr_update_unchanged_IF,
+      Abbr `s15`,EX_SHIFT_update_unchanged_IF,
+      Abbr `s14`,EX_ALU_update_unchanged_IF,
+      Abbr `s13`,EX_compute_enable_update_unchanged_IF,
+      Abbr `s12`,EX_ALU_input_update_unchanged_IF,
+      Abbr `s11`,EX_forward_data_unchanged_IF,
+      Abbr `s10`,EX_ctrl_update_unchanged_IF,
+      Abbr `s9`,ID_data_update_unchanged_IF,
+      Abbr `s8`,ID_imm_update_unchanged_IF,
+      Abbr `s7`,ID_opc_func_update_unchanged_IF,
+      Abbr `s6`,IF_PC_input_update_def,
+      Abbr `s5`,IF_instr_update_def,
       Abbr `s4`,ForwardW_def,Abbr `s3`,ForwardB_def,Abbr `s2`,ForwardA_def,
       Abbr `s1`,Hazard_ctrl_unchanged_EX_jump,
       Abbr `s0`,slist_unchanged_EX_jump]
@@ -718,60 +726,23 @@ Proof
   rw [agp32_def,IF_instr_update_def,mk_module_def,mk_circuit_def] >>
   qpat_abbrev_tac `s = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s' = procs _ (fext t) s s` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s1 = Hazard_ctrl _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s2 = ForwardA _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s3 = ForwardB _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s4 = ForwardW _ _ _` >>
-  rw [Once procs_def,IF_instr_update_def] >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s5 = IF_PC_input_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s6 = ID_opc_func_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s7 = ID_imm_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s8 = ID_data_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s9 = EX_ctrl_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s10 = EX_forward_data _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s11 = EX_ALU_input_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s12 = EX_compute_enable_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s13 = EX_ALU_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s14 = EX_SHIFT_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s15 = EX_jump_sel_addr_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s16 = EX_data_rec_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s17 = MEM_ctrl_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s18 = MEM_imm_update _ _ _` >>
-  rw [procs_def] >>
-  qpat_abbrev_tac `s19 = WB_update _ _ _` >>
-  fs [Abbr `s19`,WB_update_unchanged_IF,
-      Abbr `s18`,MEM_imm_update_unchanged_IF,
-      Abbr `s17`,MEM_ctrl_update_unchanged_IF,
-      Abbr `s16`,EX_data_rec_update_unchanged_IF,
-      Abbr `s15`,EX_jump_sel_addr_update_unchanged_IF,
-      Abbr `s14`,EX_SHIFT_update_unchanged_IF,
-      Abbr `s13`,EX_ALU_update_unchanged_IF,
-      Abbr `s12`,EX_compute_enable_update_unchanged_IF,
-      Abbr `s11`,EX_ALU_input_update_unchanged_IF,
-      Abbr `s10`,EX_forward_data_unchanged_IF,
-      Abbr `s9`,EX_ctrl_update_unchanged_IF,
-      Abbr `s8`,ID_data_update_unchanged_IF,
-      Abbr `s7`,ID_imm_update_unchanged_IF,
-      Abbr `s6`,ID_opc_func_update_unchanged_IF,
-      Abbr `s5`,IF_PC_input_update_unchanged_IF]
+  clist_update_state_tac >>
+  fs [Abbr `s20`,WB_update_unchanged_IF,
+      Abbr `s19`,MEM_imm_update_unchanged_IF,
+      Abbr `s18`,MEM_ctrl_update_unchanged_IF,
+      Abbr `s17`,EX_data_rec_update_unchanged_IF,
+      Abbr `s16`,EX_jump_sel_addr_update_unchanged_IF,
+      Abbr `s15`,EX_SHIFT_update_unchanged_IF,
+      Abbr `s14`,EX_ALU_update_unchanged_IF,
+      Abbr `s13`,EX_compute_enable_update_unchanged_IF,
+      Abbr `s12`,EX_ALU_input_update_unchanged_IF,
+      Abbr `s11`,EX_forward_data_unchanged_IF,
+      Abbr `s10`,EX_ctrl_update_unchanged_IF,
+      Abbr `s9`,ID_data_update_unchanged_IF,
+      Abbr `s8`,ID_imm_update_unchanged_IF,
+      Abbr `s7`,ID_opc_func_update_unchanged_IF,
+      Abbr `s6`,IF_PC_input_update_unchanged_IF,
+      Abbr `s5`,IF_instr_update_def]
 QED
 
 (** EX_carry_flag, EX_ALU_res are only changed by the EX_ALU_update function **)
@@ -792,46 +763,7 @@ Proof
   rw [agp32_def,mk_module_def,mk_circuit_def] >>
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s1 = Hazard_ctrl _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s2 = ForwardA _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s3 = ForwardB _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s4 = ForwardW _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s5 = IF_instr_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s6 = IF_PC_input_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s7 = ID_opc_func_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s8 = ID_imm_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s9 = ID_data_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s10 = EX_ctrl_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s11 = EX_forward_data _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s12 = EX_ALU_input_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s13 = EX_compute_enable_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s14 = EX_ALU_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s15 = EX_SHIFT_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s16 = EX_jump_sel_addr_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s17 = EX_data_rec_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s18 = MEM_ctrl_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s19 = MEM_imm_update _ _ _` >>
-  rw [procs_def] >>
-  qpat_abbrev_tac `s20 = WB_update _ _ _` >>
+  clist_update_state_tac >>
   fs [Abbr `s20`,WB_update_unchanged_EX_ALU,
       Abbr `s19`,MEM_imm_update_unchanged_EX_ALU,
       Abbr `s18`,MEM_ctrl_update_unchanged_EX_ALU,
@@ -851,6 +783,54 @@ Proof
   rw [agp32_def,mk_module_def,mk_circuit_def] >>
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,WB_update_unchanged_EX_pipeline_items,
+      Abbr `s19`,MEM_imm_update_def,
+      Abbr `s18`,MEM_ctrl_update_unchanged_EX_pipeline_items,
+      Abbr `s17`,EX_data_rec_update_unchanged_EX_pipeline_items,
+      Abbr `s16`,EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
+      Abbr `s15`,EX_SHIFT_update_unchanged_EX_pipeline_items,
+      Abbr `s14`,EX_ALU_update_unchanged_EX_pipeline_items,
+      Abbr `s13`,EX_compute_enable_update_def,
+      Abbr `s12`,EX_ALU_input_update_def,
+      Abbr `s11`,EX_forward_data_def,
+      Abbr `s10`,EX_ctrl_update_unchanged_EX_pipeline_items,
+      Abbr `s9`,ID_data_update_unchanged_EX_pipeline_items,
+      Abbr `s8`,ID_imm_update_unchanged_EX_pipeline_items,
+      Abbr `s7`,ID_opc_func_update_unchanged_EX_pipeline_items] >>
+  fs [Abbr `s6`,IF_PC_input_update_def,
+      Abbr `s5`,IF_instr_update_def,
+      Abbr `s4`,ForwardW_def,Abbr `s3`,ForwardB_def,Abbr `s2`,ForwardA_def,
+      Abbr `s1`,Hazard_ctrl_unchanged_EX_pipeline_items,Abbr `s'''`] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_EX_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_EX_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_EX_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_EX_pipeline_items,Abbr `ss4`] >>
+  rw [EX_pipeline_def]
+QED
+
+
+(* additional theorems for the correctness proof *)
+Theorem agp32_same_EX_opc_until_ALU_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute]
+               (fext t) s s ==>
+    s'' = procs [Hazard_ctrl; ForwardA; ForwardB; ForwardW; IF_instr_update;
+                 IF_PC_input_update; ID_opc_func_update; ID_imm_update;
+                 ID_data_update; EX_ctrl_update; EX_forward_data;
+                 EX_ALU_input_update; EX_compute_enable_update]
+                (fext (SUC t)) s' s' ==>
+    s''.EX.EX_opc = (agp32 fext fbits (SUC t)).EX.EX_opc
+Proof
+  rpt STRIP_TAC >>
+  Q.ABBREV_TAC `s0 = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext (SUC t)) s s0).EX.EX_opc`
+    by fs [agp32_EX_opc_updated_EX_pipeline,Abbr `s0`] >> rw [] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  qpat_abbrev_tac `s' = procs _ (fext t) s s` >>
   rw [Once procs_def] >>
   qpat_abbrev_tac `s1 = Hazard_ctrl _ _ _` >>
   rw [Once procs_def] >>
@@ -877,28 +857,8 @@ Proof
   qpat_abbrev_tac `s12 = EX_ALU_input_update _ _ _` >>
   rw [Once procs_def] >>
   qpat_abbrev_tac `s13 = EX_compute_enable_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s14 = EX_ALU_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s15 = EX_SHIFT_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s16 = EX_jump_sel_addr_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s17 = EX_data_rec_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s18 = MEM_ctrl_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s19 = MEM_imm_update _ _ _` >>
   rw [procs_def] >>
-  qpat_abbrev_tac `s20 = WB_update _ _ _` >>
-  fs [Abbr `s20`,WB_update_unchanged_EX_pipeline_items,
-      Abbr `s19`,MEM_imm_update_def,
-      Abbr `s18`,MEM_ctrl_update_unchanged_EX_pipeline_items,
-      Abbr `s17`,EX_data_rec_update_unchanged_EX_pipeline_items,
-      Abbr `s16`,EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
-      Abbr `s15`,EX_SHIFT_update_unchanged_EX_pipeline_items,
-      Abbr `s14`,EX_ALU_update_unchanged_EX_pipeline_items,
-      Abbr `s13`,EX_compute_enable_update_def,
+  fs [Abbr `s13`,EX_compute_enable_update_def,
       Abbr `s12`,EX_ALU_input_update_def,
       Abbr `s11`,EX_forward_data_def,
       Abbr `s10`,EX_ctrl_update_unchanged_EX_pipeline_items,
@@ -908,47 +868,14 @@ Proof
   fs [Abbr `s6`,IF_PC_input_update_def,
       Abbr `s5`,IF_instr_update_def,
       Abbr `s4`,ForwardW_def,Abbr `s3`,ForwardB_def,Abbr `s2`,ForwardA_def,
-      Abbr `s1`,Hazard_ctrl_unchanged_EX_pipeline_items,Abbr `s'''`] >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s21 = agp32_next_state _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s22 = WB_pipeline _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s23 = MEM_pipeline _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s24 = EX_pipeline _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s25 = REG_write _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s26 = ID_pipeline _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s27 = IF_PC_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s28 = Acc_compute _ _ _` >>
-  rw [Once procs_def] >>
-  fs [Abbr `s28`,Acc_compute_unchanged_EX_pipeline_items,
-      Abbr `s27`,IF_PC_update_unchanged_EX_pipeline_items,
-      Abbr `s26`,ID_pipeline_unchanged_EX_pipeline_items,
-      Abbr `s25`,REG_write_unchanged_EX_pipeline_items,Abbr `s24`] >>
+      Abbr `s1`,Hazard_ctrl_unchanged_EX_pipeline_items,Abbr `s'`] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_EX_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_EX_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_EX_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_EX_pipeline_items,Abbr `ss4`,
+      Abbr `s0`,procs_def] >>
   rw [EX_pipeline_def]
-QED
-
-
-(* additional theorems for the correctness proof *)
-Theorem agp32_same_EX_opc_until_ALU_update:
-  !fext fbits t s s' s''.
-    s = agp32 fext fbits t ==>
-    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
-                REG_write; ID_pipeline; IF_PC_update; Acc_compute]
-               (fext t) s s ==>
-    s'' = procs [Hazard_ctrl; ForwardA; ForwardB; ForwardW; IF_instr_update;
-                 IF_PC_input_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; EX_ctrl_update; EX_forward_data;
-                 EX_ALU_input_update; EX_compute_enable_update]
-                (fext (SUC t)) s' s' ==>
-    s''.EX.EX_opc = (agp32 fext fbits (SUC t)).EX.EX_opc
-Proof
-  cheat
 QED
 
 val _ = export_theory ();

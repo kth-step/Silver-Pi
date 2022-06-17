@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory;
 
 val _ = new_theory "agp32Correct";
 
@@ -27,13 +27,12 @@ QED
 (* carry_flag between ISA and circuit states *)
 Theorem agp32_Rel_ag32_carry_flag_correct:
   !fext fbits s a t I.
-    (!t k. enable_stg k (agp32 fext fbits (SUC t)) ==>
-           I (k,SUC t) = I (k,t) + 1) ==>
+    (!t k. enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t) + 1) ==>
     Rel I (fext t) (agp32 fext fbits t) a t ==>
     ((agp32 fext fbits (SUC t)).EX.EX_carry_flag <=>
      (FUNPOW Next (I (3,SUC t)) a).CarryFlag)
 Proof
-  rw [] >> Cases_on `enable_stg 3 (agp32 fext fbits (SUC t))` >-
+  rw [] >> Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
    (** EX stage is enabled **)
    (`I'(3,SUC t) = SUC (I'(3,t))` by fs [] >>
     rw [FUNPOW_SUC] >>
@@ -56,11 +55,13 @@ Proof
        by fs [agp32_EX_ALU_items_updated_by_EX_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >> rw [] >>
      `opc ai = 8w` by fs [ag32_Decode_Acc_opc_8w] >>
      `(agp32 fext fbits (SUC t)).EX.EX_opc = 8w` by cheat >>
-     `s''.EX.EX_opc = 8w` by METIS_TAC [agp32_same_EX_opc_until_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
-     `s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func` by cheat >>
-     `(s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
-     (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)` by cheat >>
-     `s''.EX.EX_carry_flag = s.EX.EX_carry_flag` by cheat (* can be proved *) >>
+     `(s''.EX.EX_opc = 8w) /\ (s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func)`
+       by METIS_TAC [agp32_same_EX_opc_func_until_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+     `(s''.EX.EX_func = 9w) \/ (s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
+     (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)`
+       by fs [Abbr `s`,agp32_EX_opc_implies_EX_func] >> 
+     `s''.EX.EX_carry_flag = s.EX.EX_carry_flag` 
+      by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`]>>
      rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]) >>
     cheat) >>
   (** EX stage is disabled **)
@@ -82,7 +83,7 @@ Theorem agp32_Rel_ag32_correct:
     Init (fext 0) (s 0) a ==>
     (** properties of scheduling function I **)
     (!k.I(k,0) = 0) ==>
-    (!t k. enable_stg k (s (SUC t)) ==> I(k,SUC t) = I(k,t) + 1) ==>
+    (!t k. enable_stg k (s t) ==> I(k,SUC t) = I(k,t) + 1) ==>
     Rel I (fext t) (s t) a t
 Proof
   Induct_on `t` >>

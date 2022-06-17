@@ -713,6 +713,22 @@ Proof
 QED
 
 (** unchanged items by MEM_pipeline **)
+Theorem MEM_pipeline_unchanged_enable_flags:
+  !fext s s'.
+    ((MEM_pipeline fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((MEM_pipeline fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [MEM_pipeline_def]
+QED
+
+Theorem MEM_pipeline_unchanged_ID_opc_func:
+  !fext s s'.
+    ((MEM_pipeline fext s s').ID.ID_opc = s'.ID.ID_opc) /\
+    ((MEM_pipeline fext s s').ID.ID_func = s'.ID.ID_func)
+Proof
+  rw [MEM_pipeline_def]
+QED
+
 Theorem MEM_pipeline_unchanged_EX_jump:
   !fext s s'.
     ((MEM_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
@@ -722,6 +738,22 @@ Proof
 QED
 
 (** unchanged items by WB_pipeline **)
+Theorem WB_pipeline_unchanged_enable_flags:
+  !fext s s'.
+    ((WB_pipeline fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((WB_pipeline fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [WB_pipeline_def]
+QED
+
+Theorem WB_pipeline_unchanged_ID_opc_func:
+  !fext s s'.
+    ((WB_pipeline fext s s').ID.ID_opc = s'.ID.ID_opc) /\
+    ((WB_pipeline fext s s').ID.ID_func = s'.ID.ID_func)
+Proof
+  rw [WB_pipeline_def]
+QED
+
 Theorem WB_pipeline_unchanged_EX_jump:
   !fext s s'.
     ((WB_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
@@ -731,6 +763,24 @@ Proof
 QED
 
 (** unchanged items by agp32_next_state **)
+Theorem agp32_next_state_unchanged_enable_flags:
+  !fext s s'.
+    ((agp32_next_state fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((agp32_next_state fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
+Theorem agp32_next_state_unchanged_ID_opc_func:
+  !fext s s'.
+    ((agp32_next_state fext s s').ID.ID_opc = s'.ID.ID_opc) /\
+    ((agp32_next_state fext s s').ID.ID_func = s'.ID.ID_func)
+Proof
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
 Theorem agp32_next_state_unchanged_EX_jump:
   !fext s s'.
     ((agp32_next_state fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\

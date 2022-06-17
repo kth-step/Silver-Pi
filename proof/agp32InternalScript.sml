@@ -67,9 +67,24 @@ Proof
   `?s.(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext (SUC t)) s s'').EX.EX_opc /\
   (agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext (SUC t)) s s'').EX.EX_func`
     by fs [agp32_EX_func_updated_EX_pipeline,agp32_EX_opc_updated_EX_pipeline] >>
-  fs [EX_pipeline_def] >> rw [] >>
-  `s''.ID.ID_EX_write_enable = s'.ID.ID_EX_write_enable` by cheat >> fs [] >>
-  `s''.ID.ID_func = s'.ID.ID_func /\ s''.ID.ID_opc = s'.ID.ID_opc` by cheat >>
+  `s''.ID.ID_EX_write_enable = s'.ID.ID_EX_write_enable`
+    by (fs [Abbr `s''`,procs_def] >>
+        qpat_abbrev_tac `s1 = agp32_next_state _ _ _` >>
+        qpat_abbrev_tac `s2 = WB_pipeline _ _ _` >>
+        qpat_abbrev_tac `s3 = MEM_pipeline _ _ _` >>
+        fs [Abbr `s3`,MEM_pipeline_unchanged_enable_flags,
+            Abbr `s2`,WB_pipeline_unchanged_enable_flags,
+            Abbr `s1`,agp32_next_state_unchanged_enable_flags]) >>
+  fs [EX_pipeline_def] >>
+  Cases_on `s'.ID.ID_EX_write_enable` >> fs [] >>
+  `s''.ID.ID_func = s'.ID.ID_func /\ s''.ID.ID_opc = s'.ID.ID_opc`
+    by (fs [Abbr `s''`,procs_def] >>
+        qpat_abbrev_tac `s1 = agp32_next_state _ _ _` >>
+        qpat_abbrev_tac `s2 = WB_pipeline _ _ _` >>
+        qpat_abbrev_tac `s3 = MEM_pipeline _ _ _` >>
+        fs [Abbr `s3`,MEM_pipeline_unchanged_ID_opc_func,
+            Abbr `s2`,WB_pipeline_unchanged_ID_opc_func,
+            Abbr `s1`,agp32_next_state_unchanged_ID_opc_func]) >>
   METIS_TAC [agp32_ID_opc_implies_ID_func]
 QED
 

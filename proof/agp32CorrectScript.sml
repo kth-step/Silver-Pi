@@ -62,6 +62,30 @@ Proof
        by fs [Abbr `s`,agp32_EX_opc_implies_EX_func] >> 
      `s''.EX.EX_carry_flag = s.EX.EX_carry_flag` 
       by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`]>>
+     rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]) >-
+     ((** In **)
+     rw [Run_def,dfn'In_def,incPC_def] >>
+     Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+     Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                               REG_write;ID_pipeline;IF_PC_update;Acc_compute]
+                              (fext t) s s` >>
+     Q.ABBREV_TAC `s'' = procs [Hazard_ctrl;ForwardA;ForwardB;ForwardW;IF_instr_update;
+                                IF_PC_input_update;ID_opc_func_update;ID_imm_update;
+                                ID_data_update;EX_ctrl_update;EX_forward_data;
+                                EX_ALU_input_update;EX_compute_enable_update]
+                               (fext (SUC t)) s' s'` >>                        
+     `(agp32 fext fbits (SUC t)).EX.EX_carry_flag =
+     (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_carry_flag`
+       by fs [agp32_EX_ALU_items_updated_by_EX_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >> rw [] >>
+     `opc ai = 7w` by fs [ag32_Decode_In_opc_7w] >>
+     `(agp32 fext fbits (SUC t)).EX.EX_opc = 7w` by cheat >>
+     `(s''.EX.EX_opc = 7w) /\ (s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func)`
+       by METIS_TAC [agp32_same_EX_opc_func_until_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+     `(s''.EX.EX_func = 9w) \/ (s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
+     (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)`
+       by fs [Abbr `s`,agp32_EX_opc_implies_EX_func] >> 
+     `s''.EX.EX_carry_flag = s.EX.EX_carry_flag` 
+      by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`]>>
      rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]) >>
     cheat) >>
   (** EX stage is disabled **)

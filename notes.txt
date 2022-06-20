@@ -17,3 +17,4 @@ But the pipeline design cannot do so, because ALU and shift are computed in the 
 
 Solution: when checking SHIFT, assign 11[BIT7-6] as the func, so the flags cannot be changed (requires func as 0 or 1).
 We do not create a new variable like SHIFT_func to save hardware resources.
+https://github.com/kth-step/hw-verification-silver/commit/859b2b2c5d10c7c02ca26bd5b7008756c392ad89

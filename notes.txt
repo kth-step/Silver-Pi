@@ -1,0 +1,19 @@
+Pipelined Silver processor: bugs found during the verification work.
+
+1. SHIFT instruction, func and visible carry/overflow flags.
+Usually, func (Bit9-6) is used by the ALU to check which function to apply.
+SHIFT instructions use Bit7-6 as the input, ie the lower 2 bits of func.
+When designing the pipelined machine, to save resources and avoid unnecessary variables, the processor applies the func for both ALU and SHIFT.
+But this will create a violation for the ISA.
+Suppose there is a SHIFT instr where func:0000, 
+although the shift result is correct, 
+the ALU is also updated where the visible registers carry/overflow flags can be changed which will not happen on the ISA level.
+
+This problem is hard to find by testing, since it requires special test programs that contain SHIFT -> ALU(take carry/overflow flags). 
+For example, with the test programs from CakeML, we did not find this bug. 
+
+The previous Silver processor does not have this bug, since it assigns func to 9 when shift and uses Bit7-6 directly when computing shift.
+But the pipeline design cannot do so, because ALU and shift are computed in the EX stage where the instruction(32bits) is already decoded.
+
+Solution: when checking SHIFT, assign 11[BIT7-6] as the func, so the flags cannot be changed (requires func as 0 or 1).
+We do not create a new variable like SHIFT_func to save hardware resources.

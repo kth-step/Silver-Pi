@@ -66,26 +66,39 @@ Proof
   Q.ABBREV_TAC `s'' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s' s'` >>
   `?s.(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext (SUC t)) s s'').EX.EX_opc /\
   (agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext (SUC t)) s s'').EX.EX_func`
-    by fs [agp32_EX_func_updated_EX_pipeline,agp32_EX_opc_updated_EX_pipeline] >>
-  `s''.ID.ID_EX_write_enable = s'.ID.ID_EX_write_enable`
-    by (fs [Abbr `s''`,procs_def] >>
-        qpat_abbrev_tac `s1 = agp32_next_state _ _ _` >>
-        qpat_abbrev_tac `s2 = WB_pipeline _ _ _` >>
-        qpat_abbrev_tac `s3 = MEM_pipeline _ _ _` >>
-        fs [Abbr `s3`,MEM_pipeline_unchanged_enable_flags,
-            Abbr `s2`,WB_pipeline_unchanged_enable_flags,
-            Abbr `s1`,agp32_next_state_unchanged_enable_flags]) >>
+    by fs [agp32_EX_opc_func_updated_EX_pipeline] >>
+  `s''.ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable`
+    by METIS_TAC [Abbr `s'`,Abbr `s''`,agp32_same_items_until_MEM_pipeline] >>
   fs [EX_pipeline_def] >>
   Cases_on `s'.ID.ID_EX_write_enable` >> fs [] >>
   `s''.ID.ID_func = s'.ID.ID_func /\ s''.ID.ID_opc = s'.ID.ID_opc`
-    by (fs [Abbr `s''`,procs_def] >>
-        qpat_abbrev_tac `s1 = agp32_next_state _ _ _` >>
-        qpat_abbrev_tac `s2 = WB_pipeline _ _ _` >>
-        qpat_abbrev_tac `s3 = MEM_pipeline _ _ _` >>
-        fs [Abbr `s3`,MEM_pipeline_unchanged_ID_opc_func,
-            Abbr `s2`,WB_pipeline_unchanged_ID_opc_func,
-            Abbr `s1`,agp32_next_state_unchanged_ID_opc_func]) >>
+    by METIS_TAC [Abbr `s'`,Abbr `s''`,agp32_same_items_until_MEM_pipeline] >>
   METIS_TAC [agp32_ID_opc_implies_ID_func]
+QED
+
+
+(* ID_EX_write_enable, ID_ID_write_enable and ID_flush_flag *)
+Theorem agp32_ID_enable_flags_implies_flush_NOP_flags:
+  !fext fbits t.
+    ~((agp32 fext fbits t).ID.ID_ID_write_enable) ==>
+    (agp32 fext fbits t).ID.ID_EX_write_enable ==>
+    (agp32 fext fbits t).ID.ID_flush_flag /\
+    (agp32 fext fbits t).EX.EX_NOP_flag
+Proof
+  rw [] >>
+  `?s s'.
+  ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable) /\
+  ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable) /\
+  ((agp32 fext fbits t).ID.ID_flush_flag <=> (Hazard_ctrl (fext t) s s').ID.ID_flush_flag) /\
+  ((agp32 fext fbits t).EX.EX_NOP_flag <=> (Hazard_ctrl (fext t) s s').EX.EX_NOP_flag)`
+    by rw [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
+  fs [Hazard_ctrl_def] >>
+  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `(fext t).ready` >> fs [] >>
+  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
 val _ = export_theory ();

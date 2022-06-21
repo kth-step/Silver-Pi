@@ -4,7 +4,6 @@ val _ = new_theory "agp32Correct";
 
 (* Special variables used in theorems:
    I: scheduling function.
-   C: cache oracle.
  *)
 
 val _ = prefer_num ();
@@ -27,7 +26,8 @@ QED
 (* carry_flag between ISA and circuit states *)
 Theorem agp32_Rel_ag32_carry_flag_correct:
   !fext fbits s a t I.
-    (!t k. enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t) + 1) ==>
+    (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
+                                                 (I (k,SUC t) = I (k - 1,t))) ==>
     Rel I (fext t) (agp32 fext fbits t) a t ==>
     ((agp32 fext fbits (SUC t)).EX.EX_carry_flag <=>
      (FUNPOW Next (I (3,SUC t)) a).CarryFlag)
@@ -45,7 +45,7 @@ Proof
      Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                                REG_write;ID_pipeline;IF_PC_update;Acc_compute]
                               (fext t) s s` >>
-     Q.ABBREV_TAC `s'' = procs [Hazard_ctrl;ForwardA;ForwardB;ForwardW;IF_instr_update;
+     Q.ABBREV_TAC `s'' = procs [ForwardA;ForwardB;ForwardW;IF_instr_update;
                                 IF_PC_input_update;ID_opc_func_update;ID_imm_update;
                                 ID_data_update;EX_ctrl_update;EX_forward_data;
                                 EX_ALU_input_update;EX_compute_enable_update]
@@ -54,22 +54,49 @@ Proof
      (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_carry_flag`
        by fs [agp32_EX_ALU_items_updated_by_EX_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >> rw [] >>
      `opc ai = 8w` by fs [ag32_Decode_Acc_opc_8w] >>
-     `(agp32 fext fbits (SUC t)).EX.EX_opc = 8w` by cheat >>
-     `(s''.EX.EX_opc = 8w) /\ (s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func)`
+     Q.ABBREV_TAC `s3 = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+     `?s4.(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext (SUC t)) s4 s3).EX.EX_opc`
+       by fs [agp32_EX_opc_func_updated_EX_pipeline,Abbr `s3`,Abbr `s`] >>
+     `(s3.ID.ID_EX_write_enable <=> s.ID.ID_EX_write_enable) /\ (s3.ID.ID_opc = s.ID.ID_opc)`
+       by METIS_TAC [Abbr `s3`,Abbr `s`,agp32_same_items_until_MEM_pipeline] >>
+     `s3.ID.ID_EX_write_enable` by fs [enable_stg_def] >>
+      Cases_on `enable_stg 2 s` >-
+      ((** ID is enabled at cycle t **)
+       `s.ID.ID_opc = 8w` by (fs [Rel_def] >> `2 = 3 - 1` by rw [] >>
+                              `I' (3,SUC t) = I' (2,t)` by METIS_TAC [Abbr `s`] >>
+                              fs [ID_Rel_def]) >>
+       `((agp32 fext fbits (SUC t)).EX.EX_opc = 16w) \/
+       ((agp32 fext fbits (SUC t)).EX.EX_opc = s.ID.ID_opc)`
+         by (fs [EX_pipeline_def] >> Cases_on `s3.EX.EX_NOP_flag` >> fs []) >>
+       `(s''.EX.EX_opc = (agp32 fext fbits (SUC t)).EX.EX_opc) /\
+       (s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func)`
+         by METIS_TAC [agp32_same_EX_opc_func_until_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+       `(s''.EX.EX_func = 9w) \/ (s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
+       (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)`
+         by fs [Abbr `s`,agp32_EX_opc_implies_EX_func] >>
+       `s''.EX.EX_carry_flag <=> s.EX.EX_carry_flag`
+         by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+       rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]) >>
+     (** ID is disabled at cycle t **)
+     `s.EX.EX_NOP_flag` by fs [Abbr `s`,agp32_ID_enable_flags_implies_flush_NOP_flags,enable_stg_def] >>
+     `s3.EX.EX_NOP_flag <=> s.EX.EX_NOP_flag` by METIS_TAC [Abbr `s3`,Abbr `s`,agp32_same_items_until_MEM_pipeline] >>
+     fs [EX_pipeline_def] >>
+     `(s''.EX.EX_opc = (agp32 fext fbits (SUC t)).EX.EX_opc) /\
+     (s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func)`
        by METIS_TAC [agp32_same_EX_opc_func_until_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
      `(s''.EX.EX_func = 9w) \/ (s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
      (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)`
-       by fs [Abbr `s`,agp32_EX_opc_implies_EX_func] >> 
-     `s''.EX.EX_carry_flag = s.EX.EX_carry_flag` 
-      by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`]>>
-     rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]) >-
+       by fs [Abbr `s`,agp32_EX_opc_implies_EX_func] >>
+     `s''.EX.EX_carry_flag <=> s.EX.EX_carry_flag`
+       by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`] >>    
+     rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]) >-   
      ((** In **)
      rw [Run_def,dfn'In_def,incPC_def] >>
      Q.ABBREV_TAC `s = agp32 fext fbits t` >>
      Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                                REG_write;ID_pipeline;IF_PC_update;Acc_compute]
                               (fext t) s s` >>
-     Q.ABBREV_TAC `s'' = procs [Hazard_ctrl;ForwardA;ForwardB;ForwardW;IF_instr_update;
+     Q.ABBREV_TAC `s'' = procs [ForwardA;ForwardB;ForwardW;IF_instr_update;
                                 IF_PC_input_update;ID_opc_func_update;ID_imm_update;
                                 ID_data_update;EX_ctrl_update;EX_forward_data;
                                 EX_ALU_input_update;EX_compute_enable_update]
@@ -101,13 +128,11 @@ Theorem agp32_Rel_ag32_correct:
     is_acc accelerator_f s ==>
     is_interrupt_interface fext_accessor_circuit s fext ==>
     is_data_in fext ==>
-    (* cache oracle can introduce hit/miss *)
-    (!t. C (s t).data_addr (s t).data_wstrb (s t).data_wdata (s t).command (s t).PC
-         <=> (fext t).ready) ==>
     Init (fext 0) (s 0) a ==>
     (** properties of scheduling function I **)
     (!k.I(k,0) = 0) ==>
-    (!t k. enable_stg k (s t) ==> I(k,SUC t) = I(k,t) + 1) ==>
+    (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
+                                                 (I (k,SUC t) = I (k - 1,t))) ==>
     Rel I (fext t) (s t) a t
 Proof
   Induct_on `t` >>
@@ -119,7 +144,7 @@ Proof
    (** data_in **)
    fs [Rel_def,is_data_in_def,ag32_data_in_unchanged_all] >-
    (** carryflag **)
-   fs [agp32_Rel_ag32_carry_flag_correct] >-
+   METIS_TAC [agp32_Rel_ag32_carry_flag_correct] >-
    (** overflow flag **)
    cheat >-
    (** PC when jump **)

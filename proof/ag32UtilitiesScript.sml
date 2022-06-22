@@ -234,4 +234,31 @@ Proof
   Cases_on_word_value `op` >> fs []
 QED
 
+(** if Deocde got ReservedInstr, then opc is not 0-14w **)
+Theorem ag32_Decode_ReservedInstr_opc_15w:
+  !ag.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = ReservedInstr ==>
+    opc ag = 15w
+Proof
+  rpt GEN_TAC >> simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >>
+  NTAC 2 (IF_CASES_TAC >- fs []) >>
+  IF_CASES_TAC >-
+   (Q.ABBREV_TAC `i = word_at_addr ag.MEM (align_addr ag.PC)` >>
+    `~word_bit 31 i` by fs [] >>
+    simp [opc_def,instr_def] >> fs [] >>
+    `(23 >< 9) i <> 0w` by FULL_BBLAST_TAC >> rw []) >>
+  NTAC 3 (IF_CASES_TAC >- fs []) >>
+  qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >>
+  Cases_on `dc` >> fs [] >-
+   (simp [opc_def,instr_def] >> fs [DecodeReg_imm_def] >>
+    Q.ABBREV_TAC `i = word_at_addr ag.MEM (align_addr ag.PC)` >>
+    Cases_on `word_bit 31 i` >> fs [v2w_single]) >>
+  NTAC 10 (IF_CASES_TAC >- fs []) >>
+  simp [opc_def,instr_def] >> fs [DecodeReg_imm_def] >>
+  Q.ABBREV_TAC `i = word_at_addr ag.MEM (align_addr ag.PC)` >>
+  Cases_on `word_bit 31 i` >> fs [] >>
+  `~((5 >< 0) i <+ 10w)` by FULL_BBLAST_TAC >> fs []
+QED
+
 val _ = export_theory ();

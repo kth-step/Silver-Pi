@@ -62,6 +62,38 @@ val carry_flag_unchanged_tac =
        by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`] >>    
      rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]);
 
+val carry_flag_unchanged_by_func_tac =
+    (Q.ABBREV_TAC `s3 = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+     `?s4.(agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext (SUC t)) s4 s3).EX.EX_func`
+       by fs [agp32_EX_opc_func_updated_EX_pipeline,Abbr `s3`,Abbr `s`] >>
+     `(s3.ID.ID_EX_write_enable <=> s.ID.ID_EX_write_enable) /\ (s3.ID.ID_func = s.ID.ID_func)`
+       by METIS_TAC [Abbr `s3`,Abbr `s`,agp32_same_items_until_MEM_pipeline] >>
+     `s3.ID.ID_EX_write_enable` by fs [enable_stg_def] >>
+      Cases_on `enable_stg 2 s` >-
+      ((** ID is enabled at cycle t **)
+       `s.ID.ID_func = func ai` by (fs [Rel_def] >> `2 = 3 - 1` by rw [] >>
+                                    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [Abbr `s`] >>
+                                    fs [ID_Rel_def]) >>
+       `((agp32 fext fbits (SUC t)).EX.EX_func = 12w) \/
+       ((agp32 fext fbits (SUC t)).EX.EX_func = s.ID.ID_func)`
+         by (fs [EX_pipeline_def] >> Cases_on `s3.EX.EX_NOP_flag` >> fs []) >>
+       `s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func`
+         by METIS_TAC [agp32_same_EX_opc_func_until_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+       `(s''.EX.EX_func <> 0w) /\ (s''.EX.EX_func <> 1w)` by fs [] >>
+       `s''.EX.EX_carry_flag <=> s.EX.EX_carry_flag`
+         by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+       rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`] >>
+       Cases_on_word_value `func ai` >> fs []) >>
+     (** ID is disabled at cycle t **)
+     `s.EX.EX_NOP_flag` by fs [Abbr `s`,agp32_ID_enable_flags_implies_flush_NOP_flags,enable_stg_def] >>
+     `s3.EX.EX_NOP_flag <=> s.EX.EX_NOP_flag` by METIS_TAC [Abbr `s3`,Abbr `s`,agp32_same_items_until_MEM_pipeline] >>
+     fs [EX_pipeline_def] >>
+     `s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func`
+       by METIS_TAC [agp32_same_EX_opc_func_until_ALU_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+     `s''.EX.EX_carry_flag <=> s.EX.EX_carry_flag`
+       by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`] >>    
+     rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]);
+
 (* Init relation implies Rel at cycle 0 *)
 Theorem agp32_Init_implies_Rel:
   !fext fbits s a I.
@@ -81,6 +113,7 @@ Theorem agp32_Rel_ag32_carry_flag_correct:
   !fext fbits s a t I.
     (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
                                                  (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits t) a t ==>
     ((agp32 fext fbits (SUC t)).EX.EX_carry_flag <=>
      (FUNPOW Next (I (3,SUC t)) a).CarryFlag)
@@ -112,13 +145,55 @@ Proof
      carry_flag_unchanged_tac) >-
 
      ((** Jump: CarryFlag can be changed **)
-     cheat) >-
+     PairCases_on `p` >> rw [Run_def,dfn'Jump_def] >>
+     pairarg_tac >> fs [] >>
+     Cases_on `p0 = fAdd` >-
+      ((** fAdd **)
+      fs [ALU_def] >> rw [] >>
+      cheat) >>
+     Cases_on `p0 = fAddWithCarry` >-
+      ((** fAddWithCarry **)
+      fs [ALU_def] >> rw [] >>
+      cheat) >>
+     `s.CarryFlag = ai.CarryFlag` by (fs [ALU_def] >> Cases_on `p0` >> fs [] >> rw []) >>
+     fs [] >> rename1 `(v,ai')` >>
+     update_carry_flag_when_enabled_tac >>
+     `(func ai <> 0w) /\ (func ai <> 1w)` by fs [ag32_Decode_Jump_func_not_0w_1w] >>
+     carry_flag_unchanged_by_func_tac) >-
 
      ((** JumpIfNotZero: CarryFlag can be changed **)
-     cheat) >-
+     PairCases_on `p` >> rw [Run_def,dfn'JumpIfNotZero_def] >>
+     pairarg_tac >> fs [] >>
+     Cases_on `p0 = fAdd` >-
+      ((** fAdd **)
+      fs [ALU_def,incPC_def] >> rw [] >>
+      cheat) >>
+     Cases_on `p0 = fAddWithCarry` >-
+      ((** fAddWithCarry **)
+      fs [ALU_def,incPC_def] >> rw [] >>
+      cheat) >>
+     `s.CarryFlag = ai.CarryFlag` by (fs [ALU_def] >> Cases_on `p0` >> fs [] >> rw []) >>
+     fs [] >> rename1 `(v,ai')` >>
+     update_carry_flag_when_enabled_tac >> rw [incPC_def] >>
+     `(func ai <> 0w) /\ (func ai <> 1w)` by fs [ag32_Decode_JumpIfNotZero_func_not_0w_1w] >>
+     carry_flag_unchanged_by_func_tac) >-
 
      ((** JumpIfZreo: CarryFlag can be changed **)
-     cheat) >-
+     PairCases_on `p` >> rw [Run_def,dfn'JumpIfZero_def] >>
+     pairarg_tac >> fs [] >>
+     Cases_on `p0 = fAdd` >-
+      ((** fAdd **)
+      fs [ALU_def,incPC_def] >> rw [] >>
+      cheat) >>
+     Cases_on `p0 = fAddWithCarry` >-
+      ((** fAddWithCarry **)
+      fs [ALU_def,incPC_def] >> rw [] >>
+      cheat) >>
+     `s.CarryFlag = ai.CarryFlag` by (fs [ALU_def] >> Cases_on `p0` >> fs [] >> rw []) >>
+     fs [] >> rename1 `(v,ai')` >>
+     update_carry_flag_when_enabled_tac >> rw [incPC_def] >>
+     `(func ai <> 0w) /\ (func ai <> 1w)` by fs [ag32_Decode_JumpIfZero_func_not_0w_1w] >>
+     carry_flag_unchanged_by_func_tac) >-
 
      ((** LoadConstant **)
      PairCases_on `p` >> rw [Run_def,dfn'LoadConstant_def,incPC_def] >>
@@ -175,12 +250,19 @@ Proof
     carry_flag_unchanged_tac) >>
 
   (** EX stage is disabled **)
-  fs [enable_stg_def] >> cheat
+  `I' (3,SUC t) = I' (3,t)` by fs [] >>
+  fs [Rel_def] >>
+  update_carry_flag_when_enabled_tac >>
+  reverse (Cases_on `s''.EX.EX_compute_enable`) >-
+   (`s''.EX.EX_carry_flag <=> s.EX.EX_carry_flag`
+      by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+    fs [EX_ALU_update_def]) >>
+  cheat
 QED
 
 (* correctness of the pipelined Silver concerning the ISA *)
 Theorem agp32_Rel_ag32_correct:
-  !fext fbits s a (t:num) I C.
+  !fext fbits s a (t:num) I.
     s = agp32 fext fbits ==>
     (!t. SC_self_mod (s t)) ==>
     is_mem fext_accessor_circuit s fext ==>
@@ -192,6 +274,7 @@ Theorem agp32_Rel_ag32_correct:
     (!k.I(k,0) = 0) ==>
     (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
                                                  (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (s t) a t
 Proof
   Induct_on `t` >>

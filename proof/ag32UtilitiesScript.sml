@@ -40,10 +40,23 @@ val get_opc_from_decode_tac =
   rw [opc_def,instr_def] >>
   fs [DecodeReg_imm_def,v2w_single_0w]);
 
+val get_func_from_decode_tac =
+ (simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >>              
+  qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >> rw [] >>
+  Cases_on `dc` >> fs [] >>
+  Q.ABBREV_TAC `op = (5 >< 0) (word_at_addr ag.MEM (align_addr ag.PC))` >>
+  Cases_on_word_value `op` >> fs [] >>
+  Q.ABBREV_TAC `i = (word_at_addr ag.MEM (align_addr ag.PC))` >>
+  Cases_on_word_value `(9 >< 6) i` >>
+  fs [func_def,num2funcT_thm,instr_def]);
+
+
+(* unchanged items in ISA state after ALU updating *)
 Theorem ALU_state_eq_after:
   !func input1 input2 res a a'.
     ALU (func, input1, input2) a = (res, a') ==>
-    a'.PC = a.PC /\ a'.MEM = a.MEM /\ a'.PC = a.PC /\ a'.R = a.R /\
+    a'.PC = a.PC /\ a'.MEM = a.MEM /\ a'.R = a.R /\
     a'.data_in = a.data_in /\ a'.data_out = a.data_out /\ a'.io_events = a.io_events
 Proof
   rw [ALU_def] >> Cases_on `func'` >> fs [] >> rw []
@@ -259,6 +272,115 @@ Proof
   Q.ABBREV_TAC `i = word_at_addr ag.MEM (align_addr ag.PC)` >>
   Cases_on `word_bit 31 i` >> fs [] >>
   `~((5 >< 0) i <+ 10w)` by FULL_BBLAST_TAC >> fs []
+QED
+
+
+(* Decode the func *)
+(** if Decode got Jump(fAdd,_,_), the func is 0w **)
+Theorem ag32_Decode_Jump_fAdd_func_0w:
+  !ag wi a.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (fAdd,wi,a) ==>
+    func ag = 0w
+Proof
+  rw [] >> `opc ag = 9w` by fs [ag32_Decode_Jump_opc_9w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (fAdd,wi,a)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got Jump(fAddWithCarry,_,_), the func is 1w **)
+Theorem ag32_Decode_Jump_fAddWithCarry_func_1w:
+  !ag wi a.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (fAddWithCarry,wi,a) ==>
+    func ag = 1w
+Proof
+  rw [] >> `opc ag = 9w` by fs [ag32_Decode_Jump_opc_9w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (fAddWithCarry,wi,a)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got JumpIfZero(fAdd,_,_,_), the func is 0w **)
+Theorem ag32_Decode_JumpIfZero_fAdd_func_0w:
+  !ag wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (fAdd,wi,a,b) ==>
+    func ag = 0w
+Proof
+  rw [] >> `opc ag = 10w` by fs [ag32_Decode_JumpIfZero_opc_10w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (fAdd,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got JumpIfZero(fAddWithCarry,_,_), the func is 1w **)
+Theorem ag32_Decode_JumpIfZero_fAddWithCarry_func_1w:
+  !ag wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (fAddWithCarry,wi,a,b) ==>
+    func ag = 1w
+Proof
+  rw [] >> `opc ag = 10w` by fs [ag32_Decode_JumpIfZero_opc_10w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (fAddWithCarry,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got JumpIfZero(f,_,_,_) and f is not fAdd or fAddWithCarry,
+    the func is not 0w or 1w **)
+Theorem ag32_Decode_JumpIfZero_func_not_0w_1w:
+  !ag f wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (f,wi,a,b) ==>
+    f <> fAdd ==>
+    f <> fAddWithCarry ==>
+    (func ag <> 0w) /\ (func ag <> 1w)
+Proof
+  rw [] >> `opc ag = 10w` by fs [ag32_Decode_JumpIfZero_opc_10w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (f,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got Jump(f,_,_) and f is not fAdd or fAddWithCarry, the func is not 0w or 1w **)
+Theorem ag32_Decode_Jump_func_not_0w_1w:
+  !ag f wi a.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (f,wi,a) ==>
+    f <> fAdd ==>
+    f <> fAddWithCarry ==>
+    (func ag <> 0w) /\ (func ag <> 1w)
+Proof
+  rw [] >> `opc ag = 9w` by fs [ag32_Decode_Jump_opc_9w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (f,wi,a)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got JumpIfNotZero(fAdd,_,_,_), the func is 0w **)
+Theorem ag32_Decode_JumpIfNotZero_fAdd_func_0w:
+  !ag wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (fAdd,wi,a,b) ==>
+    func ag = 0w
+Proof
+  rw [] >> `opc ag = 11w` by fs [ag32_Decode_JumpIfNotZero_opc_11w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (fAdd,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got JumpIfNotZero(fAddWithCarry,_,_), the func is 1w **)
+Theorem ag32_Decode_JumpIfNotZero_fAddWithCarry_func_1w:
+  !ag wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (fAddWithCarry,wi,a,b) ==>
+    func ag = 1w
+Proof
+  rw [] >> `opc ag = 11w` by fs [ag32_Decode_JumpIfNotZero_opc_11w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (fAddWithCarry,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got JumpIfNotZero(f,_,_,_) and f is not fAdd or fAddWithCarry,
+    the func is not 0w or 1w **)
+Theorem ag32_Decode_JumpIfNotZero_func_not_0w_1w:
+  !ag f wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (f,wi,a,b) ==>
+    f <> fAdd ==>
+    f <> fAddWithCarry ==>
+    (func ag <> 0w) /\ (func ag <> 1w)
+Proof
+  rw [] >> `opc ag = 11w` by fs [ag32_Decode_JumpIfNotZero_opc_11w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (f,wi,a,b)`` >>
+  get_func_from_decode_tac
 QED
 
 val _ = export_theory ();

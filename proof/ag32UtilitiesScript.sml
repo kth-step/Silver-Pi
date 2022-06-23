@@ -276,6 +276,76 @@ QED
 
 
 (* Decode the func *)
+(** if Decode got Normal(fAdd,_,_,_), the func is 0w **)
+Theorem ag32_Decode_Normal_fAdd_func_0w:
+  !ag wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (fAdd,wi,a,b) ==>
+    func ag = 0w
+Proof
+  rw [] >> `opc ag = 0w` by fs [ag32_Decode_Normal_opc_0w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (fAdd,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got Normal(fAddWithCarry,_,_,_), the func is 1w **)
+Theorem ag32_Decode_Normal_fAddWithCarry_func_1w:
+  !ag wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (fAddWithCarry,wi,a,b) ==>
+    func ag = 1w
+Proof
+  rw [] >> `opc ag = 0w` by fs [ag32_Decode_Normal_opc_0w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (fAddWithCarry,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got Normal(f,_,_,_) and f is not fAdd or fAddWithCarry, the func is not 0w or 1w **)
+Theorem ag32_Decode_Normal_func_not_0w_1w:
+  !ag f wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (f,wi,a,b) ==>
+    f <> fAdd ==>
+    f <> fAddWithCarry ==>
+    (func ag <> 0w) /\ (func ag <> 1w)
+Proof
+  rw [] >> `opc ag = 0w` by fs [ag32_Decode_Normal_opc_0w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (f,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got Out(fAdd,_,_,_), the func is 0w **)
+Theorem ag32_Decode_Out_fAdd_func_0w:
+  !ag wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (fAdd,wi,a,b) ==>
+    func ag = 0w
+Proof
+  rw [] >> `opc ag = 6w` by fs [ag32_Decode_Out_opc_6w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (fAdd,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got Out(fAddWithCarry,_,_,_), the func is 1w **)
+Theorem ag32_Decode_Out_fAddWithCarry_func_1w:
+  !ag wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (fAddWithCarry,wi,a,b) ==>
+    func ag = 1w
+Proof
+  rw [] >> `opc ag = 6w` by fs [ag32_Decode_Out_opc_6w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (fAddWithCarry,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got Out(f,_,_,_) and f is not fAdd or fAddWithCarry, the func is not 0w or 1w **)
+Theorem ag32_Decode_Out_func_not_0w_1w:
+  !ag f wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (f,wi,a,b) ==>
+    f <> fAdd ==>
+    f <> fAddWithCarry ==>
+    (func ag <> 0w) /\ (func ag <> 1w)
+Proof
+  rw [] >> `opc ag = 6w` by fs [ag32_Decode_Out_opc_6w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (f,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
 (** if Decode got Jump(fAdd,_,_), the func is 0w **)
 Theorem ag32_Decode_Jump_fAdd_func_0w:
   !ag wi a.
@@ -295,6 +365,19 @@ Theorem ag32_Decode_Jump_fAddWithCarry_func_1w:
 Proof
   rw [] >> `opc ag = 9w` by fs [ag32_Decode_Jump_opc_9w] >>
   UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (fAddWithCarry,wi,a)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got Jump(f,_,_) and f is not fAdd or fAddWithCarry, the func is not 0w or 1w **)
+Theorem ag32_Decode_Jump_func_not_0w_1w:
+  !ag f wi a.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (f,wi,a) ==>
+    f <> fAdd ==>
+    f <> fAddWithCarry ==>
+    (func ag <> 0w) /\ (func ag <> 1w)
+Proof
+  rw [] >> `opc ag = 9w` by fs [ag32_Decode_Jump_opc_9w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (f,wi,a)`` >>
   get_func_from_decode_tac
 QED
 
@@ -331,19 +414,6 @@ Theorem ag32_Decode_JumpIfZero_func_not_0w_1w:
 Proof
   rw [] >> `opc ag = 10w` by fs [ag32_Decode_JumpIfZero_opc_10w] >>
   UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (f,wi,a,b)`` >>
-  get_func_from_decode_tac
-QED
-
-(** if Decode got Jump(f,_,_) and f is not fAdd or fAddWithCarry, the func is not 0w or 1w **)
-Theorem ag32_Decode_Jump_func_not_0w_1w:
-  !ag f wi a.
-    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (f,wi,a) ==>
-    f <> fAdd ==>
-    f <> fAddWithCarry ==>
-    (func ag <> 0w) /\ (func ag <> 1w)
-Proof
-  rw [] >> `opc ag = 9w` by fs [ag32_Decode_Jump_opc_9w] >>
-  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (f,wi,a)`` >>
   get_func_from_decode_tac
 QED
 

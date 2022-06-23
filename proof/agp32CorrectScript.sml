@@ -220,10 +220,38 @@ Proof
      carry_flag_unchanged_tac) >-
 
      ((** Normal: CarryFlag can be changed **)
-     cheat) >-
+     PairCases_on `p` >> rw [Run_def,dfn'Normal_def,norm_def,incPC_def] >>
+     pairarg_tac >> fs [] >>
+     Cases_on `p0 = fAdd` >-
+      ((** fAdd **)
+      fs [ALU_def] >> rw [] >>
+      cheat) >>
+     Cases_on `p0 = fAddWithCarry` >-         
+      ((** fAddWithCarry **)
+      fs [ALU_def] >> rw [] >>
+      cheat) >>
+     `s.CarryFlag = ai.CarryFlag` by (fs [ALU_def] >> Cases_on `p0` >> fs [] >> rw []) >>
+     fs [] >> rename1 `(v,ai')` >>
+     update_carry_flag_when_enabled_tac >>
+     `(func ai <> 0w) /\ (func ai <> 1w)` by fs [ag32_Decode_Normal_func_not_0w_1w] >>
+     carry_flag_unchanged_by_func_tac) >-
 
      ((** Out: CarryFlag can be changed **)
-     cheat) >-
+     PairCases_on `p` >> rw [Run_def,dfn'Out_def,norm_def,incPC_def] >>
+     pairarg_tac >> fs [] >>
+     Cases_on `p0 = fAdd` >-
+      ((** fAdd **)
+      fs [ALU_def] >> rw [] >>
+      cheat) >>
+     Cases_on `p0 = fAddWithCarry` >-         
+      ((** fAddWithCarry **)
+      fs [ALU_def] >> rw [] >>
+      cheat) >>
+     `s.CarryFlag = ai.CarryFlag` by (fs [ALU_def] >> Cases_on `p0` >> fs [] >> rw []) >>
+     fs [] >> rename1 `(v,ai')` >>
+     update_carry_flag_when_enabled_tac >>
+     `(func ai <> 0w) /\ (func ai <> 1w)` by fs [ag32_Decode_Out_func_not_0w_1w] >>
+     carry_flag_unchanged_by_func_tac) >-
 
      ((** ReservedInstr **)
      rw [Run_def] >>

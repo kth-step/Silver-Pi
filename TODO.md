@@ -2,7 +2,7 @@ Here is the TODO list.
 
 ### Current
 - Proof
- - [ ] refine the Rel for the circuit and ISA states to add conditions because of multi-cycles interleaving.
+  - [ ] refine the Rel for the circuit and ISA states to add conditions because of multi-cycles interleaving.
  
 - Processor design related.
   - [ ] use BRAM for the registers R: tried several versions, but did not work.

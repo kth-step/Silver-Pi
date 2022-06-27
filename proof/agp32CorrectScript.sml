@@ -108,6 +108,31 @@ Proof
   fs [enable_stg_def] >> fs []
 QED
 
+(* lemmas *)
+(** lemmas copied from the hardware/ag32 repo **)
+Theorem ALU_correct_carry_lem:
+  !(w:33 word). word_bit 32 w <=> n2w (dimword(:32)) <=+ w
+Proof
+  simp [] >> BBLAST_PROVE_TAC
+QED
+
+Theorem ALU_correct_v2w_carry33_lem:
+  !b. v2w [b] = if b then (1w:33 word) else 0w
+Proof
+  Cases >> EVAL_TAC
+QED
+(** copy end **)
+                                              
+Theorem w2n_add_MOD_itself:
+  !(w1:word32) (w2:word32).
+    w2n w1 + w2n w2 = (w2n w1 + w2n w2) MOD 8589934592
+Proof
+  rw [] >>
+  `(w2n w1 < 4294967296) /\ (w2n w2 < 4294967296)` by METIS_TAC [w2n_lt,dimword_32] >>
+  fs []
+QED    
+
+
 (* carry_flag between ISA and circuit states *)
 Theorem agp32_Rel_ag32_carry_flag_correct:
   !fext fbits s a t I.
@@ -150,7 +175,14 @@ Proof
      Cases_on `p0 = fAdd` >-
       ((** fAdd **)
       fs [ALU_def] >> rw [] >>
-      cheat) >>
+      update_carry_flag_when_enabled_tac >>
+      `func ai = 0w` by fs [ag32_Decode_Jump_fAdd_func_0w] >>
+      `s''.EX.EX_func = 0w` by cheat >>
+      `s''.EX.EX_compute_enable` by cheat >>
+      rw [EX_ALU_update_def,ALU_correct_carry_lem,WORD_LS,word_add_def,w2n_w2w] >>
+      `(s''.EX.EX_ALU_input1 = ai.PC) /\ (s''.EX.EX_ALU_input2 = ri2word p2 ai)` by cheat >>
+      rw [] >> METIS_TAC [w2n_add_MOD_itself]
+      ) >>
      Cases_on `p0 = fAddWithCarry` >-
       ((** fAddWithCarry **)
       fs [ALU_def] >> rw [] >>

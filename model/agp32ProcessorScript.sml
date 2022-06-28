@@ -178,8 +178,8 @@ Theorem EX_ALU_input_update_trans = REWRITE_RULE [MUX_21_def] EX_ALU_input_updat
 Definition EX_compute_enable_update_def:
   EX_compute_enable_update (fext:ext) s s' =
   s' with EX := s'.EX with EX_compute_enable := (s'.state = 0w /\
-                                                (s.MEM.MEM_opc <> 16w \/ (s.MEM.MEM_opc = 16w /\
-                                                (s'.EX.EX_ForwardA <> 0w \/ s'.EX.EX_ForwardB <> 0w))))
+                                                ((s.MEM.MEM_opc <> 16w /\ s'.EX.EX_ForwardA <> 6w /\ s'.EX.EX_ForwardB <> 6w) \/ 
+                                                (s.MEM.MEM_opc = 16w /\ (s'.EX.EX_ForwardA <> 0w \/ s'.EX.EX_ForwardB <> 0w))))
 End
 
 (** ALU **)
@@ -365,6 +365,15 @@ Definition Hazard_ctrl_def:
         s' = s' with MEM := s'.MEM with MEM_state_flag := F;
         s' = s' with MEM := s'.MEM with MEM_NOP_flag := T in
     s' with WB := s'.WB with WB_state_flag := T
+  else if s'.EX.EX_isAcc then
+    let s' = s' with IF := s'.IF with IF_PC_write_enable := F;
+        s' = s' with ID := s'.ID with ID_ID_write_enable := F;
+        s' = s' with ID := s'.ID with ID_flush_flag := F;
+        s' = s' with ID := s'.ID with ID_EX_write_enable := F;
+        s' = s' with EX := s'.EX with EX_NOP_flag := T;
+        s' = s' with MEM := s'.MEM with MEM_state_flag := T;
+        s' = s' with MEM := s'.MEM with MEM_NOP_flag := F in
+    s' with WB := s'.WB with WB_state_flag := T
   else if s'.EX.EX_jump_sel then
     let s' = s' with IF := s'.IF with IF_PC_write_enable := T;
         s' = s' with ID := s'.ID with ID_ID_write_enable := F;
@@ -389,6 +398,8 @@ End
 Definition Forward_update_def:
   Forward_update EX_addr addr_disable check s s' : word3 =
   if EX_addr = s.MEM.MEM_addrW /\ s'.MEM.MEM_write_reg /\
+     (s.MEM.MEM_opc = 4w \/ s.MEM.MEM_opc = 5w) /\ (~ addr_disable) /\ check then 6w
+  else if EX_addr = s.MEM.MEM_addrW /\ s'.MEM.MEM_write_reg /\
      (s.MEM.MEM_opc = 13w \/ s.MEM.MEM_opc = 14w) /\ (~ addr_disable) /\ check then 5w
   else if EX_addr = s.MEM.MEM_addrW /\ s'.MEM.MEM_write_reg /\
           s.MEM.MEM_opc = 9w /\ (~ addr_disable) /\ check then 4w

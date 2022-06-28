@@ -23,6 +23,15 @@ Definition enable_stg_def:
   else F
 End
 
+(* reg_data_vaild: the register data is vaild from the external components e.g. memory *)
+(* TODO *)
+Definition reg_data_vaild_def:
+  reg_data_vaild k s = 
+  if k = 3 then s.EX.EX_compute_enable
+  else if k = 5 then s.state = 0w
+  else F
+End  
+
 (* software conditions *)
 (* self modified: the instructions in IF, ID and EX stages do not fetch the address that MEM stage is writing *)
 Definition SC_self_mod_def:
@@ -211,13 +220,13 @@ Definition Rel_def:
   Rel (I:num # num -> num) (fext:ext) (s:state_circuit) (a:ag32_state) (t:num) <=>
   (fext.data_in = (FUNPOW Next (I(5,t)) a).data_in) /\
   (** visible part: directly seen by ISA **)
-  (s.EX.EX_carry_flag <=> (FUNPOW Next (I(3,t)) a).CarryFlag) /\
-  (s.EX.EX_overflow_flag <=> (FUNPOW Next (I(3,t)) a).OverflowFlag) /\
-  (s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next (I(3,t)) a).PC) /\                 
+  (reg_data_vaild 3 s ==> s.EX.EX_carry_flag <=> (FUNPOW Next (I(3,t)) a).CarryFlag) /\
+  (reg_data_vaild 3 s ==> s.EX.EX_overflow_flag <=> (FUNPOW Next (I(3,t)) a).OverflowFlag) /\
+  (reg_data_vaild 3 s ==> s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next (I(3,t)) a).PC) /\                 
   (~s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next (I(3,t)) a).PC + 8w) /\
-  (fext.mem = (FUNPOW Next (I(4,t)) a).MEM) /\                                     
+  (fext.ready ==> fext.mem = (FUNPOW Next (I(4,t)) a).MEM) /\                                     
   (s.data_out = (FUNPOW Next (I(5,t)) a).data_out) /\
-  (s.R = (FUNPOW Next (I(5,t)) a).R) /\
+  (reg_data_vaild 5 s ==> s.R = (FUNPOW Next (I(5,t)) a).R) /\
   (** invisible part **)
   (enable_stg 1 s ==> IF_Rel fext s a (I(1,t))) /\
   (enable_stg 2 s ==> ID_Rel fext s a (I(2,t))) /\

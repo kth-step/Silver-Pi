@@ -244,7 +244,7 @@ end
 end
 
 always_comb begin
-EX_compute_enable = (state == 3'd0) && ((!(MEM_opc == 6'd16)) || ((MEM_opc == 6'd16) && ((!(EX_ForwardA == 3'd0)) || (!(EX_ForwardB == 3'd0)))));
+EX_compute_enable = (state == 3'd0) && (((!(MEM_opc == 6'd16)) && ((!(EX_ForwardA == 3'd6)) && (!(EX_ForwardB == 3'd6)))) || ((MEM_opc == 6'd16) && ((!(EX_ForwardA == 3'd0)) || (!(EX_ForwardB == 3'd0)))));
 end
 
 always_comb begin
@@ -352,17 +352,17 @@ end
 
 always_comb begin
 checkW = (EX_opc == 6'd10) || ((EX_opc == 6'd11) || (EX_opc == 6'd14));
-EX_ForwardW = ((EX_addrW == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd13) || (MEM_opc == 6'd14)) && ((!EX_addrW_disable) && checkW)))) ? 3'd5 : (((EX_addrW == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd9) && ((!EX_addrW_disable) && checkW)))) ? 3'd4 : (((EX_addrW == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd1) && ((!EX_addrW_disable) && checkW)))) ? 3'd3 : (((EX_addrW == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd0) || (MEM_opc == 6'd6)) && ((!EX_addrW_disable) && checkW)))) ? 3'd2 : (((EX_addrW == WB_addrW) && (WB_write_reg && ((!EX_addrW_disable) && checkW))) ? 3'd1 : 3'd0))));
+EX_ForwardW = ((EX_addrW == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd4) || (MEM_opc == 6'd5)) && ((!EX_addrW_disable) && checkW)))) ? 3'd6 : (((EX_addrW == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd13) || (MEM_opc == 6'd14)) && ((!EX_addrW_disable) && checkW)))) ? 3'd5 : (((EX_addrW == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd9) && ((!EX_addrW_disable) && checkW)))) ? 3'd4 : (((EX_addrW == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd1) && ((!EX_addrW_disable) && checkW)))) ? 3'd3 : (((EX_addrW == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd0) || (MEM_opc == 6'd6)) && ((!EX_addrW_disable) && checkW)))) ? 3'd2 : (((EX_addrW == WB_addrW) && (WB_write_reg && ((!EX_addrW_disable) && checkW))) ? 3'd1 : 3'd0)))));
 end
 
 always_comb begin
 checkB = (EX_opc == 6'd0) || ((EX_opc == 6'd1) || ((EX_opc == 6'd2) || ((EX_opc == 6'd3) || ((EX_opc == 6'd6) || ((EX_opc == 6'd10) || (EX_opc == 6'd11))))));
-EX_ForwardB = ((EX_addrB == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd13) || (MEM_opc == 6'd14)) && ((!EX_addrB_disable) && checkB)))) ? 3'd5 : (((EX_addrB == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd9) && ((!EX_addrB_disable) && checkB)))) ? 3'd4 : (((EX_addrB == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd1) && ((!EX_addrB_disable) && checkB)))) ? 3'd3 : (((EX_addrB == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd0) || (MEM_opc == 6'd6)) && ((!EX_addrB_disable) && checkB)))) ? 3'd2 : (((EX_addrB == WB_addrW) && (WB_write_reg && ((!EX_addrB_disable) && checkB))) ? 3'd1 : 3'd0))));
+EX_ForwardB = ((EX_addrB == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd4) || (MEM_opc == 6'd5)) && ((!EX_addrB_disable) && checkB)))) ? 3'd6 : (((EX_addrB == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd13) || (MEM_opc == 6'd14)) && ((!EX_addrB_disable) && checkB)))) ? 3'd5 : (((EX_addrB == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd9) && ((!EX_addrB_disable) && checkB)))) ? 3'd4 : (((EX_addrB == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd1) && ((!EX_addrB_disable) && checkB)))) ? 3'd3 : (((EX_addrB == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd0) || (MEM_opc == 6'd6)) && ((!EX_addrB_disable) && checkB)))) ? 3'd2 : (((EX_addrB == WB_addrW) && (WB_write_reg && ((!EX_addrB_disable) && checkB))) ? 3'd1 : 3'd0)))));
 end
 
 always_comb begin
 checkA = (EX_opc == 6'd0) || ((EX_opc == 6'd1) || ((EX_opc == 6'd2) || ((EX_opc == 6'd3) || ((EX_opc == 6'd4) || ((EX_opc == 6'd5) || ((EX_opc == 6'd6) || ((EX_opc == 6'd8) || ((EX_opc == 6'd9) || ((EX_opc == 6'd10) || (EX_opc == 6'd11))))))))));
-EX_ForwardA = ((EX_addrA == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd13) || (MEM_opc == 6'd14)) && ((!EX_addrA_disable) && checkA)))) ? 3'd5 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd9) && ((!EX_addrA_disable) && checkA)))) ? 3'd4 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd1) && ((!EX_addrA_disable) && checkA)))) ? 3'd3 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd0) || (MEM_opc == 6'd6)) && ((!EX_addrA_disable) && checkA)))) ? 3'd2 : (((EX_addrA == WB_addrW) && (WB_write_reg && ((!EX_addrA_disable) && checkA))) ? 3'd1 : 3'd0))));
+EX_ForwardA = ((EX_addrA == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd4) || (MEM_opc == 6'd5)) && ((!EX_addrA_disable) && checkA)))) ? 3'd6 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd13) || (MEM_opc == 6'd14)) && ((!EX_addrA_disable) && checkA)))) ? 3'd5 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd9) && ((!EX_addrA_disable) && checkA)))) ? 3'd4 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && ((MEM_opc == 6'd1) && ((!EX_addrA_disable) && checkA)))) ? 3'd3 : (((EX_addrA == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd0) || (MEM_opc == 6'd6)) && ((!EX_addrA_disable) && checkA)))) ? 3'd2 : (((EX_addrA == WB_addrW) && (WB_write_reg && ((!EX_addrA_disable) && checkA))) ? 3'd1 : 3'd0)))));
 end
 
 always_comb begin
@@ -406,6 +406,16 @@ MEM_state_flag = 0;
 MEM_NOP_flag = 1;
 WB_state_flag = 1;
 end else begin
+if (EX_isAcc) begin
+IF_PC_write_enable = 0;
+ID_ID_write_enable = 0;
+ID_flush_flag = 0;
+ID_EX_write_enable = 0;
+EX_NOP_flag = 1;
+MEM_state_flag = 1;
+MEM_NOP_flag = 0;
+WB_state_flag = 1;
+end else begin
 if (EX_jump_sel) begin
 IF_PC_write_enable = 1;
 ID_ID_write_enable = 0;
@@ -424,6 +434,7 @@ EX_NOP_flag = 0;
 MEM_state_flag = 1;
 MEM_NOP_flag = 0;
 WB_state_flag = 1;
+end
 end
 end
 end

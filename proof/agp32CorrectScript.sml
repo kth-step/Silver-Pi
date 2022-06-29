@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib;
 
 val _ = new_theory "agp32Correct";
 
@@ -94,19 +94,21 @@ val carry_flag_unchanged_by_func_tac =
        by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`] >>    
      rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]);
 
+
 (* Init relation implies Rel at cycle 0 *)
 Theorem agp32_Init_implies_Rel:
   !fext fbits s a I.
     s = agp32 fext fbits ==>
     (!k.I(k,0) = 0) ==>
     Init (fext 0) (s 0) a ==>
-    Rel I (fext 0) (s 0) a 0
+    Rel I (fext 0) (s 0) (s 0) a 0
 Proof
   rpt strip_tac >>
   fs [Init_def,Rel_def] >> rw [] >-
    cheat >>
   fs [enable_stg_def] >> fs []
 QED
+
 
 (* lemmas *)
 (** lemmas copied from the hardware/ag32 repo **)
@@ -130,16 +132,15 @@ Proof
   rw [] >>
   `(w2n w1 < 4294967296) /\ (w2n w2 < 4294967296)` by METIS_TAC [w2n_lt,dimword_32] >>
   fs []
-QED    
-
+QED
 
 (* carry_flag between ISA and circuit states *)
 Theorem agp32_Rel_ag32_carry_flag_correct:
-  !fext fbits s a t I.
+  !fext fbits a t I.
     (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
                                                  (I (k,SUC t) = I (k - 1,t))) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
-    Rel I (fext t) (agp32 fext fbits t) a t ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     ((agp32 fext fbits (SUC t)).EX.EX_carry_flag <=>
      (FUNPOW Next (I (3,SUC t)) a).CarryFlag)
 Proof
@@ -320,6 +321,46 @@ Proof
   cheat
 QED
 
+
+(* IF:PC between ISA and circuit states *)
+Theorem agp32_Rel_ag32_IF_PC_correct:
+  !fext fbits a t I.
+    (!t. SC_self_mod (agp32 fext fbits t)) ==>
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
+                                                 (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 1 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (I'(1,t)) a).PC
+Proof
+  rw [] >> cheat
+QED
+
+(* IF_Rel between ISA and circuit states *)
+Theorem agp32_Rel_ag32_IF_Rel_correct:
+  !fext fbits a t I.
+    (!t. SC_self_mod (agp32 fext fbits t)) ==>
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
+                                                 (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 1 (agp32 fext fbits t) ==>
+    IF_Rel (fext (SUC t)) (agp32 fext fbits (SUC t)) a (I (1,SUC t))
+Proof
+  reverse (rw [IF_Rel_def]) >>
+  `?s s'. (agp32 fext fbits (SUC t)).IF.IF_instr =
+  (IF_instr_update (fext (SUC t)) s s').IF.IF_instr`
+    by rw [agp32_IF_instr_updated_by_IF_instr_update] >>
+   (rw [IF_instr_update_def,instr_def]) >-
+   ((** PC **)
+   METIS_TAC [agp32_Rel_ag32_IF_PC_correct]) >>
+  (** inst **)
+  last_assum (assume_tac o is_mem_def_mem_no_errors) >>
+  cheat
+QED
+
 (* correctness of the pipelined Silver concerning the ISA *)
 Theorem agp32_Rel_ag32_correct:
   !fext fbits s a (t:num) I.
@@ -335,12 +376,12 @@ Theorem agp32_Rel_ag32_correct:
     (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
                                                  (I (k,SUC t) = I (k - 1,t))) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
-    Rel I (fext t) (s t) a t
+    Rel I (fext t) (s (t-1)) (s t) a t
 Proof
   Induct_on `t` >>
   rpt strip_tac >-
-   METIS_TAC [agp32_Init_implies_Rel] >>
-  `Rel I' (fext t) (s t) a t` by METIS_TAC [] >>
+   (SIMP_TAC std_ss [] >> METIS_TAC [agp32_Init_implies_Rel]) >>
+  `Rel I' (fext t) (s (t-1)) (s t) a t` by METIS_TAC [] >>
   rw [Rel_def] >-
    (* visible signals *)
    (** data_in **)
@@ -349,9 +390,9 @@ Proof
    METIS_TAC [agp32_Rel_ag32_carry_flag_correct] >-
    (** overflow flag **)
    cheat >-
-   (** PC when jump **)
+   (** PC_input when jump **)
    cheat >-
-   (** PC when no jump **)
+   (** PC_input when no jump **)
    cheat >-
    (** memory **)
    cheat >-
@@ -360,15 +401,9 @@ Proof
    (** registers **)
    cheat >-
    (** invisiable regs in IF **)
-   (rw [IF_Rel_def] >-
-    (** IF_instr when memory is ready **)
-    (`?s s'. (agp32 fext fbits (SUC t)).IF.IF_instr =
-     (IF_instr_update (fext (SUC t)) s s').IF.IF_instr`
-       by rw [agp32_IF_instr_updated_by_IF_instr_update] >>
-     rw [IF_instr_update_def,instr_def] >> cheat) >>
-    (** IF_instr when not ready **)
-    cheat) >>
-  cheat         
+   METIS_TAC [agp32_Rel_ag32_IF_Rel_correct] >>
+   (** other stages **)
+   cheat         
 QED
 
 val _ = export_theory ();

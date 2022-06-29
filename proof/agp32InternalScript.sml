@@ -98,7 +98,8 @@ Proof
   Cases_on `(fext t).ready` >> fs [] >>
   Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
             s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs []
+  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+  Cases_on `s'.EX.EX_jump_sel` >> fs []                               
 QED
 
 val _ = export_theory ();

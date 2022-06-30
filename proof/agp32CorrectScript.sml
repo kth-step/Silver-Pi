@@ -16,7 +16,7 @@ val update_carry_flag_when_enabled_tac =
                                REG_write;ID_pipeline;IF_PC_update;Acc_compute]
                               (fext t) s s` >>
      Q.ABBREV_TAC `s'' = procs [ForwardA;ForwardB;ForwardW;IF_instr_update;
-                                IF_PC_input_update;ID_opc_func_update;ID_imm_update;
+                                ID_opc_func_update;ID_imm_update;
                                 ID_data_update;EX_ctrl_update;EX_forward_data;
                                 EX_ALU_input_update;EX_compute_enable_update]
                                (fext (SUC t)) s' s'` >>                        
@@ -322,7 +322,7 @@ Proof
 QED
 
 
-(* IF:PC between ISA and circuit states *)
+(* PC updated by IF between ISA and circuit states *)
 Theorem agp32_Rel_ag32_IF_PC_correct:
   !fext fbits a t I.
     (!t. SC_self_mod (agp32 fext fbits t)) ==>
@@ -332,9 +332,20 @@ Theorem agp32_Rel_ag32_IF_PC_correct:
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
-    (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (I'(1,t)) a).PC
+    (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (I(1,t)) a).PC
 Proof
-  rw [] >> cheat
+  rw [] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>             
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline]
+                           (fext t) s s` >>
+  `?s''.(agp32 fext fbits (SUC t)).PC =(IF_PC_update (fext (SUC t)) s'' s').PC`
+    by fs [agp32_PC_updated_by_IF_PC_update,Abbr `s`,Abbr `s'`] >> rw [] >>
+  `s.IF.IF_PC_write_enable` by fs [enable_stg_def] >>
+  `(s'.IF.IF_PC_write_enable <=> s.IF.IF_PC_write_enable) /\
+  (s'.IF.IF_PC_input = s.IF.IF_PC_input)` by cheat >>      
+  rw [IF_PC_update_def] >> fs [Rel_def] >>
+  cheat
 QED
 
 (* IF_Rel between ISA and circuit states *)

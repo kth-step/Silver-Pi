@@ -159,6 +159,10 @@ end
 end
 
 always_comb begin
+IF_PC_input = EX_jump_sel ? EX_jump_addr : (PC + 32'd4);
+end
+
+always_comb begin
 if ((state == 3'd0) && (!(MEM_opc == 6'd16))) begin
 EX_dataA_rec = EX_dataA_updated;
 EX_dataB_rec = EX_dataB_updated;
@@ -340,10 +344,6 @@ end else begin
 ID_func = 4'd9;
 end
 end
-end
-
-always_comb begin
-IF_PC_input = EX_jump_sel ? EX_jump_addr : (PC + 32'd4);
 end
 
 always_comb begin

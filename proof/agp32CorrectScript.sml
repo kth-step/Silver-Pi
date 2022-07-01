@@ -95,6 +95,16 @@ val carry_flag_unchanged_by_func_tac =
      rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]);
 
 
+(* lemma about the scheduling function I *)
+Theorem I_2_stages_t:
+  !t k I fext fbits.
+    enable_stg k (agp32 fext fbits t) ==>
+    ((I (k,SUC t) = I (k,t) + 1) /\ (I (k,SUC t) = I (k - 1,t))) ==>       
+    I (k,t) + 1 = I (k-1,t)
+Proof
+  rw [] >> fs []
+QED
+
 (* Init relation implies Rel at cycle 0 *)
 Theorem agp32_Init_implies_Rel:
   !fext fbits s a I.
@@ -182,8 +192,7 @@ Proof
       `s''.EX.EX_compute_enable` by cheat >>
       rw [EX_ALU_update_def,ALU_correct_carry_lem,WORD_LS,word_add_def,w2n_w2w] >>
       `(s''.EX.EX_ALU_input1 = ai.PC) /\ (s''.EX.EX_ALU_input2 = ri2word p2 ai)` by cheat >>
-      rw [] >> METIS_TAC [w2n_add_MOD_itself]
-      ) >>
+      rw [] >> METIS_TAC [w2n_add_MOD_itself]) >>
      Cases_on `p0 = fAddWithCarry` >-
       ((** fAddWithCarry **)
       fs [ALU_def] >> rw [] >>
@@ -332,6 +341,7 @@ Theorem agp32_Rel_ag32_IF_PC_correct:
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
+    reg_data_vaild 3 (agp32 fext fbits t) ==>
     (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (I(1,t)) a).PC
 Proof
   rw [] >>
@@ -343,8 +353,10 @@ Proof
     by fs [agp32_PC_updated_by_IF_PC_update,Abbr `s`,Abbr `s'`] >> rw [] >>
   `s.IF.IF_PC_write_enable` by fs [enable_stg_def] >>
   `(s'.IF.IF_PC_write_enable <=> s.IF.IF_PC_write_enable) /\
-  (s'.IF.IF_PC_input = s.IF.IF_PC_input)` by cheat >>      
-  rw [IF_PC_update_def] >> fs [Rel_def] >>
+  (s'.IF.IF_PC_input = s.IF.IF_PC_input)`
+    by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s`,Abbr `s'`] >>
+  rw [IF_PC_update_def] >> fs [Rel_def,Abbr `s`] >>
+  Cases_on `(agp32 fext fbits t).EX.EX_jump_sel` >> rw [] >>
   cheat
 QED
 
@@ -358,13 +370,13 @@ Theorem agp32_Rel_ag32_IF_Rel_correct:
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
-    IF_Rel (fext (SUC t)) (agp32 fext fbits (SUC t)) a (I (1,SUC t))
+    IF_Rel (fext (SUC t)) (agp32 fext fbits t) (agp32 fext fbits (SUC t)) a (I (1,SUC t))
 Proof
   reverse (rw [IF_Rel_def]) >>
   `?s s'. (agp32 fext fbits (SUC t)).IF.IF_instr =
   (IF_instr_update (fext (SUC t)) s s').IF.IF_instr`
     by rw [agp32_IF_instr_updated_by_IF_instr_update] >>
-   (rw [IF_instr_update_def,instr_def]) >-
+  rw [IF_instr_update_def,instr_def] >-
    ((** PC **)
    METIS_TAC [agp32_Rel_ag32_IF_PC_correct]) >>
   (** inst **)

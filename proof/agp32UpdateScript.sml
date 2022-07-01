@@ -774,6 +774,14 @@ Proof
 QED
 
 (** unchanged items by ID_pipeline **)
+Theorem ID_pipeline_unchanged_IF_items:
+  !fext s s'.
+    ((ID_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
+    ((ID_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+Proof
+  rw [ID_pipeline_def]
+QED
+
 Theorem ID_pipeline_unchanged_EX_jump:
   !fext s s'.
     ((ID_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
@@ -812,6 +820,14 @@ Proof
 QED
 
 (** unchanged items by REG_write **)
+Theorem REG_write_unchanged_IF_items:
+  !fext s s'.
+    ((REG_write fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
+    ((REG_write fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+Proof
+  rw [REG_write_def]
+QED
+
 Theorem REG_write_unchanged_EX_jump:
   !fext s s'.
     ((REG_write fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
@@ -850,6 +866,14 @@ Proof
 QED
 
 (** unchanged items by EX_pipeline **)
+Theorem EX_pipeline_unchanged_IF_items:
+  !fext s s'.
+    ((EX_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
+    ((EX_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+Proof
+  rw [EX_pipeline_def]
+QED
+
 Theorem EX_pipeline_unchanged_EX_jump:
   !fext s s'.
     ((EX_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
@@ -873,6 +897,14 @@ Theorem MEM_pipeline_unchanged_enable_flags:
     ((MEM_pipeline fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
     ((MEM_pipeline fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
     ((MEM_pipeline fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [MEM_pipeline_def]
+QED
+
+Theorem MEM_pipeline_unchanged_IF_items:
+  !fext s s'.
+    ((MEM_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
+    ((MEM_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
 Proof
   rw [MEM_pipeline_def]
 QED
@@ -912,6 +944,14 @@ Proof
   rw [WB_pipeline_def]
 QED
 
+Theorem WB_pipeline_unchanged_IF_items:
+  !fext s s'.
+    ((WB_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
+    ((WB_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+Proof
+  rw [WB_pipeline_def]
+QED
+
 Theorem WB_pipeline_unchanged_ID_opc_func:
   !fext s s'.
     ((WB_pipeline fext s s').ID.ID_opc = s'.ID.ID_opc) /\
@@ -943,6 +983,15 @@ Theorem agp32_next_state_unchanged_enable_flags:
     ((agp32_next_state fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
     ((agp32_next_state fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
     ((agp32_next_state fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
+Theorem agp32_next_state_unchanged_IF_items:
+  !fext s s'.
+    ((agp32_next_state fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
+    ((agp32_next_state fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
 Proof
   rw [agp32_next_state_def] >>
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
@@ -1260,6 +1309,29 @@ Proof
       WB_pipeline_unchanged_ID_opc_func,
       Abbr `ss1`,agp32_next_state_unchanged_enable_flags,
       agp32_next_state_unchanged_ID_opc_func]
+QED
+
+Theorem agp32_same_IF_items_until_ID_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                REG_write;ID_pipeline] (fext t) s s ==>
+    (s'.IF.IF_PC_write_enable <=> s.IF.IF_PC_write_enable) /\
+    (s'.IF.IF_PC_input = s.IF.IF_PC_input)
+Proof
+  rpt STRIP_TAC >> fs [procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  qpat_abbrev_tac `ss2 = WB_pipeline _ _ _` >>
+  qpat_abbrev_tac `ss3 = MEM_pipeline _ _ _` >>
+  qpat_abbrev_tac `ss4 = EX_pipeline _ _ _` >>
+  qpat_abbrev_tac `ss5 = REG_write _ _ _` >>
+  qpat_abbrev_tac `ss6 = ID_pipeline _ _ _` >>
+  fs [Abbr `ss6`,ID_pipeline_unchanged_IF_items,
+      Abbr `ss5`,REG_write_unchanged_IF_items,
+      Abbr `ss4`,EX_pipeline_unchanged_IF_items,
+      Abbr `ss3`,MEM_pipeline_unchanged_IF_items,
+      Abbr `ss2`,WB_pipeline_unchanged_IF_items,
+      Abbr `ss1`,agp32_next_state_unchanged_IF_items]
 QED
 
 (* states exist to update specific items *)

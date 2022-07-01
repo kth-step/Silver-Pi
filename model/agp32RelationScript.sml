@@ -27,7 +27,7 @@ End
 (* TODO *)
 Definition reg_data_vaild_def:
   reg_data_vaild k s = 
-  if k = 3 then s.EX.EX_compute_enable
+  if k = 3 then enable_stg 4 s
   else if k = 5 then s.state = 0w
   else F
 End  
@@ -82,12 +82,12 @@ Definition Init_def:
   ~s.WB.WB_write_reg
 End
 
-(* relation between the pipelined Silver circuit and ISA state *)
+(* relation between the circuit and ISA state for different pipeline stages *)
 Definition IF_Rel_def:
-  IF_Rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
-  (fext.ready ==> s.IF.IF_instr = instr (FUNPOW Next (i-1) a)) /\
+  IF_Rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
+  (fext.ready ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
   (~fext.ready ==> s.IF.IF_instr = 63w) /\
-  (s.PC = (FUNPOW Next (i-1) a).PC)
+  (reg_data_vaild 3 si ==> s.PC = (FUNPOW Next (i - 1) a).PC)
 End
 
 Definition ID_Rel_def:
@@ -225,13 +225,13 @@ Definition Rel_def:
   (** visible part: directly seen by ISA **)
   ((s.EX.EX_carry_flag <=> (FUNPOW Next (I(3,t)) a).CarryFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (I(3,t)) a).OverflowFlag)) /\
-  (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next (I(3,t)) a).PC)) /\                 
-  (~s.EX.EX_jump_sel ==> s.PC = (FUNPOW Next (I(3,t)) a).PC + 8w) /\
+  (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (I(3,t)) a).PC)) /\                 
+  (reg_data_vaild 3 s ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (I(3,t)) a).PC + 4w)) /\
   (fext.ready ==> fext.mem = (FUNPOW Next (I(4,t)) a).MEM) /\                                     
   (s.data_out = (FUNPOW Next (I(5,t)) a).data_out) /\
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (I(5,t)) a).R)) /\
   (** invisible part **)
-  (enable_stg 1 si ==> IF_Rel fext s a (I(1,t))) /\
+  (enable_stg 1 si ==> IF_Rel fext si s a (I(1,t))) /\
   (enable_stg 2 s ==> ID_Rel fext s a (I(2,t))) /\
   (enable_stg 3 si ==> EX_Rel fext s a (I(3,t))) /\
   (enable_stg 4 si ==> MEM_Rel fext s a (I(4,t))) /\

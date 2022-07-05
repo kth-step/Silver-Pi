@@ -381,6 +381,10 @@ Proof
    METIS_TAC [agp32_Rel_ag32_IF_PC_correct]) >>
   (** inst **)
   last_assum (assume_tac o is_mem_def_mem_no_errors) >>
+  (* require to consider the command and state, fext ready
+  Cases_on `(agp32 fext fbits t).command` >>
+  last_assum (assume_tac o is_mem_inst_read `t`) >> rw []
+  *)
   cheat
 QED
 
@@ -423,10 +427,16 @@ Proof
    cheat >-
    (** registers **)
    cheat >-
-   (** invisiable regs in IF **)
-   METIS_TAC [agp32_Rel_ag32_IF_Rel_correct] >>
-   (** other stages **)
-   cheat         
+   (** IF **)
+   METIS_TAC [agp32_Rel_ag32_IF_Rel_correct] >-
+   (** ID **)
+   cheat >-
+   (** EX **)
+   cheat >-
+   (** MEM **)
+   cheat >>
+   (** WB **)
+   cheat
 QED
 
 val _ = export_theory ();

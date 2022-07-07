@@ -85,7 +85,7 @@ End
 (* relation between the circuit and ISA state for different pipeline stages *)
 Definition IF_Rel_def:
   IF_Rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
-  (fext.ready ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
+  (fext.ready ==> s.command <> 0w ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
   (~fext.ready ==> s.IF.IF_instr = 63w) /\
   (reg_data_vaild 3 si ==> s.PC = (FUNPOW Next (i - 1) a).PC)
 End

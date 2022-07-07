@@ -66,7 +66,7 @@ Proof
   Q.ABBREV_TAC `s'' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s' s'` >>
   `?s.(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext (SUC t)) s s'').EX.EX_opc /\
   (agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext (SUC t)) s s'').EX.EX_func`
-    by fs [agp32_EX_opc_func_updated_EX_pipeline] >>
+    by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >>
   `s''.ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable`
     by METIS_TAC [Abbr `s'`,Abbr `s''`,agp32_same_items_until_MEM_pipeline] >>
   fs [EX_pipeline_def] >>
@@ -100,6 +100,24 @@ Proof
             s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
   Cases_on `s'.EX.EX_isAcc` >> fs [] >>
   Cases_on `s'.EX.EX_jump_sel` >> fs []                               
+QED
+
+
+(* command is not possible for values 5/6/7 *)
+Theorem agp32_command_impossible_values:
+  !fext fbits t.
+    ((agp32 fext fbits t).command <> 5w) /\
+    ((agp32 fext fbits t).command <> 6w) /\
+    ((agp32 fext fbits t).command <> 7w)
+Proof
+  rpt GEN_TAC >>
+  Induct_on `t` >-
+   rw [agp32_init_command_0w] >> 
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s s).command`
+    by fs [agp32_command_updated_by_agp32_next_state,Abbr `s`] >>
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
 QED
 
 val _ = export_theory ();

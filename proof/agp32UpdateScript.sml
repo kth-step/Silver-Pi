@@ -144,6 +144,14 @@ Proof
   rw [ID_opc_func_update_def]
 QED
 
+Theorem ID_opc_func_update_unchanged_state_items:
+  !fext s s'.
+    ((ID_opc_func_update fext s s').command = s'.command) /\
+    ((ID_opc_func_update fext s s').state = s'.state)
+Proof
+  rw [ID_opc_func_update_def]
+QED
+
 (** unchanged items by ID_imm_update **)
 Theorem ID_imm_update_unchanged_IF:
   !fext s s'.
@@ -188,6 +196,14 @@ Theorem ID_imm_update_unchanged_EX_ALU:
     ((ID_imm_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
     ((ID_imm_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
     ((ID_imm_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
+Proof
+  rw [ID_imm_update_def]
+QED
+
+Theorem ID_imm_update_unchanged_state_items:
+  !fext s s'.
+    ((ID_imm_update fext s s').command = s'.command) /\
+    ((ID_imm_update fext s s').state = s'.state)
 Proof
   rw [ID_imm_update_def]
 QED
@@ -240,6 +256,14 @@ Proof
   rw [ID_data_update_def]
 QED
 
+Theorem ID_data_update_unchanged_state_items:
+  !fext s s'.
+    ((ID_data_update fext s s').command = s'.command) /\
+    ((ID_data_update fext s s').state = s'.state)
+Proof
+  rw [ID_data_update_def]
+QED
+
 (** unchanged items by EX_ctrl_update **)
 Theorem EX_ctrl_update_unchanged_IF:
   !fext s s'.
@@ -288,6 +312,14 @@ Proof
   rw [EX_ctrl_update_def]
 QED
         
+Theorem EX_ctrl_update_unchanged_state_items:
+  !fext s s'.
+    ((EX_ctrl_update fext s s').command = s'.command) /\
+    ((EX_ctrl_update fext s s').state = s'.state)
+Proof
+  rw [EX_ctrl_update_def]
+QED
+
 (** unchanged items by EX_forward_data **)
 Theorem EX_forward_data_unchanged_IF:
   !fext s s'.
@@ -295,6 +327,14 @@ Theorem EX_forward_data_unchanged_IF:
     ((EX_forward_data fext s s').IF.IF_instr = s'.IF.IF_instr) /\
     ((EX_forward_data fext s s').IF.IF_PC_write_enable = s'.IF.IF_PC_write_enable) /\
     ((EX_forward_data fext s s').PC = s'.PC)
+Proof
+  rw [EX_forward_data_def]
+QED
+
+Theorem EX_forward_data_unchanged_state_items:
+  !fext s s'.
+    ((EX_forward_data fext s s').command = s'.command) /\
+    ((EX_forward_data fext s s').state = s'.state)
 Proof
   rw [EX_forward_data_def]
 QED
@@ -310,6 +350,14 @@ Proof
   rw [EX_ALU_input_update_def]
 QED
 
+Theorem EX_ALU_input_update_unchanged_state_items:
+  !fext s s'.
+    ((EX_ALU_input_update fext s s').command = s'.command) /\
+    ((EX_ALU_input_update fext s s').state = s'.state)
+Proof
+  rw [EX_ALU_input_update_def]
+QED
+
 (** unchanged items by EX_compute_enable_update **)
 Theorem EX_compute_enable_update_unchanged_IF:
   !fext s s'.
@@ -317,6 +365,14 @@ Theorem EX_compute_enable_update_unchanged_IF:
     ((EX_compute_enable_update fext s s').IF.IF_instr = s'.IF.IF_instr) /\
     ((EX_compute_enable_update fext s s').IF.IF_PC_write_enable = s'.IF.IF_PC_write_enable) /\
     ((EX_compute_enable_update fext s s').PC = s'.PC)
+Proof
+  rw [EX_compute_enable_update_def]
+QED
+
+Theorem EX_compute_enable_update_unchanged_state_items:
+  !fext s s'.
+    ((EX_compute_enable_update fext s s').command = s'.command) /\
+    ((EX_compute_enable_update fext s s').state = s'.state)
 Proof
   rw [EX_compute_enable_update_def]
 QED
@@ -358,6 +414,15 @@ Theorem EX_ALU_update_unchanged_EX_pipeline_items:
     ((EX_ALU_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
     ((EX_ALU_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((EX_ALU_update fext s s').EX.EX_func = s'.EX.EX_func)
+Proof
+  rw [EX_ALU_update_def] >>
+  Cases_on_word_value `s'.EX.EX_func` >> fs []
+QED
+
+Theorem EX_ALU_update_unchanged_state_items:
+  !fext s s'.
+    ((EX_ALU_update fext s s').command = s'.command) /\
+    ((EX_ALU_update fext s s').state = s'.state)
 Proof
   rw [EX_ALU_update_def] >>
   Cases_on_word_value `s'.EX.EX_func` >> fs []
@@ -415,6 +480,15 @@ Proof
   Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
 QED
 
+Theorem EX_SHIFT_update_unchanged_state_items:
+  !fext s s'.
+    ((EX_SHIFT_update fext s s').command = s'.command) /\
+    ((EX_SHIFT_update fext s s').state = s'.state)
+Proof
+  rw [EX_SHIFT_update_def] >>
+  Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
+QED
+
 (** unchanged items by EX_jump_sel_addr_update **)
 Theorem EX_jump_sel_addr_update_unchanged_IF:
   !fext s s'.
@@ -463,6 +537,14 @@ Proof
   rw [EX_jump_sel_addr_update_def]
 QED
      
+Theorem EX_jump_sel_addr_update_unchanged_state_items:
+  !fext s s'.
+    ((EX_jump_sel_addr_update fext s s').command = s'.command) /\
+    ((EX_jump_sel_addr_update fext s s').state = s'.state)
+Proof
+  rw [EX_jump_sel_addr_update_def]
+QED
+
 (** unchanged items by EX_data_rec_update **)
 Theorem EX_data_rec_update_unchanged_IF:
   !fext s s'.
@@ -507,6 +589,14 @@ Theorem EX_data_rec_update_unchanged_EX_pipeline_items:
     ((EX_data_rec_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
     ((EX_data_rec_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((EX_data_rec_update fext s s').EX.EX_func = s'.EX.EX_func)
+Proof
+  rw [EX_data_rec_update_def]
+QED
+
+Theorem EX_data_rec_update_unchanged_state_items:
+  !fext s s'.
+    ((EX_data_rec_update fext s s').command = s'.command) /\
+    ((EX_data_rec_update fext s s').state = s'.state)
 Proof
   rw [EX_data_rec_update_def]
 QED
@@ -559,6 +649,14 @@ Proof
   rw [MEM_ctrl_update_def]
 QED
 
+Theorem MEM_ctrl_update_unchanged_state_items:
+  !fext s s'.
+    ((MEM_ctrl_update fext s s').command = s'.command) /\
+    ((MEM_ctrl_update fext s s').state = s'.state)
+Proof
+  rw [MEM_ctrl_update_def]
+QED
+
 (** unchanged items by MEM_imm_update **)
 Theorem MEM_imm_update_unchanged_IF:
   !fext s s'.
@@ -583,6 +681,14 @@ Theorem MEM_imm_update_unchanged_EX_ALU:
     ((MEM_imm_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
     ((MEM_imm_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
     ((MEM_imm_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
+Proof
+  rw [MEM_imm_update_def]
+QED
+
+Theorem MEM_imm_update_unchanged_state_items:
+  !fext s s'.
+    ((MEM_imm_update fext s s').command = s'.command) /\
+    ((MEM_imm_update fext s s').state = s'.state)
 Proof
   rw [MEM_imm_update_def]
 QED
@@ -631,6 +737,14 @@ Theorem WB_update_unchanged_EX_pipeline_items:
     ((WB_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
     ((WB_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((WB_update fext s s').EX.EX_func = s'.EX.EX_func)
+Proof
+  rw [WB_update_def]
+QED
+
+Theorem WB_update_unchanged_state_items:
+  !fext s s'.
+    ((WB_update fext s s').command = s'.command) /\
+    ((WB_update fext s s').state = s'.state)
 Proof
   rw [WB_update_def]
 QED
@@ -690,6 +804,14 @@ Proof
   rw [Hazard_ctrl_def]
 QED
 
+Theorem Hazard_ctrl_unchanged_state_items:
+  !fext s s'.
+    ((Hazard_ctrl fext s s').command = s'.command) /\
+    ((Hazard_ctrl fext s s').state = s'.state)
+Proof
+  rw [Hazard_ctrl_def]
+QED
+
 (** unchanged items by Acc_compute **)
 Theorem Acc_compute_unchanged_IF:
   !fext s s'.
@@ -735,6 +857,14 @@ Proof
   rw [Acc_compute_def]
 QED
 
+Theorem Acc_compute_unchanged_state_items:
+  !fext s s'.
+    ((Acc_compute fext s s').command = s'.command) /\
+    ((Acc_compute fext s s').state = s'.state)
+Proof
+  rw [Acc_compute_def]
+QED
+
 (** unchanged items by IF_PC_update **)
 Theorem IF_PC_update_unchanged_EX_jump:
   !fext s s'.
@@ -769,6 +899,14 @@ Theorem IF_PC_update_unchanged_EX_ALU:
     ((IF_PC_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
     ((IF_PC_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
     ((IF_PC_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
+Proof
+  rw [IF_PC_update_def]
+QED
+
+Theorem IF_PC_update_unchanged_state_items:
+  !fext s s'.
+    ((IF_PC_update fext s s').command = s'.command) /\
+    ((IF_PC_update fext s s').state = s'.state)
 Proof
   rw [IF_PC_update_def]
 QED
@@ -819,6 +957,14 @@ Proof
   rw [ID_pipeline_def]
 QED
 
+Theorem ID_pipeline_unchanged_state_items:
+  !fext s s'.
+    ((ID_pipeline fext s s').command = s'.command) /\
+    ((ID_pipeline fext s s').state = s'.state)
+Proof
+  rw [ID_pipeline_def]
+QED
+
 (** unchanged items by REG_write **)
 Theorem REG_write_unchanged_IF_items:
   !fext s s'.
@@ -865,6 +1011,14 @@ Proof
   rw [REG_write_def]
 QED
 
+Theorem REG_write_unchanged_state_items:
+  !fext s s'.
+    ((REG_write fext s s').command = s'.command) /\
+    ((REG_write fext s s').state = s'.state)
+Proof
+  rw [REG_write_def]
+QED
+
 (** unchanged items by EX_pipeline **)
 Theorem EX_pipeline_unchanged_IF_items:
   !fext s s'.
@@ -887,6 +1041,14 @@ Theorem EX_pipeline_unchanged_EX_ALU:
     ((EX_pipeline fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
     ((EX_pipeline fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
     ((EX_pipeline fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
+Proof
+  rw [EX_pipeline_def]
+QED
+
+Theorem EX_pipeline_unchanged_state_items:
+  !fext s s'.
+    ((EX_pipeline fext s s').command = s'.command) /\
+    ((EX_pipeline fext s s').state = s'.state)
 Proof
   rw [EX_pipeline_def]
 QED
@@ -934,6 +1096,14 @@ Proof
   rw [MEM_pipeline_def]
 QED
 
+Theorem MEM_pipeline_unchanged_state_items:
+  !fext s s'.
+    ((MEM_pipeline fext s s').command = s'.command) /\
+    ((MEM_pipeline fext s s').state = s'.state)
+Proof
+  rw [MEM_pipeline_def]
+QED
+
 (** unchanged items by WB_pipeline **)
 Theorem WB_pipeline_unchanged_enable_flags:
   !fext s s'.
@@ -973,6 +1143,14 @@ Theorem WB_pipeline_unchanged_EX_ALU:
     ((WB_pipeline fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
     ((WB_pipeline fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
     ((WB_pipeline fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
+Proof
+  rw [WB_pipeline_def]
+QED
+
+Theorem WB_pipeline_unchanged_state_items:
+  !fext s s'.
+    ((WB_pipeline fext s s').command = s'.command) /\
+    ((WB_pipeline fext s s').state = s'.state)
 Proof
   rw [WB_pipeline_def]
 QED
@@ -1187,7 +1365,7 @@ Proof
 QED
 
 (** EX_opc and func are updated by the EX_pipeline function **)
-Theorem agp32_EX_opc_func_updated_EX_pipeline:
+Theorem agp32_EX_opc_func_updated_by_EX_pipeline:
   !fext fbits t s s' s''.
     s' = agp32 fext fbits t ==>
     s'' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s' s' ==>
@@ -1220,6 +1398,37 @@ Proof
   rw [EX_pipeline_def]
 QED
 
+(** command is updated by the agp32_next_state function **)
+Theorem agp32_command_updated_by_agp32_next_state:
+  !fext fbits t s.
+    s = agp32 fext fbits t ==>
+    (agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s s).command
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_imm_update_unchanged_state_items,MEM_ctrl_update_unchanged_state_items,
+      EX_data_rec_update_unchanged_state_items,EX_jump_sel_addr_update_unchanged_state_items,
+      EX_SHIFT_update_unchanged_state_items,EX_ALU_update_unchanged_state_items,
+      EX_compute_enable_update_unchanged_state_items,EX_ALU_input_update_unchanged_state_items,
+      EX_forward_data_unchanged_state_items,EX_ctrl_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_PC_input_update_def,IF_instr_update_def,
+      ForwardW_def,ForwardB_def,ForwardA_def] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Abbr `ss7`,Abbr `ss6`,Abbr `ss5`,
+      Abbr `ss4`,Abbr `ss3`,Abbr `ss2`,
+      Acc_compute_unchanged_state_items,IF_PC_update_unchanged_state_items,
+      ID_pipeline_unchanged_state_items,REG_write_unchanged_state_items,
+      EX_pipeline_unchanged_state_items,MEM_pipeline_unchanged_state_items,
+      WB_pipeline_unchanged_state_items]
+QED
+
 
 (* additional theorems for the correctness proof *)
 Theorem agp32_same_EX_opc_func_until_ALU_update:
@@ -1240,7 +1449,7 @@ Proof
   Q.ABBREV_TAC `s0 = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
   `((agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext (SUC t)) s s0).EX.EX_opc) /\
    ((agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext (SUC t)) s s0).EX.EX_func)`
-    by fs [agp32_EX_opc_func_updated_EX_pipeline,Abbr `s0`] >>
+    by fs [agp32_EX_opc_func_updated_by_EX_pipeline,Abbr `s0`] >>
   clist_update_state_before_ALU_tac >>
   fs [Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,
       EX_compute_enable_update_def,EX_ALU_input_update_def,EX_forward_data_def,
@@ -1397,6 +1606,28 @@ Proof
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>  METIS_TAC []
+QED
+
+(* initial command is 0 *)
+Theorem agp32_init_command_0w:
+  !fext fbits.
+    (agp32 fext fbits 0).command = 0w
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_imm_update_unchanged_state_items,MEM_ctrl_update_unchanged_state_items,
+      EX_data_rec_update_unchanged_state_items,EX_jump_sel_addr_update_unchanged_state_items,
+      EX_SHIFT_update_unchanged_state_items,EX_ALU_update_unchanged_state_items,
+      EX_compute_enable_update_unchanged_state_items,EX_ALU_input_update_unchanged_state_items,
+      EX_forward_data_unchanged_state_items,EX_ctrl_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_PC_input_update_def,IF_instr_update_def,
+      ForwardW_def,ForwardB_def,ForwardA_def] >>
+  rw [agp32_init_def]
 QED
 
 val _ = export_theory ();

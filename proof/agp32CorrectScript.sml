@@ -30,7 +30,7 @@ val carry_flag_unchanged_tac =
      `s3.ID.ID_EX_write_enable` by fs [enable_stg_def] >>
       Cases_on `enable_stg 2 s` >-
       ((** ID is enabled at cycle t **)
-       `s.ID.ID_opc = opc ai` by (fs [Rel_def] >> `2 = 3 - 1` by rw [] >>
+       `s.ID.ID_opc = opc ai` by (fs [Rel_def] >> `2 = 3 - 1 /\ 3 <> 1` by rw [] >>
                               `I' (3,SUC t) = I' (2,t)` by METIS_TAC [Abbr `s`] >>
                               fs [ID_Rel_def]) >>
        `((agp32 fext fbits (SUC t)).EX.EX_opc = 16w) \/
@@ -68,7 +68,7 @@ val carry_flag_unchanged_by_func_tac =
      `s3.ID.ID_EX_write_enable` by fs [enable_stg_def] >>
       Cases_on `enable_stg 2 s` >-
       ((** ID is enabled at cycle t **)
-       `s.ID.ID_func = func ai` by (fs [Rel_def] >> `2 = 3 - 1` by rw [] >>
+       `s.ID.ID_func = func ai` by (fs [Rel_def] >> `2 = 3 - 1 /\ 3 <> 1` by rw [] >>
                                     `I' (3,SUC t) = I' (2,t)` by METIS_TAC [Abbr `s`] >>
                                     fs [ID_Rel_def]) >>
        `((agp32 fext fbits (SUC t)).EX.EX_func = 12w) \/
@@ -102,21 +102,6 @@ Proof
   rw [] >> fs []
 QED
 
-(* Init relation implies Rel at cycle 0 *)
-Theorem agp32_Init_implies_Rel:
-  !fext fbits s a I.
-    s = agp32 fext fbits ==>
-    (!k.I(k,0) = 0) ==>
-    Init (fext 0) (s 0) a ==>
-    Rel I (fext 0) (s 0) (s 0) a 0
-Proof
-  rpt strip_tac >>
-  fs [Init_def,Rel_def] >> rw [] >-
-   cheat >>
-  fs [enable_stg_def] >> fs []
-QED
-
-
 (* lemmas *)
 (** lemmas copied from the hardware/ag32 repo **)
 Theorem ALU_correct_carry_lem:
@@ -144,8 +129,8 @@ QED
 (* carry_flag between ISA and circuit states *)
 Theorem agp32_Rel_ag32_carry_flag_correct:
   !fext fbits a t I.
-    (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
-                                                 (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t k. enable_stg k (agp32 fext fbits t) ==> k <> 1 ==>
+           (I (k,SUC t) = I (k,t) + 1) /\ (I (k,SUC t) = I (k - 1,t))) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     ((agp32 fext fbits (SUC t)).EX.EX_carry_flag <=>
@@ -328,22 +313,37 @@ Proof
 QED
 
 
+(* Init relation implies Rel at cycle 0 *)
+Theorem agp32_Init_implies_Rel:
+  !fext fbits s a I.
+    s = agp32 fext fbits ==>
+    (!k.I(k,0) = 0) ==>
+    Init (fext 0) (s 0) a ==>
+    Rel I (fext 0) (s 0) (s 0) a 0
+Proof
+  rpt strip_tac >>
+  fs [Init_def,Rel_def] >> rw [] >-
+   fs [agp32_init_IF_PC_input] >>
+  fs [enable_stg_def] >> fs []
+QED
+
+
 (* IF related items *)
 (** PC updated by IF between ISA and circuit states **)
 Theorem agp32_Rel_ag32_IF_PC_correct:
   !fext fbits a t I.
     (!t. SC_self_mod (agp32 fext fbits t)) ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
-    (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
-                                                 (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t. enable_stg 1 (agp32 fext fbits t) ==>
+         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1) /\
+         (~(agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (1,t) + 1)) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
     reg_data_vaild 3 (agp32 fext fbits t) ==>
-    (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (I(1,t)) a).PC
+    (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (I (1,SUC t) - 1) a).PC
 Proof
-  rw [] >>
-  Q.ABBREV_TAC `s = agp32 fext fbits t` >>             
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>             
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline]
                            (fext t) s s` >>
@@ -353,8 +353,8 @@ Proof
   `(s'.IF.IF_PC_write_enable <=> s.IF.IF_PC_write_enable) /\
   (s'.IF.IF_PC_input = s.IF.IF_PC_input)`
     by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s`,Abbr `s'`] >>
-  rw [IF_PC_update_def] >> fs [Rel_def,Abbr `s`] >>
-  Cases_on `(agp32 fext fbits t).EX.EX_jump_sel` >> rw [] >>
+  rw [IF_PC_update_def] >>
+  Cases_on `s.EX.EX_jump_sel` >> fs [Rel_def] >>
   cheat
 QED
 
@@ -363,14 +363,16 @@ Theorem agp32_Rel_ag32_IF_instr_correct:
   !fext fbits a t I.
     (!t. SC_self_mod (agp32 fext fbits t)) ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
-    (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
-                                                 (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t. enable_stg 1 (agp32 fext fbits t) ==>
+         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1) /\
+         (~(agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (1,t) + 1)) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
+    reg_data_vaild 3 (agp32 fext fbits t) ==>
     (fext (SUC t)).ready ==>
     (agp32 fext fbits (SUC t)).command <> 0w ==>
-    (agp32 fext fbits (SUC t)).IF.IF_instr = instr (FUNPOW Next (I (1,t)) a)
+    (agp32 fext fbits (SUC t)).IF.IF_instr = instr (FUNPOW Next (I (1,SUC t) - 1) a)
 Proof
   rw [] >>
   `?s s'. (agp32 fext fbits (SUC t)).IF.IF_instr =
@@ -383,7 +385,10 @@ Proof
    ((** 4: interrupt and read instr **)
    last_assum (mp_tac o is_mem_data_flush `SUC t`) >> rw [] >>
    Cases_on `m` >-
-    (fs [] >> cheat) >>
+    (fs [] >>
+     `(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (I'(1,SUC t) - 1) a).PC`
+       by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >>
+     cheat) >>
    `~ (fext (0 + SUC t)).ready` by fs [] >> fs []) >-
    ((** 3: write memory and read instr **)
    last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
@@ -407,8 +412,9 @@ Theorem agp32_Rel_ag32_IF_Rel_correct:
   !fext fbits a t I.
     (!t. SC_self_mod (agp32 fext fbits t)) ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
-    (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
-                                                 (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t. enable_stg 1 (agp32 fext fbits t) ==>
+         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1) /\
+         (~(agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (1,t) + 1)) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
@@ -442,8 +448,11 @@ Theorem agp32_Rel_ag32_correct:
     Init (fext 0) (s 0) a ==>
     (** properties of scheduling function I **)
     (!k.I(k,0) = 0) ==>
-    (!t k. enable_stg k (agp32 fext fbits t) ==> (I (k,SUC t) = I (k,t) + 1) /\
-                                                 (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t k. enable_stg k (agp32 fext fbits t) ==> k <> 1 ==>
+           (I (k,SUC t) = I (k,t) + 1) /\ (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t. enable_stg 1 (agp32 fext fbits t) ==>
+         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1) /\
+         (~(agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (1,t) + 1)) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (s (t-1)) (s t) a t
 Proof

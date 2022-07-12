@@ -637,7 +637,7 @@ val init_tm = add_x_inits ``<| R := K 0w;
                                interrupt_req := F;           
                                IF := <| IF_PC_write_enable := F |>;           
                                ID := <| ID_instr := 0x0000003Fw |>;
-                               EX := <| EX_PC_sel := 0w; EX_jump_sel := F; EX_opc := 15w |>;
+                               EX := <| EX_PC_sel := 0w; EX_opc := 15w |>;
                                MEM := <| MEM_enable := F; MEM_write_reg := F; MEM_opc := 15w |>;
                                WB := <| WB_enable := F; WB_write_reg := F |> |>``;
 

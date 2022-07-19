@@ -85,7 +85,7 @@ End
 (* relation between the circuit and ISA state for different pipeline stages *)
 Definition IF_Rel_def:
   IF_Rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
-  (fext.ready ==> s.command <> 0w ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
+  (fext.ready ==> reg_data_vaild 3 si ==> s.command <> 0w ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
   (~fext.ready ==> s.IF.IF_instr = 63w) /\
   (reg_data_vaild 3 si ==> s.PC = (FUNPOW Next (i - 1) a).PC)
 End
@@ -125,9 +125,7 @@ End
 
 Definition EX_Rel_def:
   EX_Rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
-  ((s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next i a).PC) /\
-   (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next i a).PC + 4w) /\
-   (s.EX.EX_PC = (FUNPOW Next (i-1) a).PC) /\
+  ((s.EX.EX_PC = (FUNPOW Next (i-1) a).PC) /\
    (s.EX.EX_addrA = addrA (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_addrB = addrB (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_addrW = addrW (FUNPOW Next (i-1) a)) /\
@@ -169,7 +167,6 @@ Definition EX_Rel_def:
    (s.EX.EX_opc = 11w ==> s.EX.EX_PC_sel = 3w) /\
    (s.EX.EX_PC_sel = 1w \/ (s.EX.EX_PC_sel = 2w /\ s.EX.EX_ALU_res = 0w) \/
     (s.EX.EX_PC_sel = 3w /\ s.EX.EX_ALU_res <> 0w) ==> s.EX.EX_jump_sel) /\
-   (* TODO: EX_ForwardA/B/W *)
    (s.EX.EX_jump_sel ==> s.EX.EX_jump_addr = (FUNPOW Next i a).PC) /\
    (s.EX.EX_opc = opc (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_func = func (FUNPOW Next (i-1) a)))
@@ -226,7 +223,7 @@ Definition Rel_def:
   ((s.EX.EX_carry_flag <=> (FUNPOW Next (I(3,t)) a).CarryFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (I(3,t)) a).OverflowFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (I(3,t)) a).PC)) /\                 
-  (reg_data_vaild 3 s ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (I(3,t)) a).PC + 4w)) /\
+  (reg_data_vaild 3 s ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (I(1,t) - 1) a).PC + 4w)) /\
   (fext.ready ==> fext.mem = (FUNPOW Next (I(4,t)) a).MEM) /\                                     
   (s.data_out = (FUNPOW Next (I(5,t)) a).data_out) /\
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (I(5,t)) a).R)) /\

@@ -1645,6 +1645,29 @@ Proof
       Abbr `ss1`,agp32_next_state_unchanged_EX_ALU]
 QED
 
+Theorem agp32_same_EX_jump_sel_after_EX_jump_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                REG_write;ID_pipeline;IF_PC_update;Acc_compute]
+               (fext t) s s ==>
+    s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
+                 ID_imm_update; ID_data_update; EX_ctrl_update; EX_forward_data;
+                 EX_ALU_input_update; EX_compute_enable_update; EX_ALU_update;
+                 EX_SHIFT_update; EX_jump_sel_addr_update; EX_data_rec_update]
+                (fext (SUC t)) s' s' ==>
+    ((agp32 fext fbits (SUC t)).EX.EX_jump_sel <=> s''.EX.EX_jump_sel)
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,
+      Hazard_ctrl_unchanged_EX_jump,WB_update_unchanged_EX_jump,
+      MEM_imm_update_unchanged_EX_jump,MEM_ctrl_update_unchanged_EX_jump,
+      IF_PC_input_update_def]
+QED
+
 Theorem agp32_same_items_until_MEM_pipeline:
   !fext fbits t s s'.
     s = agp32 fext fbits t ==>

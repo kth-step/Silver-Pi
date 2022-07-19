@@ -323,9 +323,43 @@ Theorem agp32_Init_implies_Rel:
 Proof
   rpt strip_tac >>
   fs [Init_def,Rel_def] >> rw [] >-
-   fs [agp32_init_IF_PC_input] >>
+   (fs [reg_data_vaild_def,enable_stg_def] >> fs []) >>
   fs [enable_stg_def] >> fs []
 QED
+
+
+(* IF_PC_input when jump *)
+Theorem agp32_Rel_ag32_IF_PC_input_jump_correct:
+  !fext fbits a t I.
+    (!t k. enable_stg k (agp32 fext fbits t) ==> k <> 1 ==>
+           (I (k,SUC t) = I (k,t) + 1) /\ (I (k,SUC t) = I (k - 1,t))) ==>
+    (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    reg_data_vaild 3 (agp32 fext fbits (SUC t)) ==>
+    (agp32 fext fbits (SUC t)).EX.EX_jump_sel ==>
+    (agp32 fext fbits (SUC t)).IF.IF_PC_input = (FUNPOW Next (I (3,SUC t)) a).PC
+Proof
+  rw [] >>  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline;IF_PC_update;Acc_compute]
+                           (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
+                             ID_imm_update; ID_data_update; EX_ctrl_update; EX_forward_data;
+                             EX_ALU_input_update; EX_compute_enable_update; EX_ALU_update;
+                             EX_SHIFT_update; EX_jump_sel_addr_update; EX_data_rec_update]
+                            (fext (SUC t)) s' s'` >>
+  `(agp32 fext fbits (SUC t)).IF.IF_PC_input =
+  (IF_PC_input_update (fext (SUC t)) s' s'').IF.IF_PC_input`
+    by fs [agp32_IF_PC_input_updated_by_IF_PC_input_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+  rw [IF_PC_input_update_def] >>
+  `s''.EX.EX_jump_sel`
+    by METIS_TAC [agp32_same_EX_jump_sel_after_EX_jump_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+  rw [MUX_21_def] >>
+  cheat
+QED
+
+
+(* IF_PC_input when not jump *)
 
 
 (* IF related items *)
@@ -335,8 +369,8 @@ Theorem agp32_Rel_ag32_IF_PC_correct:
     (!t. SC_self_mod (agp32 fext fbits t)) ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     (!t. enable_stg 1 (agp32 fext fbits t) ==>
-         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1) /\
-         (~(agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (1,t) + 1)) ==>
+         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1)
+         (*/\ (~(agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (1,t) + 1)*)) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
@@ -364,8 +398,7 @@ Theorem agp32_Rel_ag32_IF_instr_correct:
     (!t. SC_self_mod (agp32 fext fbits t)) ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     (!t. enable_stg 1 (agp32 fext fbits t) ==>
-         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1) /\
-         (~(agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (1,t) + 1)) ==>
+         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1)) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
@@ -388,7 +421,7 @@ Proof
     (fs [] >>
      `(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (I'(1,SUC t) - 1) a).PC`
        by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >>
-     cheat) >>
+     `(fext (SUC t)).mem = (FUNPOW Next (I' (1,SUC t) - 1) a).MEM` by cheat >> rw []) >>
    `~ (fext (0 + SUC t)).ready` by fs [] >> fs []) >-
    ((** 3: write memory and read instr **)
    last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
@@ -413,8 +446,7 @@ Theorem agp32_Rel_ag32_IF_Rel_correct:
     (!t. SC_self_mod (agp32 fext fbits t)) ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     (!t. enable_stg 1 (agp32 fext fbits t) ==>
-         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1) /\
-         (~(agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (1,t) + 1)) ==>
+         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1)) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
@@ -451,8 +483,7 @@ Theorem agp32_Rel_ag32_correct:
     (!t k. enable_stg k (agp32 fext fbits t) ==> k <> 1 ==>
            (I (k,SUC t) = I (k,t) + 1) /\ (I (k,SUC t) = I (k - 1,t))) ==>
     (!t. enable_stg 1 (agp32 fext fbits t) ==>
-         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1) /\
-         (~(agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (1,t) + 1)) ==>
+         ((agp32 fext fbits t).EX.EX_jump_sel ==> I (1,SUC t) = I (3,t) + 1)) ==>
     (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (s (t-1)) (s t) a t
 Proof
@@ -469,7 +500,7 @@ Proof
    (** overflow flag **)
    cheat >-
    (** PC_input when jump **)
-   cheat >-
+   METIS_TAC [agp32_Rel_ag32_IF_PC_input_jump_correct] >-
    (** PC_input when no jump **)
    cheat >-
    (** memory **)

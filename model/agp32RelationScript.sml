@@ -228,11 +228,53 @@ Definition Rel_def:
   (s.data_out = (FUNPOW Next (THE (I (5,t))) a).data_out) /\
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
   (** invisible part **)
-  (enable_stg 1 si ==> (I(1,t) <> NONE) ==> IF_Rel fext si s a (THE (I (1,t)))) /\
+  (enable_stg 1 si ==> (I (1,t) <> NONE) ==> IF_Rel fext si s a (THE (I (1,t)))) /\
   (enable_stg 2 s ==> ID_Rel fext s a (THE (I (2,t)))) /\
   (enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
   (enable_stg 5 si ==> WB_Rel fext s a (THE (I (5,t))))
+End
+
+(* scheduling function I *)
+Definition is_sch_init_def:
+  is_sch_init (I:num # num -> num option) = (!k.I (k,0) = SOME 0)
+End
+
+Definition is_sch_fetch_def:
+  is_sch_fetch (I:num # num -> num option) (fs:num -> state_circuit) (a:ag32_state) <=>
+  (!t. enable_stg 1 (fs t) ==> (fs t).EX.EX_jump_sel ==>
+       I (1,SUC t) = SOME (THE (I (3,t)) + 1)) /\
+  (!t. enable_stg 1 (fs t) ==> ~(fs t).EX.EX_jump_sel ==>
+       (isJump_isa (FUNPOW Next (THE (I (1,t)) - 1) a) \/     
+        isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) \/
+        THE (I (1,t)) = 0) ==>
+       I (1,SUC t) = NONE) /\
+  (!t. enable_stg 1 (fs t) ==>
+       ~(fs t).EX.EX_jump_sel ==>
+       ~isJump_isa (FUNPOW Next (THE (I (1,t)) - 1) a) ==>
+       ~isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
+       THE (I (1,t)) <> 0 ==>
+       I (1,SUC t) = SOME (THE (I (1,t)) + 1))
+End
+
+Definition is_sch_other_def:
+  is_sch_other (I:num # num -> num option) (fs:num -> state_circuit) <=>
+  (!t k. enable_stg k (fs t) ==> k <> 1 ==>
+         (I (k,SUC t) = SOME (THE (I (k,t)) + 1)) /\
+         (I (k,SUC t) = SOME (THE (I (k - 1,t)))))
+End
+
+Definition is_sch_disable_def:
+  is_sch_disable (I:num # num -> num option) (fs:num -> state_circuit) =
+  (!t k. ~enable_stg k (fs t) ==> I (k,SUC t) = I (k,t))
+End
+
+Definition is_sch_def:
+  is_sch (I:num # num -> num option) (fs:num -> state_circuit) (a:ag32_state) <=>
+  is_sch_init I /\
+  is_sch_fetch I fs a/\
+  is_sch_other I fs /\
+  is_sch_disable I fs
 End
 
 val _ = export_theory ();

@@ -217,22 +217,22 @@ End
 (* TODO: refine the definition *)
 (* si: circuit state at cycle t-1 *)
 Definition Rel_def:
-  Rel (I:num # num -> num) (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (t:num) <=>
-  (fext.data_in = (FUNPOW Next (I(5,t)) a).data_in) /\
+  Rel (I:num # num -> num option) (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (t:num) <=>
+  (fext.data_in = (FUNPOW Next (THE (I (5,t))) a).data_in) /\
   (** visible part: directly seen by ISA **)
-  ((s.EX.EX_carry_flag <=> (FUNPOW Next (I(3,t)) a).CarryFlag)) /\
-  (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (I(3,t)) a).OverflowFlag)) /\
-  (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (I(3,t)) a).PC)) /\                 
-  (reg_data_vaild 3 s ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (I(1,t) - 1) a).PC + 4w)) /\
-  (fext.ready ==> fext.mem = (FUNPOW Next (I(4,t)) a).MEM) /\                                     
-  (s.data_out = (FUNPOW Next (I(5,t)) a).data_out) /\
-  (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (I(5,t)) a).R)) /\
+  ((s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (3,t))) a).CarryFlag)) /\
+  (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I(3,t))) a).OverflowFlag)) /\
+  (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
+  (reg_data_vaild 3 s ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next ((THE (I (1,t))) - 1) a).PC + 4w)) /\
+  (fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\                                     
+  (s.data_out = (FUNPOW Next (THE (I (5,t))) a).data_out) /\
+  (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
   (** invisible part **)
-  (enable_stg 1 si ==> IF_Rel fext si s a (I(1,t))) /\
-  (enable_stg 2 s ==> ID_Rel fext s a (I(2,t))) /\
-  (enable_stg 3 si ==> EX_Rel fext s a (I(3,t))) /\
-  (enable_stg 4 si ==> MEM_Rel fext s a (I(4,t))) /\
-  (enable_stg 5 si ==> WB_Rel fext s a (I(5,t)))
+  (enable_stg 1 si ==> (I(1,t) <> NONE) ==> IF_Rel fext si s a (THE (I (1,t)))) /\
+  (enable_stg 2 s ==> ID_Rel fext s a (THE (I (2,t)))) /\
+  (enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
+  (enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
+  (enable_stg 5 si ==> WB_Rel fext s a (THE (I (5,t))))
 End
 
 val _ = export_theory ();

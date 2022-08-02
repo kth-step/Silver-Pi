@@ -86,15 +86,15 @@ Definition immW_def:
 End
 
 Definition dataA_def:
-  dataA a = if (flagA a) then (immA a) else (reg_dataA a)
+  dataA a = ri2word (DecodeReg_imm (v2w [word_bit 23 (word_at_addr a.MEM (align_addr a.PC))],(22 >< 17) (word_at_addr a.MEM (align_addr a.PC)))) a
 End
 
 Definition dataB_def:
-  dataB a = if (flagB a) then (immB a) else (reg_dataB a)
+  dataB a = ri2word (DecodeReg_imm (v2w [word_bit 16 (word_at_addr a.MEM (align_addr a.PC))],(15 >< 10) (word_at_addr a.MEM (align_addr a.PC)))) a
 End
 
 Definition dataW_def:
-  dataW a = if (flagW a) then (immW a) else (reg_dataW a)
+  dataW a = ri2word (DecodeReg_imm (v2w [word_bit 31 (word_at_addr a.MEM (align_addr a.PC))],(30 >< 25) (word_at_addr a.MEM (align_addr a.PC)))) a
 End
 
 (* immediate *)
@@ -239,6 +239,14 @@ Definition reg_wdata_def:
     else if opc = 13w then imm a
     else if opc = 14w then ((8 >< 0) (imm a)) @@ ((22 >< 0) (dataW a))
     else 0w
+End
+
+(* detect if a jump is happening in the ISA machine *)
+Definition isJump_isa_def:
+  isJump_isa a =
+  let opc = opc a;
+      ALU_res = ALU_res a in
+  ((opc = 9w) \/ (opc = 15w) \/ (opc = 10w /\ ALU_res = 0w) \/ (opc = 11w /\ ALU_res <> 0w))
 End
 
 val _ = export_theory ();

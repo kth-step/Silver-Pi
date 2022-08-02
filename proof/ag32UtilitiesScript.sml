@@ -1,4 +1,4 @@
-open hardwarePreamble arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsExtraTheory ag32Theory ag32ExtraTheory;
+open hardwarePreamble arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsExtraTheory ag32Theory ag32ExtraTheory agp32EnvironmentTheory;
 
 val _ = new_theory "ag32Utilities";
 
@@ -451,6 +451,72 @@ Proof
   rw [] >> `opc ag = 11w` by fs [ag32_Decode_JumpIfNotZero_opc_11w] >>
   UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (f,wi,a,b)`` >>
   get_func_from_decode_tac
+QED
+
+
+(** a lemma about the ISA ALU function, copied from ag32 repo **)
+Theorem ALU_state_eq_after[local]:
+ !func a b res ag ag'.
+   ALU (func, a, b) ag = (res, ag') ==>
+   ag'.PC = ag.PC /\ ag'.MEM = ag.MEM /\ ag'.PC = ag.PC /\ ag'.R = ag.R /\ ag'.data_in = ag.data_in /\
+   ag'.data_out = ag.data_out /\ ag'.io_events = ag.io_events
+Proof
+ rw [ALU_def] >> Cases_on `func'` >> fs [] >> rw []
+QED
+
+(* if the current instr does not jump, the next pc = current pc + 4w *)
+Theorem ag32_not_isJump_isa_Next_PC:
+  !ag.
+    ~isJump_isa ag ==>
+    ag.PC + 4w = (Next ag).PC
+Proof
+  rw [Next_def,isJump_isa_def] >> rw [GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr ag.MEM (align_addr ag.PC))` >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def]) >-
+   rw [Run_def,dfn'In_def,incPC_def] >-
+   rw [Run_def,dfn'Interrupt_def,incPC_def] >-
+   (** Jump **)
+   (PairCases_on `p` >> fs [ag32_Decode_Jump_opc_9w]) >-
+   (** JumpIfNotZero **)
+   (PairCases_on `p` >>
+    `opc ag = 11w` by fs [ag32_Decode_JumpIfNotZero_opc_11w] >>
+    fs [Run_def,dfn'JumpIfNotZero_def,ALU_res_def] >>
+    UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (p0,p1,p2,p3)`` >> 
+    simp [Decode_def,boolify32_def] >>
+    CONV_TAC v2w_word_bit_list_cleanup >>
+    qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >> rw [] >-
+     (fs [func_def,instr_def,dataA_def,dataB_def] >>
+      qpat_abbrev_tac `alu = ALU (_,_,_)` >>
+      Cases_on `alu ag` >> fs [incPC_def,Abbr `alu`] >> METIS_TAC [ALU_state_eq_after]) >>
+    Cases_on `dc` >> fs [] >>
+    Q.ABBREV_TAC `op = (5 >< 0) (word_at_addr ag.MEM (align_addr ag.PC))` >>
+    Cases_on_word_value `op` >> fs []) >-
+   (** JumpIfZero **)
+   (PairCases_on `p` >>
+    `opc ag = 10w` by fs [ag32_Decode_JumpIfZero_opc_10w] >>
+    fs [Run_def,dfn'JumpIfZero_def,ALU_res_def] >>
+    UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (p0,p1,p2,p3)`` >> 
+    simp [Decode_def,boolify32_def] >>
+    CONV_TAC v2w_word_bit_list_cleanup >>
+    qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >> rw [] >-
+     (fs [func_def,instr_def,dataA_def,dataB_def] >>
+      qpat_abbrev_tac `alu = ALU (_,_,_)` >>
+      Cases_on `alu ag` >> fs [incPC_def,Abbr `alu`] >> METIS_TAC [ALU_state_eq_after]) >>
+    Cases_on `dc` >> fs [] >>
+    Q.ABBREV_TAC `op = (5 >< 0) (word_at_addr ag.MEM (align_addr ag.PC))` >>
+    Cases_on_word_value `op` >> fs []) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadConstant_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEM_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEMByte_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadUpperConstant_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Normal_def,norm_def,incPC_def,ALU_def] >>
+    Cases_on `p0` >> rw []) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Out_def,norm_def,incPC_def,ALU_def] >>
+    Cases_on `p0` >> rw []) >-
+   fs [ag32_Decode_ReservedInstr_opc_15w] >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'StoreMEM_def,incPC_def]) >> 
+   PairCases_on `p` >> rw [Run_def,dfn'StoreMEMByte_def,incPC_def]
 QED
 
 val _ = export_theory ();

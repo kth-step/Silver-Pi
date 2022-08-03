@@ -1778,6 +1778,25 @@ Proof
 QED
 
 
+(* lemma for correctness proof *)
+Theorem agp32_same_PC_after_IF_PC_update:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext t) s s ==>
+    s'.PC = (agp32 fext fbits (SUC t)).PC
+Proof
+  rpt STRIP_TAC >>
+  Q.ABBREV_TAC `s'' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;
+                             EX_pipeline;REG_write;ID_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).PC = (IF_PC_update (fext (SUC t)) s''' s'').PC`
+    by fs [Abbr `s''`,agp32_PC_updated_by_IF_PC_update] >> fs [Abbr `s''`] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Abbr `ss7`,Acc_compute_unchanged_IF] >>
+  rw [IF_PC_update_def]
+QED
+
+
 (* initial values *)
 (** initial EX_PC_sel = 0w **)
 Theorem agp32_init_EX_PC_sel:

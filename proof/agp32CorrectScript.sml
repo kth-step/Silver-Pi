@@ -91,7 +91,6 @@ val carry_flag_unchanged_by_func_tac =
      `s''.EX.EX_carry_flag <=> s.EX.EX_carry_flag`
        by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`] >>    
      rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]);
-*)
 
 (* lemma about the scheduling function I *)
 Theorem I_2_stages_t:
@@ -127,7 +126,6 @@ Proof
   fs []
 QED
 
-(*
 (* carry_flag between ISA and circuit states *)
 Theorem agp32_Rel_ag32_carry_flag_correct:
   !fext fbits a t I.
@@ -497,8 +495,14 @@ Proof
    (Cases_on `reg_data_vaild 3 (agp32 fext fbits t)` >-
      (Cases_on `I' (1,SUC t) <> NONE` >-
        fs [Abbr `s`,agp32_Rel_ag32_IF_PC_correct] >>
-      fs [] >> cheat) >>
-    cheat) >>   
+      fs [is_sch_fetch_def] >>
+      Cases_on `(agp32 fext fbits t).EX.EX_jump_sel` >-
+       (`I' (1,SUC t) = SOME (THE (I' (3,t)) + 1)` by METIS_TAC [] >> fs []) >>
+      Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
+      isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ THE (I' (1,t)) = 0` >-  
+       (fs [] >> cheat) >>
+      `I' (1,SUC t) = SOME (THE (I' (1,t)) + 1)` by METIS_TAC [] >> fs []) >>
+    fs [reg_data_vaild_def,enable_stg_def] >> cheat) >>
   Q.ABBREV_TAC `s3 = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline] (fext t) s s` >>
   `?s4.(agp32 fext fbits (SUC t)).PC = (IF_PC_update (fext (SUC t)) s4 s3).PC`

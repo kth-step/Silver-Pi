@@ -223,7 +223,7 @@ Definition Rel_def:
   ((s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (3,t))) a).CarryFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I(3,t))) a).OverflowFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
-  (reg_data_vaild 3 s ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next ((THE (I (1,t))) - 1) a).PC + 4w)) /\
+  (reg_data_vaild 3 s ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = s.PC + 4w)) /\
   (fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\                                     
   (s.data_out = (FUNPOW Next (THE (I (5,t))) a).data_out) /\
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
@@ -247,12 +247,14 @@ Definition is_sch_fetch_def:
   (!t. enable_stg 1 (sf t) ==> ~(sf t).EX.EX_jump_sel ==>
        (isJump_isa (FUNPOW Next (THE (I (1,t)) - 1) a) \/     
         isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) \/
+        I (1,t) = NONE \/
         THE (I (1,t)) = 0) ==>
        I (1,SUC t) = NONE) /\
   (!t. enable_stg 1 (sf t) ==>
        ~(sf t).EX.EX_jump_sel ==>
        ~isJump_isa (FUNPOW Next (THE (I (1,t)) - 1) a) ==>
        ~isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
+       I (1,t) <> NONE ==>
        THE (I (1,t)) <> 0 ==>
        I (1,SUC t) = SOME (THE (I (1,t)) + 1))
 End

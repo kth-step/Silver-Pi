@@ -1760,6 +1760,8 @@ QED
 Theorem agp32_ctrl_flags_exists_Hazard_ctrl:
   !fext fbits t.
     ?s s'.
+      ((agp32 fext fbits t).IF.IF_PC_write_enable <=>
+       (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable) /\
       ((agp32 fext fbits t).ID.ID_ID_write_enable <=>
        (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable) /\
       ((agp32 fext fbits t).ID.ID_EX_write_enable <=>
@@ -1767,7 +1769,9 @@ Theorem agp32_ctrl_flags_exists_Hazard_ctrl:
       ((agp32 fext fbits t).ID.ID_flush_flag <=>
        (Hazard_ctrl (fext t) s s').ID.ID_flush_flag) /\
       ((agp32 fext fbits t).EX.EX_NOP_flag <=>
-       (Hazard_ctrl (fext t) s s').EX.EX_NOP_flag)
+       (Hazard_ctrl (fext t) s s').EX.EX_NOP_flag) /\
+      ((agp32 fext fbits t).MEM.MEM_state_flag <=>
+       (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)
 Proof
   rw [] >> Cases_on `t` >>
   rw [agp32_def,mk_module_def,mk_circuit_def] >-

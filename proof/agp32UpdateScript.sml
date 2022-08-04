@@ -122,7 +122,6 @@ Theorem ID_opc_func_update_unchanged_EX_pipeline_items:
     ((ID_opc_func_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((ID_opc_func_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((ID_opc_func_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((ID_opc_func_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((ID_opc_func_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((ID_opc_func_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((ID_opc_func_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -186,7 +185,6 @@ Theorem ID_imm_update_unchanged_EX_pipeline_items:
     ((ID_imm_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((ID_imm_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((ID_imm_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((ID_imm_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((ID_imm_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((ID_imm_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((ID_imm_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -250,7 +248,6 @@ Theorem ID_data_update_unchanged_EX_pipeline_items:
     ((ID_data_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((ID_data_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((ID_data_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((ID_data_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((ID_data_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((ID_data_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((ID_data_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -314,7 +311,6 @@ Theorem EX_ctrl_update_unchanged_EX_pipeline_items:
     ((EX_ctrl_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((EX_ctrl_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_ctrl_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((EX_ctrl_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((EX_ctrl_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((EX_ctrl_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((EX_ctrl_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -453,7 +449,6 @@ Theorem EX_ALU_update_unchanged_EX_pipeline_items:
     ((EX_ALU_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((EX_ALU_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_ALU_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((EX_ALU_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((EX_ALU_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((EX_ALU_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((EX_ALU_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -513,7 +508,6 @@ Theorem EX_SHIFT_update_unchanged_EX_pipeline_items:
     ((EX_SHIFT_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((EX_SHIFT_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_SHIFT_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((EX_SHIFT_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((EX_SHIFT_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((EX_SHIFT_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((EX_SHIFT_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -581,7 +575,6 @@ Theorem EX_jump_sel_addr_update_unchanged_EX_pipeline_items:
     ((EX_jump_sel_addr_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((EX_jump_sel_addr_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -645,7 +638,6 @@ Theorem EX_data_rec_update_unchanged_EX_pipeline_items:
     ((EX_data_rec_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((EX_data_rec_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_data_rec_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((EX_data_rec_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((EX_data_rec_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((EX_data_rec_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((EX_data_rec_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -717,7 +709,6 @@ Theorem MEM_ctrl_update_unchanged_EX_pipeline_items:
     ((MEM_ctrl_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((MEM_ctrl_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((MEM_ctrl_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((MEM_ctrl_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((MEM_ctrl_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((MEM_ctrl_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((MEM_ctrl_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -841,7 +832,6 @@ Theorem WB_update_unchanged_EX_pipeline_items:
     ((WB_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((WB_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((WB_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((WB_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((WB_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((WB_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((WB_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -912,7 +902,6 @@ Theorem Hazard_ctrl_unchanged_EX_pipeline_items:
     ((Hazard_ctrl fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((Hazard_ctrl fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((Hazard_ctrl fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((Hazard_ctrl fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((Hazard_ctrl fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((Hazard_ctrl fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((Hazard_ctrl fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -973,7 +962,6 @@ Theorem Acc_compute_unchanged_EX_pipeline_items:
     ((Acc_compute fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((Acc_compute fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((Acc_compute fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((Acc_compute fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((Acc_compute fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((Acc_compute fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((Acc_compute fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -1019,7 +1007,6 @@ Theorem IF_PC_update_unchanged_EX_pipeline_items:
     ((IF_PC_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((IF_PC_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((IF_PC_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((IF_PC_update fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((IF_PC_update fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((IF_PC_update fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((IF_PC_update fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -1073,7 +1060,6 @@ Theorem ID_pipeline_unchanged_EX_pipeline_items:
     ((ID_pipeline fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((ID_pipeline fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((ID_pipeline fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((ID_pipeline fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((ID_pipeline fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((ID_pipeline fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((ID_pipeline fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\
@@ -1127,7 +1113,6 @@ Theorem REG_write_unchanged_EX_pipeline_items:
     ((REG_write fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
     ((REG_write fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((REG_write fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((REG_write fext s s').EX.EX_write_enable <=> s'.EX.EX_write_enable) /\
     ((REG_write fext s s').EX.EX_addrA_disable <=> s'.EX.EX_addrA_disable) /\
     ((REG_write fext s s').EX.EX_addrB_disable <=> s'.EX.EX_addrB_disable) /\
     ((REG_write fext s s').EX.EX_addrW_disable <=> s'.EX.EX_addrW_disable) /\

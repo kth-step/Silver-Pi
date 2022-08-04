@@ -277,7 +277,7 @@ End
 (** Set up flags of MEM stage **)
 Definition MEM_ctrl_update_def:
   MEM_ctrl_update (fext:ext) s s' =
-  if (s.EX.EX_write_enable /\ s'.MEM.MEM_state_flag) \/ s.MEM.MEM_enable then
+  if s'.MEM.MEM_state_flag \/ s.MEM.MEM_enable then
     let s' = s' with MEM := s'.MEM with MEM_read_mem := (s.MEM.MEM_opc = 4w \/ s.MEM.MEM_opc = 5w);
         s' = s' with MEM := s'.MEM with MEM_write_mem := (s.MEM.MEM_opc = 2w);
         s' = s' with MEM := s'.MEM with MEM_write_mem_byte := (s.MEM.MEM_opc = 3w) in
@@ -481,23 +481,22 @@ Definition EX_pipeline_def:
         s' = s' with EX := s'.EX with EX_dataB := s'.ID.ID_dataB;
         s' = s' with EX := s'.EX with EX_dataW := s'.ID.ID_dataW;
         s' = s' with EX := s'.EX with EX_imm := s'.ID.ID_imm;
-        s' = s' with EX := s'.EX with EX_write_enable := T;
         s' = s' with EX := s'.EX with EX_addrA_disable := s'.ID.ID_addrA_disable;
         s' = s' with EX := s'.EX with EX_addrB_disable := s'.ID.ID_addrB_disable;
         s' = s' with EX := s'.EX with EX_addrW_disable := s'.ID.ID_addrW_disable;
         s' = s' with EX := s'.EX with EX_addrA := s'.ID.ID_addrA;
         s' = s' with EX := s'.EX with EX_addrB := s'.ID.ID_addrB;
         s' = s' with EX := s'.EX with EX_addrW := s'.ID.ID_addrW;
-        s' = s' with EX := s'.EX with EX_opc := if s'.EX.EX_NOP_flag then 16w else s'.ID.ID_opc in
+        s' = s' with EX := s'.EX with EX_opc := if s'.EX.EX_NOP_flag then 15w else s'.ID.ID_opc in
       s' with EX := s'.EX with EX_func := if s'.EX.EX_NOP_flag then 12w else s'.ID.ID_func
   else
-    s' with EX := s'.EX with EX_write_enable := F
+    s'
 End
 
 (** memory: EX -> MEM **)
 Definition MEM_pipeline_def:
   MEM_pipeline (fext:ext) s s' =
-  let s' = (if (s.EX.EX_write_enable /\ s'.MEM.MEM_state_flag) \/ s.MEM.MEM_enable then
+  let s' = (if s'.MEM.MEM_state_flag \/ s.MEM.MEM_enable then
               let s' = s' with MEM := s'.MEM with MEM_PC := s.EX.EX_PC;
                   s' = s' with MEM := s'.MEM with MEM_dataA := s'.EX.EX_dataA_rec;
                   s' = s' with MEM := s'.MEM with MEM_dataB := s'.EX.EX_dataB_rec;

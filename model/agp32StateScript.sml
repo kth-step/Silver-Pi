@@ -63,7 +63,6 @@ Datatype:
                  EX_overflow_flag : bool;
                  EX_ALU_res: word32;
                  EX_SHIFT_res: word32;
-                 EX_write_enable: bool;
                  EX_addrA_disable: bool;
                  EX_addrB_disable: bool;
                  EX_addrW_disable: bool;

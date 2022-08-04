@@ -365,7 +365,7 @@ Proof
         rw [FUNPOW_SUC] >>  METIS_TAC [ag32_not_isJump_isa_Next_PC]) >>
       `(agp32 fext fbits (t-1)).MEM.MEM_state_flag`
         by fs [enable_stg_def,agp32_IF_PC_write_enable_and_MEM_state_flag] >>
-      fs [reg_data_vaild_def,enable_stg_def] >> cheat) >>
+      fs [reg_data_vaild_def,enable_stg_def]) >>
     fs [Abbr `s`,enable_stg_def] >> METIS_TAC []) >>
   Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
   isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ I' (1,t) = NONE \/ THE (I' (1,t)) = 0` >-

@@ -223,7 +223,7 @@ Definition Rel_def:
   ((s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (3,t))) a).CarryFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I(3,t))) a).OverflowFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
-  (reg_data_vaild 3 s ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = s.PC + 4w)) /\
+  (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = s.PC + 4w) /\
   (fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\                                     
   (s.data_out = (FUNPOW Next (THE (I (5,t))) a).data_out) /\
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
@@ -268,7 +268,7 @@ End
 
 Definition is_sch_disable_def:
   is_sch_disable (I:num # num -> num option) (sf:num -> state_circuit) =
-  (!t k. ~enable_stg k (sf t) ==> I (k,SUC t) = I (k,t))
+  (!t k. ~enable_stg k (sf t) ==> I (k,SUC t) = NONE)
 End
 
 Definition is_sch_def:

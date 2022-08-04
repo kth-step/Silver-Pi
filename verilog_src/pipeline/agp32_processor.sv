@@ -82,7 +82,6 @@ logic EX_carry_flag = 'x;
 logic EX_overflow_flag = 'x;
 logic[31:0] EX_ALU_res = 'x;
 logic[31:0] EX_SHIFT_res = 'x;
-logic EX_write_enable = 'x;
 logic EX_addrA_disable = 'x;
 logic EX_addrB_disable = 'x;
 logic EX_addrW_disable = 'x;
@@ -150,7 +149,7 @@ MEM_imm_updated = (MEM_opc == 6'd14) ? {MEM_imm[8:0], MEM_dataW[22:0]} : MEM_imm
 end
 
 always_comb begin
-if ((EX_write_enable && MEM_state_flag) || MEM_enable) begin
+if (MEM_state_flag || MEM_enable) begin
 MEM_read_mem = (MEM_opc == 6'd4) || (MEM_opc == 6'd5);
 MEM_write_mem = MEM_opc == 6'd2;
 MEM_write_mem_byte = MEM_opc == 6'd3;
@@ -472,22 +471,19 @@ EX_dataA = ID_dataA;
 EX_dataB = ID_dataB;
 EX_dataW = ID_dataW;
 EX_imm <= ID_imm;
-EX_write_enable <= 1;
 EX_addrA_disable = ID_addrA_disable;
 EX_addrB_disable = ID_addrB_disable;
 EX_addrW_disable = ID_addrW_disable;
 EX_addrA = ID_addrA;
 EX_addrB = ID_addrB;
 EX_addrW <= ID_addrW;
-EX_opc <= EX_NOP_flag ? 6'd16 : ID_opc;
+EX_opc <= EX_NOP_flag ? 6'd15 : ID_opc;
 EX_func = EX_NOP_flag ? 4'd12 : ID_func;
-end else begin
-EX_write_enable <= 0;
 end
 end
 
 always_ff @ (posedge clk) begin
-if ((EX_write_enable && MEM_state_flag) || MEM_enable) begin
+if (MEM_state_flag || MEM_enable) begin
 MEM_PC <= EX_PC;
 MEM_dataA <= EX_dataA_rec;
 MEM_dataB <= EX_dataB_rec;

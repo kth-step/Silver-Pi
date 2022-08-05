@@ -1630,7 +1630,7 @@ Proof
       Abbr `ss1`,agp32_next_state_unchanged_EX_ALU]
 QED
 
-Theorem agp32_same_EX_jump_sel_after_EX_jump_update:
+Theorem agp32_same_EX_jump_items_after_EX_jump_update:
   !fext fbits t s s' s''.
     s = agp32 fext fbits t ==>
     s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
@@ -1641,7 +1641,8 @@ Theorem agp32_same_EX_jump_sel_after_EX_jump_update:
                  EX_ALU_input_update; EX_compute_enable_update; EX_ALU_update;
                  EX_SHIFT_update; EX_jump_sel_addr_update; EX_data_rec_update]
                 (fext (SUC t)) s' s' ==>
-    ((agp32 fext fbits (SUC t)).EX.EX_jump_sel <=> s''.EX.EX_jump_sel)
+    ((agp32 fext fbits (SUC t)).EX.EX_jump_sel <=> s''.EX.EX_jump_sel) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_jump_addr = s''.EX.EX_jump_addr)
 Proof
   rw [agp32_def,mk_module_def,mk_circuit_def] >>
   qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>

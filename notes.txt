@@ -18,3 +18,8 @@ But the pipeline design cannot do so, because ALU and shift are computed in the 
 Solution: when checking SHIFT, assign 11[BIT7-6] as the func, so the flags cannot be changed (requires func as 0 or 1).
 We do not create a new variable like SHIFT_func to save hardware resources.
 https://github.com/kth-step/hw-verification-silver/commit/859b2b2c5d10c7c02ca26bd5b7008756c392ad89
+
+2. introduce the option for scheduling function I
+In order to handle the case when jump is in the fetch or decode stage that cannot be recognized by the pipeline (as the EX stage takes care of jump).
+
+If the fetch or decode stage I is NONE, then we do not need to compare the value with ISA state, since these instrs are not going to be executed in the end.

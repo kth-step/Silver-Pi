@@ -352,26 +352,15 @@ Proof
     by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s`,Abbr `s'`] >>
   rw [IF_PC_update_def] >>
   Cases_on `s.EX.EX_jump_sel` >> fs [Rel_def,is_sch_fetch_def,IF_Rel_def] >>
-  Cases_on `enable_stg 1 (agp32 fext fbits (t-1))` >-
-   (Cases_on `I' (1,t) <> NONE` >-
-     (Cases_on `reg_data_vaild 3 (agp32 fext fbits (t-1))` >-
-       (fs [] >>
-        Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
-        isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ THE (I' (1,t)) = 0` >-
-         METIS_TAC [Abbr `s`,enable_stg_def] >>
-        `I' (1,SUC t) = SOME (THE (I' (1,t)) + 1)` by METIS_TAC [Abbr `s`,enable_stg_def] >> fs [] >>
-        Q.ABBREV_TAC `i = THE (I' (1,t))` >>
-        Cases_on `i` >> fs [] >>
-        rw [FUNPOW_SUC] >>  METIS_TAC [ag32_not_isJump_isa_Next_PC]) >>
-      `(agp32 fext fbits (t-1)).MEM.MEM_state_flag`
-        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_MEM_state_flag] >>
-      fs [reg_data_vaild_def,enable_stg_def]) >>
-    fs [Abbr `s`,enable_stg_def] >> METIS_TAC []) >>
-  Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
-  isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ I' (1,t) = NONE \/ THE (I' (1,t)) = 0` >-
-   METIS_TAC [Abbr `s`,enable_stg_def] >>
-  fs [is_sch_disable_def] >>
-  `I' (1,SUC (t-1)) = NONE` by fs [] >> Cases_on `t` >> fs []
+  Cases_on `I' (1,t) <> NONE` >> fs [] >-
+   (Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
+    isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ THE (I' (1,t)) = 0` >-
+     METIS_TAC [Abbr `s`,enable_stg_def] >>
+    `I' (1,SUC t) = SOME (THE (I' (1,t)) + 1)` by METIS_TAC [Abbr `s`,enable_stg_def] >> fs [] >>
+    Q.ABBREV_TAC `i = THE (I' (1,t))` >>
+    Cases_on `i` >> fs [] >>
+    rw [FUNPOW_SUC] >>  METIS_TAC [ag32_not_isJump_isa_Next_PC]) >>
+  fs [Abbr `s`,enable_stg_def] >> METIS_TAC []
 QED
 
 (** IF_instr **)
@@ -397,6 +386,7 @@ Proof
   last_assum (assume_tac o is_mem_def_mem_no_errors) >>
   Cases_on_word_value `(agp32 fext fbits (SUC t)).command` >>
   fs [agp32_command_impossible_values] >-
+   (** different command values **)
    ((** 4: interrupt and read instr **)
    last_assum (mp_tac o is_mem_data_flush `SUC t`) >> rw [] >>
    Cases_on `m` >-
@@ -471,8 +461,8 @@ Proof
   (IF_PC_input_update (fext (SUC t)) s' s'').IF.IF_PC_input`
     by fs [agp32_IF_PC_input_updated_by_IF_PC_input_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
   rw [IF_PC_input_update_def] >>
-  `s''.EX.EX_jump_sel`
-    by METIS_TAC [agp32_same_EX_jump_sel_after_EX_jump_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+  `s''.EX.EX_jump_sel /\ (s''.EX.EX_jump_addr = (agp32 fext fbits (SUC t)).EX.EX_jump_addr)`
+    by METIS_TAC [agp32_same_EX_jump_items_after_EX_jump_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
   rw [MUX_21_def] >>
   cheat
 QED
@@ -480,9 +470,13 @@ QED
 
 (* IF_PC_input when not jump *)
 Theorem agp32_Rel_ag32_IF_PC_input_not_jump_correct:
-  !fext fbits a t I.  
+  !fext fbits a t I.
+    is_sch_fetch I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (1,SUC t) <> NONE ==>
     ~(agp32 fext fbits (SUC t)).EX.EX_jump_sel ==>
-    (agp32 fext fbits (SUC t)).IF.IF_PC_input = (agp32 fext fbits (SUC t)).PC + 4w
+    (agp32 fext fbits (SUC t)).IF.IF_PC_input = (FUNPOW Next (THE (I (1,SUC t)) − 1) a).PC + 4w
 Proof
   rw [is_sch_other_def] >>  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
@@ -498,9 +492,18 @@ Proof
     by fs [agp32_IF_PC_input_updated_by_IF_PC_input_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
   rw [IF_PC_input_update_def] >>
   `~s''.EX.EX_jump_sel`
-    by METIS_TAC [agp32_same_EX_jump_sel_after_EX_jump_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+    by METIS_TAC [agp32_same_EX_jump_items_after_EX_jump_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
   rw [MUX_21_def] >>
-  fs [Abbr `s`,Abbr `s'`,agp32_same_PC_after_IF_PC_update]
+  `s'.PC = (agp32 fext fbits (SUC t)).PC`
+    by fs [Abbr `s`,Abbr `s'`,agp32_same_PC_after_IF_PC_update] >> rw [] >>
+  Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
+   (Cases_on `reg_data_vaild 3 (agp32 fext fbits t)` >-
+     fs [agp32_Rel_ag32_IF_PC_correct] >>
+    `(agp32 fext fbits t).MEM.MEM_state_flag`
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_MEM_state_flag] >>
+    fs [reg_data_vaild_def,enable_stg_def]) >>
+  fs [is_sch_disable_def] >>
+  METIS_TAC []      
 QED
 
 
@@ -537,7 +540,7 @@ Proof
    (** PC_input when jump **)
    METIS_TAC [is_sch_def,agp32_Rel_ag32_IF_PC_input_jump_correct] >-
    (** PC_input when no jump **)
-   fs [agp32_Rel_ag32_IF_PC_input_not_jump_correct] >-
+   METIS_TAC [is_sch_def,agp32_Rel_ag32_IF_PC_input_not_jump_correct] >-
    (** memory **)
    cheat >-
    (** data_out **)

@@ -165,11 +165,14 @@ Definition EX_Rel_def:
    (s.EX.EX_opc = 9w ==> s.EX.EX_PC_sel = 1w) /\
    (s.EX.EX_opc = 10w ==> s.EX.EX_PC_sel = 2w) /\
    (s.EX.EX_opc = 11w ==> s.EX.EX_PC_sel = 3w) /\
-   (s.EX.EX_PC_sel = 1w \/ (s.EX.EX_PC_sel = 2w /\ s.EX.EX_ALU_res = 0w) \/
-    (s.EX.EX_PC_sel = 3w /\ s.EX.EX_ALU_res <> 0w) ==> s.EX.EX_jump_sel) /\
    (s.EX.EX_jump_sel ==> s.EX.EX_jump_addr = (FUNPOW Next i a).PC) /\
    (s.EX.EX_opc = opc (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_func = func (FUNPOW Next (i-1) a)))
+End
+
+Definition EX_Rel_spec_def:
+   EX_Rel_spec (s:state_circuit) (a:ag32_state) (i:num) <=>
+   (s.EX.EX_jump_sel <=> isJump_isa (FUNPOW Next (i-1) a))
 End
 
 Definition MEM_Rel_def:
@@ -229,8 +232,9 @@ Definition Rel_def:
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
   (** invisible part **)
   (enable_stg 1 si ==> (I (1,t) <> NONE) ==> IF_Rel fext si s a (THE (I (1,t)))) /\
-  (enable_stg 2 s ==> ID_Rel fext s a (THE (I (2,t)))) /\
+  (enable_stg 2 si ==> ID_Rel fext s a (THE (I (2,t)))) /\
   (enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
+  (reg_data_vaild 3 s ==> EX_Rel_spec s a (THE (I (3,t)))) /\
   (enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
   (enable_stg 5 si ==> WB_Rel fext s a (THE (I (5,t))))
 End
@@ -242,16 +246,18 @@ End
 
 Definition is_sch_fetch_def:
   is_sch_fetch (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
-  (!t. enable_stg 1 (sf t) ==> (sf t).EX.EX_jump_sel ==>
+  (!t. enable_stg 1 (sf t) ==> 
+       isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
        I (1,SUC t) = SOME (THE (I (3,t)) + 1)) /\
-  (!t. enable_stg 1 (sf t) ==> ~(sf t).EX.EX_jump_sel ==>
+  (!t. enable_stg 1 (sf t) ==> 
+       ~isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
        (isJump_isa (FUNPOW Next (THE (I (1,t)) - 1) a) \/     
         isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) \/
         I (1,t) = NONE \/
         THE (I (1,t)) = 0) ==>
        I (1,SUC t) = NONE) /\
   (!t. enable_stg 1 (sf t) ==>
-       ~(sf t).EX.EX_jump_sel ==>
+       ~isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
        ~isJump_isa (FUNPOW Next (THE (I (1,t)) - 1) a) ==>
        ~isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
        I (1,t) <> NONE ==>

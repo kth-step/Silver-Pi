@@ -325,7 +325,7 @@ Proof
   rpt strip_tac >>
   fs [Init_def,Rel_def,is_sch_init_def] >> rw [] >-
    fs [agp32_init_IF_PC_input] >>
-  fs [enable_stg_def] >> fs []
+  fs [enable_stg_def,reg_data_vaild_def] >> fs []
 QED
 
 
@@ -351,6 +351,8 @@ Proof
   (s'.IF.IF_PC_input = s.IF.IF_PC_input)`
     by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s`,Abbr `s'`] >>
   rw [IF_PC_update_def] >>
+  `s.EX.EX_jump_sel <=> isJump_isa (FUNPOW Next (THE (I' (3,t)) - 1) a)`
+    by fs [Rel_def,EX_Rel_spec_def] >>
   Cases_on `s.EX.EX_jump_sel` >> fs [Rel_def,is_sch_fetch_def,IF_Rel_def] >>
   Cases_on `I' (1,t) <> NONE` >> fs [] >-
    (Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/

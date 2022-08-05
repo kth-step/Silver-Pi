@@ -106,11 +106,13 @@ QED
 Theorem agp32_IF_PC_write_enable_and_MEM_state_flag:
   !fext fbits t.
     (agp32 fext fbits t).IF.IF_PC_write_enable ==>
+    (agp32 fext fbits t).ID.ID_EX_write_enable /\
     (agp32 fext fbits t).MEM.MEM_state_flag
 Proof
   rw [] >>
   `?s s'.
   ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable) /\
+  ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable) /\
   ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
   fs [Hazard_ctrl_def] >>

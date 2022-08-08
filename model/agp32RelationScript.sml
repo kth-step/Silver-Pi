@@ -33,11 +33,31 @@ Definition reg_data_vaild_def:
 End  
 
 (* software conditions *)
-(* self modified: the instructions in IF, ID and EX stages do not fetch the address that MEM stage is writing *)
+(* self modified: a memory write operation does not affect the fetched value of the next 3 instructions *)
+Definition SC_self_mod_isa_def:
+  SC_self_mod_isa (a:ag32_state) (n:num) <=>
+  is_wrMEM_isa (FUNPOW Next (n-1) a) ==> 
+  !i. i > n /\ i < n + 4 /\ (FUNPOW Next (i-1) a).PC <> mem_data_addr (FUNPOW Next (n-1) a)
+End  
+
 Definition SC_self_mod_def:
-  SC_self_mod s <=> s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w ==> (s.PC <> s.data_addr) /\ (s.ID.ID_PC <> s.data_addr) /\ (s.EX.EX_PC <> s.data_addr)
+  SC_self_mod (I:num # num -> num option) (a:ag32_state) <=> 
+  !t j. j = THE (I (2,t)) \/ j = THE (I (3,t)) \/ j = THE (I (4,t)) ==>
+  is_wrMEM_isa (FUNPOW Next (j-1) a) ==>
+  mem_data_addr (FUNPOW Next (j-1) a) <> (FUNPOW Next (THE (I (1,t)) -1) a).PC
 End
 
+(* on ISA level
+isa_self_mod ==> this one
+SC_self_mod I a <=> try with ISA only
+!t.j = I (2,t) \/ j = I (3,t) \/ j = I (4,t) ==> 
+   is_wrMEM_isa (FUNPOW Next (j-1) a) ==>
+   j < I (1,t) ==>
+   wr_mem_addr (FUNPOW Next (j-1) a) <> (FUNPOW Next (I(1,t)-1) a).PC
+lemma
+!PC.
+SC_self_mod I a ==> value_at_addr PC (FUNPOW Next (I(4,t)) a).MEM = value_at_addr PC (FUNPOW Next (I(1,t)-1) a).MEM
+*)
 
 (* Definitions of relations to prove the correctness of the pipelined Silver *)
 (* relation for the initial states *)
@@ -86,7 +106,7 @@ End
 Definition IF_Rel_def:
   IF_Rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
   (fext.ready ==> reg_data_vaild 3 si ==> s.command <> 0w ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
-  (~fext.ready ==> s.IF.IF_instr = 63w) /\
+  (* (~fext.ready ==> s.IF.IF_instr = 63w) /\ *)
   (reg_data_vaild 3 si ==> s.PC = (FUNPOW Next (i - 1) a).PC)
 End
 
@@ -170,6 +190,7 @@ Definition EX_Rel_def:
    (s.EX.EX_func = func (FUNPOW Next (i-1) a)))
 End
 
+(** items belong to the EX stage that are checked only when the EX stage has vaild data **)
 Definition EX_Rel_spec_def:
    EX_Rel_spec (s:state_circuit) (a:ag32_state) (i:num) <=>
    (s.EX.EX_jump_sel <=> isJump_isa (FUNPOW Next (i-1) a))
@@ -274,7 +295,7 @@ End
 
 Definition is_sch_disable_def:
   is_sch_disable (I:num # num -> num option) (sf:num -> state_circuit) =
-  (!t k. ~enable_stg k (sf t) ==> I (k,SUC t) = NONE)
+  (!t k. ~enable_stg k (sf t) ==> I (k,SUC t) = I (k,t))
 End
 
 Definition is_sch_def:

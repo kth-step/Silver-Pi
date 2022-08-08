@@ -158,6 +158,10 @@ Definition mem_isread_def:
   mem_isread a = (opc a = 4w \/ opc a = 5w)
 End
 
+Definition is_wrMEM_isa_def:
+  is_wrMEM_isa a = (opc a = 2w \/ opc a = 3w)
+End
+
 Definition mem_iswrite_def:
   mem_iswrite a = (opc a = 2w)
 End

@@ -334,7 +334,6 @@ QED
 Theorem agp32_Rel_ag32_IF_PC_correct:
   !fext fbits a t I.
     is_sch_fetch I (agp32 fext fbits) a ==>
-    is_sch_disable I (agp32 fext fbits) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
     reg_data_vaild 3 (agp32 fext fbits t) ==>
@@ -368,10 +367,9 @@ QED
 (** IF_instr **)
 Theorem agp32_Rel_ag32_IF_instr_correct:
   !fext fbits a t I.
-    (!t. SC_self_mod (agp32 fext fbits t)) ==>
+    SC_self_mod I a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
-    is_sch_disable I (agp32 fext fbits) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
     reg_data_vaild 3 (agp32 fext fbits t) ==>
@@ -397,31 +395,31 @@ Proof
        by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >>
      `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
      cheat) >>
-   `~ (fext (0 + SUC t)).ready` by fs [] >> fs []) >-
+   (** multiple cycles **)
+   cheat) >-
    ((** 3: write memory and read instr **)
    last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
    Cases_on `m` >-
     (fs [] >> cheat) >>
-   `~ (fext (0 + SUC t)).ready` by fs [] >> fs []) >-           
+   cheat) >-           
    ((** 2: read memory and read instr **)
    last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
    Cases_on `m` >-
     (fs [] >> cheat) >>
-   `~ (fext (0 + SUC t)).ready` by fs [] >> fs []) >>
+   cheat) >>
   (** 1: read instr **)
   last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
   Cases_on `m` >-
    (fs [] >> cheat) >>
-  `~ (fext (0 + SUC t)).ready` by fs [] >> fs []
+  cheat
 QED
 
 (** IF_Rel between ISA and circuit states **)
 Theorem agp32_Rel_ag32_IF_Rel_correct:
   !fext fbits a t I.
-    (!t. SC_self_mod (agp32 fext fbits t)) ==>
+    SC_self_mod I a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
-    is_sch_disable I (agp32 fext fbits) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
     I (1,SUC t) <> NONE ==>
@@ -433,9 +431,7 @@ Proof
     by rw [agp32_IF_instr_updated_by_IF_instr_update] >-
    (** PC **)
    METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >-
-   (** fext is not ready **)
-   fs [IF_instr_update_def] >>
-  (** fext is ready **)
+  (** fetched instruction **)
   METIS_TAC [agp32_Rel_ag32_IF_instr_correct]
 QED
 
@@ -468,6 +464,25 @@ Proof
   rw [MUX_21_def] >>
   cheat
 QED
+
+(*
+Theorem test:
+  !fext fbits a t I.
+    is_sch_fetch I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    ¬enable_stg 1 (agp32 fext fbits t) ==>
+    I (1,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I (1,SUC t)) - 1) a).PC
+Proof
+  Induct_on `t` >> rw [] >-
+   cheat >>
+  rw [] >>
+  `I' (1,SUC (SUC t)) = I' (1,SUC t)` by fs [is_sch_disable_def] >> rw [] >>
+  `(agp32 fext fbits (SUC (SUC t))).PC = (agp32 fext fbits (SUC t)).PC` by cheat >> rw [] >>
+  Cases_on `enable_stg 1 (agp32 fext fbits t)` >> fs [] >>
+  `reg_data_vaild 3 (agp32 fext fbits t)` by cheat >>
+QED
+*)
 
 
 (* IF_PC_input when not jump *)
@@ -505,7 +520,14 @@ Proof
       by fs [enable_stg_def,agp32_IF_PC_write_enable_and_MEM_state_flag] >>
     fs [reg_data_vaild_def,enable_stg_def]) >>
   fs [is_sch_disable_def] >>
-  METIS_TAC []      
+  `I'(1,t) <> NONE` by METIS_TAC [] >>
+  `(agp32 fext fbits (SUC t)).PC = (agp32 fext fbits t).PC` by cheat >>
+  fs [Rel_def,IF_Rel_def] >>
+  Cases_on `enable_stg 1 (agp32 fext fbits (t-1))` >-
+   (Cases_on `reg_data_vaild 3 (agp32 fext fbits (t-1))` >> fs [] >>
+    fs [reg_data_vaild_def,enable_stg_def] >>
+    METIS_TAC [agp32_IF_PC_write_enable_and_MEM_state_flag]) >>
+  fs [] >> cheat
 QED
 
 
@@ -517,14 +539,13 @@ QED
 Theorem agp32_Rel_ag32_correct:
   !fext fbits s a t I.
     s = agp32 fext fbits ==>
-    (!t. SC_self_mod (s t)) ==>
+    SC_self_mod I a ==>
     is_mem fext_accessor_circuit s fext ==>
     is_acc accelerator_f s ==>
     is_interrupt_interface fext_accessor_circuit s fext ==>
     is_data_in fext ==>
     Init (fext 0) (s 0) a ==>
     is_sch I s a ==>
-    (!t k. ~enable_stg k (agp32 fext fbits t) ==> I (k,SUC t) = I (k,t)) ==>
     Rel I (fext t) (s (t-1)) (s t) a t
 Proof
   Induct_on `t` >>

@@ -375,7 +375,6 @@ Theorem agp32_Rel_ag32_IF_instr_correct:
     reg_data_vaild 3 (agp32 fext fbits t) ==>
     I (1,SUC t) <> NONE ==>
     (fext (SUC t)).ready ==>
-    (agp32 fext fbits (SUC t)).command <> 0w ==>
     (agp32 fext fbits (SUC t)).IF.IF_instr = instr (FUNPOW Next (THE (I (1,SUC t)) - 1) a)
 Proof
   rw [] >>
@@ -406,12 +405,31 @@ Proof
    last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
    Cases_on `m` >-
     (fs [] >> cheat) >>
+   cheat) >-
+   ((** 1: read instr **)
+   last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
+   Cases_on `m` >-
+    (fs [] >> cheat) >>
    cheat) >>
-  (** 1: read instr **)
-  last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
-  Cases_on `m` >-
-   (fs [] >> cheat) >>
-  cheat
+  (** 0: do nothing, not possible when fetching **)
+  fs [enable_stg_def] >>
+  `(agp32 fext fbits t).state = 0w`
+    by (Cases_on_word_value `(agp32 fext fbits t).state` >>
+        METIS_TAC [agp32_IF_PC_write_enable_and_state,agp32_state_impossible_values]) >>
+  `~(agp32 fext fbits t).EX.EX_isAcc` by METIS_TAC [agp32_IF_PC_write_enable_and_EX_isAcc] >>
+  `(fext t).ready` by METIS_TAC [agp32_IF_PC_write_enable_and_fext_ready] >>
+  Q.ABBREV_TAC `s'' = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s'' s'').command`
+    by fs [Abbr `s''`,agp32_command_state_updated_by_agp32_next_state] >>
+  subgoal `(agp32 fext fbits (SUC t)).command <> 0w` >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >> fs [agp32_next_state_def] >>
+  Cases_on `s''.state = 0w` >> fs [] >>
+  Cases_on `~(fext t).ready` >> fs [] >>
+  Cases_on `s''.MEM.MEM_isInterrupt` >> fs [] >>
+  Cases_on `s''.MEM.MEM_read_mem` >> fs [] >>
+  Cases_on `s''.MEM.MEM_write_mem` >> fs [] >>
+  Cases_on `s''.MEM.MEM_write_mem_byte` >> fs [] >>
+  Cases_on_word_value `(1 >< 0) s''.MEM.MEM_dataB` >> fs []
 QED
 
 (** IF_Rel between ISA and circuit states **)

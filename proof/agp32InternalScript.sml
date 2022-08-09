@@ -102,6 +102,7 @@ Proof
   Cases_on `s'.EX.EX_jump_sel` >> fs []                               
 QED
 
+
 (* IF_PC_write_enable and MEM_state_flag *)
 Theorem agp32_IF_PC_write_enable_and_MEM_state_flag:
   !fext fbits t.
@@ -138,7 +139,22 @@ Proof
    rw [agp32_init_command_0w] >> 
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   `(agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s s).command`
-    by fs [agp32_command_updated_by_agp32_next_state,Abbr `s`] >>
+    by fs [agp32_command_state_updated_by_agp32_next_state,Abbr `s`] >>
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
+(* state is not possible for values 7 *)
+Theorem agp32_state_impossible_values:
+  !fext fbits t.
+    (agp32 fext fbits t).state <> 7w
+Proof
+  rpt GEN_TAC >>
+  Induct_on `t` >-
+   rw [agp32_init_state_3w] >> 
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state`
+    by fs [agp32_command_state_updated_by_agp32_next_state,Abbr `s`] >>
   rw [agp32_next_state_def] >>
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
 QED

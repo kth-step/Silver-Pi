@@ -488,7 +488,7 @@ Definition EX_pipeline_def:
         s' = s' with EX := s'.EX with EX_addrB := s'.ID.ID_addrB;
         s' = s' with EX := s'.EX with EX_addrW := s'.ID.ID_addrW;
         s' = s' with EX := s'.EX with EX_opc := if s'.EX.EX_NOP_flag then 15w else s'.ID.ID_opc in
-      s' with EX := s'.EX with EX_func := if s'.EX.EX_NOP_flag then 12w else s'.ID.ID_func
+      s' with EX := s'.EX with EX_func := if s'.EX.EX_NOP_flag then 9w else s'.ID.ID_func
   else
     s'
 End
@@ -578,7 +578,7 @@ Definition agp32_next_state_def:
                     s' = s' with command := 0w;
                 s' = s' with acc_arg := s'.EX.EX_dataA_updated in
                   s' with acc_arg_ready := T
-              else s')
+              else s' with command := 1w)
     | 1w => (let s' = if fext.ready /\ s.command = 0w then
                         if s'.do_interrupt then let
                           s' = s' with state := 4w;

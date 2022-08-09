@@ -55,8 +55,8 @@ SC_self_mod I a <=> try with ISA only
    j < I (1,t) ==>
    wr_mem_addr (FUNPOW Next (j-1) a) <> (FUNPOW Next (I(1,t)-1) a).PC
 lemma
-!PC.
-SC_self_mod I a ==> value_at_addr PC (FUNPOW Next (I(4,t)) a).MEM = value_at_addr PC (FUNPOW Next (I(1,t)-1) a).MEM
+!adr a n.
+SC_self_mod_isa a n ==> value_at_addr adr (FUNPOW Next n a).MEM = value_at_addr adr (FUNPOW Next (i-1) a).MEM
 *)
 
 (* Definitions of relations to prove the correctness of the pipelined Silver *)
@@ -105,7 +105,7 @@ End
 (* relation between the circuit and ISA state for different pipeline stages *)
 Definition IF_Rel_def:
   IF_Rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
-  (fext.ready ==> reg_data_vaild 3 si ==> s.command <> 0w ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
+  (reg_data_vaild 3 si ==> fext.ready ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
   (* (~fext.ready ==> s.IF.IF_instr = 63w) /\ *)
   (reg_data_vaild 3 si ==> s.PC = (FUNPOW Next (i - 1) a).PC)
 End

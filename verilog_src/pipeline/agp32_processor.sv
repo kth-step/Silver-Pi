@@ -478,7 +478,7 @@ EX_addrA = ID_addrA;
 EX_addrB = ID_addrB;
 EX_addrW <= ID_addrW;
 EX_opc <= EX_NOP_flag ? 6'd15 : ID_opc;
-EX_func = EX_NOP_flag ? 4'd12 : ID_func;
+EX_func = EX_NOP_flag ? 4'd9 : ID_func;
 end
 end
 
@@ -561,6 +561,8 @@ state = 3'd2;
 command <= 3'd0;
 acc_arg <= EX_dataA_updated;
 acc_arg_ready <= 1;
+end else begin
+command <= 3'd1;
 end
 end
 end

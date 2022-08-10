@@ -606,6 +606,48 @@ Proof
   simp [addr_add] >> METIS_TAC [addr_concat]
 QED
 
+(* if the instr is a not write operation, then fetched value is not affected *)
+Theorem word_ar_addr_not_changed_after_normal_instrs:
+  !adr n a.
+    ~is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
+    word_at_addr (FUNPOW Next (n-1) a).MEM adr =
+    word_at_addr (FUNPOW Next n a).MEM adr
+Proof
+  Cases_on `n` >> rw [FUNPOW_SUC] >>
+  Q.ABBREV_TAC `a0 = FUNPOW Next n' a` >>
+  fs [is_wrMEM_isa_def] >>
+  rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr a0.MEM (align_addr a0.PC))` >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def]) >-
+   (rw [Run_def,dfn'In_def,incPC_def]) >-
+   (rw [Run_def,dfn'Interrupt_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Jump_def,ALU_def] >> Cases_on `p0` >> fs []) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'JumpIfNotZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'JumpIfZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadConstant_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEM_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEMByte_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadUpperConstant_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Normal_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Out_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   rw [Run_def] >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_StoreMEM_opc_2w]) >>
+   PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
+QED
+
 (* if there is no self-modified code,
    then the fetched instr is not affected by the memory write. *)
 Theorem SC_self_mod_not_affect_fetched_instr:
@@ -621,6 +663,11 @@ Proof
    (`align_addr (dataB (FUNPOW Next (THE (I' (2,t)) - 1) a)) <>
     align_addr (FUNPOW Next (THE (I' (1,t)) − 1) a).PC` by fs [] >>
     `THE (I' (1,t)) - 1 = THE (I' (2,t))` by cheat >> fs [] >>
+    `word_at_addr (FUNPOW Next (THE (I' (2,t))) a).MEM
+     (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC) =
+     word_at_addr (FUNPOW Next (THE (I' (2,t)) - 1) a).MEM
+     (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC)` by
+      fs [word_ar_addr_not_changed_after_write_mem] >> fs [] >>
     cheat) >>
   cheat
 QED

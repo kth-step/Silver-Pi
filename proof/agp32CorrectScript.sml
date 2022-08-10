@@ -393,7 +393,12 @@ Proof
      `(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
        by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >>
      `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
-     cheat) >>
+     fs [SC_self_mod_def] >>
+     `!j. j = THE (I' (2,SUC t)) \/ j = THE (I' (3,SUC t)) \/ j = THE (I' (4,SUC t)) ==>
+     is_wrMEM_isa (FUNPOW Next (j − 1) a) ==>
+     align_addr (dataB (FUNPOW Next (j − 1) a)) <>
+     align_addr (FUNPOW Next (THE (I' (1,SUC t)) − 1) a).PC` by METIS_TAC [] >>
+     METIS_TAC [SC_self_mod_not_affect_fetched_instr]) >>
    (** multiple cycles **)
    cheat) >-
    ((** 3: write memory and read instr **)
@@ -411,7 +416,7 @@ Proof
    Cases_on `m` >-
     (fs [] >> cheat) >>
    cheat) >>
-  (** 0: do nothing, not possible when fetching **)
+  (** 0: do nothing, not a possible command when fetching **)
   fs [enable_stg_def] >>
   `(agp32 fext fbits t).state = 0w`
     by (Cases_on_word_value `(agp32 fext fbits t).state` >>

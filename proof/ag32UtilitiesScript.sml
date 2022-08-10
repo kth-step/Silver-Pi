@@ -52,8 +52,26 @@ val get_func_from_decode_tac =
   fs [func_def,num2funcT_thm,instr_def]);
 
 
+(* two lemmas about word concat and add *)
+Theorem addr_add:
+  !(w:word32).
+    (31 >< 2) w @@ (0w:word2) + 1w = (31 >< 2) w @@ (1w:word2) /\
+    (31 >< 2) w @@ (0w:word2) + 2w = (31 >< 2) w @@ (2w:word2) /\
+    (31 >< 2) w @@ (0w:word2) + 3w = (31 >< 2) w @@ (3w:word2)
+Proof
+  BBLAST_TAC
+QED
+
+Theorem addr_concat:
+  !(w1:word30) (w2:word2) (w3:word30) (w4:word2).
+    (w1 @@ w2 = w3 @@ w4) <=> (w1 = w3 /\ w2 = w4)
+Proof
+  BBLAST_TAC
+QED
+
+
 (* unchanged items in ISA state after ALU updating *)
-Theorem ALU_state_eq_after:
+Theorem ALU_state_eq_after[local]:
   !func input1 input2 res a a'.
     ALU (func, input1, input2) a = (res, a') ==>
     a'.PC = a.PC /\ a'.MEM = a.MEM /\ a'.R = a.R /\
@@ -105,7 +123,7 @@ QED
 
 (* ISA: opc is correct with respect to the Decode *)
 (** if Deocde got Normal, then opc is 0w **)
-Theorem ag32_Decode_Normal_opc_0w:
+Theorem ag32_Decode_Normal_opc_0w[local]:
   !ag func wi a b.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (func,wi,a,b) ==>
     opc ag = 0w
@@ -114,7 +132,7 @@ Proof
 QED
 
 (** if Deocde got Shift, then opc is 1w **)
-Theorem ag32_Decode_Shift_opc_1w:
+Theorem ag32_Decode_Shift_opc_1w[local]:
   !ag sh wi a b.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Shift (sh,wi,a,b) ==>
     opc ag = 1w
@@ -123,7 +141,7 @@ Proof
 QED
 
 (** if Deocde got StoreMEM, then opc is 2w **)
-Theorem ag32_Decode_StoreMEM_opc_2w:
+Theorem ag32_Decode_StoreMEM_opc_2w[local]:
   !ag a b.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = StoreMEM (a,b) ==>
     opc ag = 2w
@@ -131,8 +149,24 @@ Proof
   get_opc_from_decode_tac
 QED
 
+(** if opc is 2w, then Decode result is StoreMEM **)
+Theorem ag32_opc_2w_Decode_StoreMEM[local]:
+  !ag.
+    opc ag = 2w ==>
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) =
+    StoreMEM (DecodeReg_imm (v2w [word_bit 23 (word_at_addr ag.MEM (align_addr ag.PC))],
+                             (22 >< 17) (word_at_addr ag.MEM (align_addr ag.PC))),
+              DecodeReg_imm (v2w [word_bit 16 (word_at_addr ag.MEM (align_addr ag.PC))],
+                             (15 >< 10) (word_at_addr ag.MEM (align_addr ag.PC))))
+Proof
+  rw [opc_def,instr_def] >> simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >> fs [] >>
+  rw [DecodeReg_imm_def] >>
+  fs [v2w_single_0w]
+QED
+
 (** if Deocde got StoreMEMByte, then opc is 3w **)
-Theorem ag32_Decode_StoreMEMByte_opc_3w:
+Theorem ag32_Decode_StoreMEMByte_opc_3w[local]:
   !ag a b.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = StoreMEMByte (a,b) ==>
     opc ag = 3w
@@ -140,8 +174,24 @@ Proof
   get_opc_from_decode_tac
 QED
 
+(** if opc is 3w, then Decode result is StoreMEMByte **)
+Theorem ag32_opc_3w_Decode_StoreMEMByte[local]:
+  !ag.
+    opc ag = 3w ==>
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) =
+    StoreMEMByte (DecodeReg_imm (v2w [word_bit 23 (word_at_addr ag.MEM (align_addr ag.PC))],
+                             (22 >< 17) (word_at_addr ag.MEM (align_addr ag.PC))),
+              DecodeReg_imm (v2w [word_bit 16 (word_at_addr ag.MEM (align_addr ag.PC))],
+                             (15 >< 10) (word_at_addr ag.MEM (align_addr ag.PC))))
+Proof
+  rw [opc_def,instr_def] >> simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >> fs [] >>
+  rw [DecodeReg_imm_def] >>
+  fs [v2w_single_0w]
+QED
+
 (** if Deocde got LoadMEM, then opc is 4w **)
-Theorem ag32_Decode_LoadMEM_opc_4w:
+Theorem ag32_Decode_LoadMEM_opc_4w[local]:
   !ag wi a.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadMEM (wi,a) ==>
     opc ag = 4w
@@ -150,7 +200,7 @@ Proof
 QED
 
 (** if Deocde got LoadMEMByte, then opc is 5w **)
-Theorem ag32_Decode_LoadMEMByte_opc_5w:
+Theorem ag32_Decode_LoadMEMByte_opc_5w[local]:
   !ag wi a.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadMEMByte (wi,a) ==>
     opc ag = 5w
@@ -159,7 +209,7 @@ Proof
 QED
 
 (** if Deocde got Out, then opc is 6w **)
-Theorem ag32_Decode_Out_opc_6w:
+Theorem ag32_Decode_Out_opc_6w[local]:
   !ag func wi a b.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (func,wi,a,b) ==>
     opc ag = 6w
@@ -168,7 +218,7 @@ Proof
 QED
 
 (** if Deocde got In, then opc is 7w **)
-Theorem ag32_Decode_In_opc_7w:
+Theorem ag32_Decode_In_opc_7w[local]:
   !ag c.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = In c ==>
     opc ag = 7w
@@ -177,7 +227,7 @@ Proof
 QED
 
 (** if Deocde got Acc, then opc is 8w **)
-Theorem ag32_Decode_Acc_opc_8w:
+Theorem ag32_Decode_Acc_opc_8w[local]:
   !ag wi a.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Accelerator (wi,a) ==>
     opc ag = 8w
@@ -186,7 +236,7 @@ Proof
 QED
 
 (** if Deocde got Jump, then opc is 9w **)
-Theorem ag32_Decode_Jump_opc_9w:
+Theorem ag32_Decode_Jump_opc_9w[local]:
   !ag func wi a.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (func,wi,a) ==>
     opc ag = 9w
@@ -195,7 +245,7 @@ Proof
 QED
 
 (** if Deocde got JumpIfZero, then opc is 10w **)
-Theorem ag32_Decode_JumpIfZero_opc_10w:
+Theorem ag32_Decode_JumpIfZero_opc_10w[local]:
   !ag func wi a b.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (func,wi,a,b) ==>
     opc ag = 10w
@@ -204,7 +254,7 @@ Proof
 QED
 
 (** if Deocde got JumpIfNotZero, then opc is 11w **)
-Theorem ag32_Decode_JumpIfNotZero_opc_11w:
+Theorem ag32_Decode_JumpIfNotZero_opc_11w[local]:
   !ag func wi a b.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (func,wi,a,b) ==>
     opc ag = 11w
@@ -213,7 +263,7 @@ Proof
 QED
 
 (** if Deocde got Interrupt, then opc is 12w **)
-Theorem ag32_Decode_Interrupt_opc_12w:
+Theorem ag32_Decode_Interrupt_opc_12w[local]:
   !ag.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Interrupt ==>
     opc ag = 12w
@@ -222,7 +272,7 @@ Proof
 QED
 
 (** if Deocde got LoadConstant, then opc is 13w **)
-Theorem ag32_Decode_LoadConstant_opc_13w:
+Theorem ag32_Decode_LoadConstant_opc_13w[local]:
   !ag w1 w2 w3.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadConstant(w1,w2,w3) ==>
     opc ag = 13w
@@ -231,7 +281,7 @@ Proof
 QED
 
 (** if Deocde got LoadUpperConstant, then opc is 14w **)
-Theorem ag32_Decode_LoadUpperConstant_opc_14w:
+Theorem ag32_Decode_LoadUpperConstant_opc_14w[local]:
   !ag w1 w2.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadUpperConstant(w1,w2) ==>
     opc ag = 14w
@@ -248,7 +298,7 @@ Proof
 QED
 
 (** if Deocde got ReservedInstr, then opc is not 0-14w **)
-Theorem ag32_Decode_ReservedInstr_opc_15w:
+Theorem ag32_Decode_ReservedInstr_opc_15w[local]:
   !ag.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = ReservedInstr ==>
     opc ag = 15w
@@ -454,16 +504,6 @@ Proof
 QED
 
 
-(** a lemma about the ISA ALU function, copied from ag32 repo **)
-Theorem ALU_state_eq_after[local]:
- !func a b res ag ag'.
-   ALU (func, a, b) ag = (res, ag') ==>
-   ag'.PC = ag.PC /\ ag'.MEM = ag.MEM /\ ag'.PC = ag.PC /\ ag'.R = ag.R /\ ag'.data_in = ag.data_in /\
-   ag'.data_out = ag.data_out /\ ag'.io_events = ag.io_events
-Proof
- rw [ALU_def] >> Cases_on `func'` >> fs [] >> rw []
-QED
-
 (* if the current instr does not jump, the next pc = current pc + 4w *)
 Theorem ag32_not_isJump_isa_Next_PC:
   !ag.
@@ -517,6 +557,72 @@ Proof
    (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def]) >-
    (PairCases_on `p` >> rw [Run_def,dfn'StoreMEM_def,incPC_def]) >> 
    PairCases_on `p` >> rw [Run_def,dfn'StoreMEMByte_def,incPC_def]
+QED
+
+
+(* word_at_addr is unchanged after a memory write *)
+Theorem word_ar_addr_not_changed_after_write_mem:
+  !adr n a.
+    is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
+    align_addr (dataB (FUNPOW Next (n-1) a)) <> (align_addr adr) ==>
+    word_at_addr (FUNPOW Next (n-1) a).MEM (align_addr adr) =
+    word_at_addr (FUNPOW Next n a).MEM (align_addr adr)
+Proof
+  Cases_on `n` >> rw [FUNPOW_SUC] >>
+  Q.ABBREV_TAC `a0 = FUNPOW Next n' a` >>
+  fs [is_wrMEM_isa_def] >-
+   ((** StoreMem **)
+   Cases_on `opc a0 = 2w` >> fs [] >>
+   rw [Next_def,Run_def] >>
+   rw [GSYM word_at_addr_def,GSYM align_addr_def] >>
+   `Decode (word_at_addr a0.MEM (align_addr a0.PC)) =
+   StoreMEM (DecodeReg_imm (v2w [word_bit 23 (word_at_addr a0.MEM (align_addr a0.PC))],
+                            (22 >< 17) (word_at_addr a0.MEM (align_addr a0.PC))),
+             DecodeReg_imm (v2w [word_bit 16 (word_at_addr a0.MEM (align_addr a0.PC))],
+                            (15 >< 10) (word_at_addr a0.MEM (align_addr a0.PC))))`
+     by fs [ag32_opc_2w_Decode_StoreMEM] >>
+   fs [dataB_def] >>
+   qpat_abbrev_tac `da = DecodeReg_imm (_,_)` >>
+   qpat_abbrev_tac `db = DecodeReg_imm (_,_)` >>
+   rw [dfn'StoreMEM_def,incPC_def] >>
+   rw [word_at_addr_def] >> fs [align_addr_def] >> fs [combinTheory.APPLY_UPDATE_THM] >>
+   rw [addr_add,addr_concat]) >>
+  Cases_on `opc a0 = 3w` >> fs [] >>
+  rw [Next_def,Run_def] >>
+  rw [GSYM word_at_addr_def,GSYM align_addr_def] >>
+  `Decode (word_at_addr a0.MEM (align_addr a0.PC)) =
+  StoreMEMByte (DecodeReg_imm (v2w [word_bit 23 (word_at_addr a0.MEM (align_addr a0.PC))],
+                               (22 >< 17) (word_at_addr a0.MEM (align_addr a0.PC))),
+                DecodeReg_imm (v2w [word_bit 16 (word_at_addr a0.MEM (align_addr a0.PC))],
+                               (15 >< 10) (word_at_addr a0.MEM (align_addr a0.PC))))`
+    by fs [ag32_opc_3w_Decode_StoreMEMByte] >>
+  fs [dataB_def] >>
+  qpat_abbrev_tac `da = DecodeReg_imm (_,_)` >>
+  qpat_abbrev_tac `db = DecodeReg_imm (_,_)` >>
+  rw [dfn'StoreMEMByte_def,incPC_def] >>
+  rw [word_at_addr_def] >> fs [align_addr_def] >> fs [combinTheory.APPLY_UPDATE_THM] >>
+  `ri2word db a0 = (31 >< 2) (ri2word db a0) @@ (1 >< 0) (ri2word db a0)` by BBLAST_TAC >>
+  `(31 >< 2) (ri2word db a0) <> (31 >< 2) adr` by fs [addr_concat] >>
+  simp [addr_add] >> METIS_TAC [addr_concat]
+QED
+
+(* if there is no self-modified code,
+   then the fetched instr is not affected by the memory write. *)
+Theorem SC_self_mod_not_affect_fetched_instr:
+  !(I:num # num -> num option) a t.
+    (!j. j = THE (I (2,t)) \/ j = THE (I (3,t)) \/ j = THE (I (4,t)) ==>
+         is_wrMEM_isa (FUNPOW Next (j-1) a) ==>
+         align_addr (dataB (FUNPOW Next (j-1) a)) <> align_addr (FUNPOW Next (THE (I (1,t)) -1) a).PC) ==>
+    word_at_addr (FUNPOW Next (THE (I (1,t)) -1) a).MEM (align_addr (FUNPOW Next (THE (I (1,t)) -1) a).PC) =
+    word_at_addr (FUNPOW Next (THE (I (4,t))) a).MEM (align_addr (FUNPOW Next (THE (I (1,t)) -1) a).PC)
+Proof
+  rw [] >>
+  Cases_on `is_wrMEM_isa (FUNPOW Next (THE (I' (2,t)) - 1) a)` >-
+   (`align_addr (dataB (FUNPOW Next (THE (I' (2,t)) - 1) a)) <>
+    align_addr (FUNPOW Next (THE (I' (1,t)) − 1) a).PC` by fs [] >>
+    `THE (I' (1,t)) - 1 = THE (I' (2,t))` by cheat >> fs [] >>
+    cheat) >>
+  cheat
 QED
 
 val _ = export_theory ();

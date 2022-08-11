@@ -367,7 +367,7 @@ QED
 (** IF_instr **)
 Theorem agp32_Rel_ag32_IF_instr_correct:
   !fext fbits a t I.
-    SC_self_mod I a ==>
+    SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
@@ -393,12 +393,9 @@ Proof
      `(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
        by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >>
      `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
-     fs [SC_self_mod_def] >>
-     `!j. j = THE (I' (2,SUC t)) \/ j = THE (I' (3,SUC t)) \/ j = THE (I' (4,SUC t)) ==>
-     is_wrMEM_isa (FUNPOW Next (j − 1) a) ==>
-     align_addr (dataB (FUNPOW Next (j − 1) a)) <>
-     align_addr (FUNPOW Next (THE (I' (1,SUC t)) − 1) a).PC` by METIS_TAC [] >>
-     METIS_TAC [SC_self_mod_not_affect_fetched_instr]) >>
+     `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
+      THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by cheat >>
+     METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
    (** multiple cycles **)
    cheat) >-
    ((** 3: write memory and read instr **)
@@ -440,7 +437,7 @@ QED
 (** IF_Rel between ISA and circuit states **)
 Theorem agp32_Rel_ag32_IF_Rel_correct:
   !fext fbits a t I.
-    SC_self_mod I a ==>
+    SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
@@ -562,7 +559,7 @@ QED
 Theorem agp32_Rel_ag32_correct:
   !fext fbits s a t I.
     s = agp32 fext fbits ==>
-    SC_self_mod I a ==>
+    SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit s fext ==>
     is_acc accelerator_f s ==>
     is_interrupt_interface fext_accessor_circuit s fext ==>

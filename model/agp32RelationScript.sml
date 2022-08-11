@@ -36,33 +36,20 @@ End
 (* self modified: a memory write operation does not affect the fetched value of the next 3 instructions *)
 Definition SC_self_mod_isa_def:
   SC_self_mod_isa (a:ag32_state) <=>
-  !n i. is_wrMEM_isa (FUNPOW Next (n-1) a) ==> 
-  i > n /\ i < n + 4 ==> align_addr (FUNPOW Next (i-1) a).PC <> align_addr (dataB (FUNPOW Next (n-1) a))
+  !n i. is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
+        i > n ==> i < n + 4 ==>
+        align_addr (FUNPOW Next (i-1) a).PC <> align_addr (dataB (FUNPOW Next (n-1) a))
 End  
 
+(* not used, to remove later
 Definition SC_self_mod_def:
-  SC_self_mod (I:num # num -> num option) (a:ag32_state) <=> 
+  SC_self_mod (I:num # num -> num option) (a:ag32_state) <=>
   !t j. j = THE (I (2,t)) \/ j = THE (I (3,t)) \/ j = THE (I (4,t)) ==>
-  is_wrMEM_isa (FUNPOW Next (j-1) a) ==>
-  align_addr (dataB (FUNPOW Next (j-1) a)) <> align_addr (FUNPOW Next (THE (I (1,t)) -1) a).PC
+        is_wrMEM_isa (FUNPOW Next (j-1) a) ==>
+        align_addr (dataB (FUNPOW Next (j-1) a)) <> align_addr (FUNPOW Next (THE (I (1,t)) -1) a).PC
 End
-
-(* on ISA level
-SC_self_mod_isa ==> SC_self_mod
-
-lemma
-!a n i.
-is_wrMEM_isa (FUNPOW Next (n-1) a) ==> 
-i > n /\ i < n + 4 ==> (FUNPOW Next (i-1) a).PC <> mem_data_addr (FUNPOW Next (n-1) a) ==> 
-value_at_addr (FUNPOW Next (i-1) a).PC (FUNPOW Next i-1 a).MEM = value_at_addr (FUNPOW Next (i-1) a).PC (FUNPOW Next n a).MEM
-
-!I a t j.
-j = THE (I (2,t)) \/ j = THE (I (3,t)) \/ j = THE (I (4,t)) ==>
-is_wrMEM_isa (FUNPOW Next (j-1) a) ==>
-mem_data_addr (FUNPOW Next (j-1) a) <> (FUNPOW Next (THE (I (1,t)) -1) a).PC ==> 
-value_at_addr (FUNPOW Next (THE (I (1,t)) -1) a).PC (FUNPOW Next (THE (I (1,t)) -1) a).MEM = 
-value_at_addr (FUNPOW Next (THE (I (1,t)) -1) a).PC (FUNPOW Next (THE (I (4,t))) a).MEM
 *)
+
 
 (* Definitions of relations to prove the correctness of the pipelined Silver *)
 (* relation for the initial states *)

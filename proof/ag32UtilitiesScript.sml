@@ -1,4 +1,4 @@
-open hardwarePreamble arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsExtraTheory ag32Theory ag32ExtraTheory agp32EnvironmentTheory;
+open hardwarePreamble arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsExtraTheory ag32Theory ag32ExtraTheory agp32EnvironmentTheory agp32RelationTheory;
 
 val _ = new_theory "ag32Utilities";
 
@@ -648,6 +648,61 @@ Proof
    PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
 QED
 
+Theorem SC_self_mod_isa_not_affect_fetched_instr:
+  !a i j.
+    SC_self_mod_isa a ==>
+    i > j ==>
+    i < j + 4 ==>
+    word_at_addr (FUNPOW Next (i-1) a).MEM (align_addr (FUNPOW Next (i-1) a).PC)  =
+    word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (i-1) a).PC)
+Proof
+  rw [SC_self_mod_isa_def] >>
+  `i = j + 1 \/ i = j + 2 \/ i = j + 3` by fs [] >> rw [] >-
+   (Q.ABBREV_TAC `n' = j + 1` >>
+    `j = n' - 1` by fs [Abbr `n'`] >> fs [] >>
+    Cases_on `is_wrMEM_isa (FUNPOW Next (n'-1) a)` >-
+     (`n'+1 > n' /\ n'+1 < n'+4` by rw [] >>
+      `align_addr (FUNPOW Next (n'+1-1) a).PC <>
+       align_addr (dataB (FUNPOW Next (n'−1) a))` by fs [] >>
+      fs [word_ar_addr_not_changed_after_write_mem]) >>
+    fs [word_ar_addr_not_changed_after_normal_instrs]) >>
+  Q.ABBREV_TAC `n' = j + 1` >>
+  `n' <> 0` by fs [Abbr `n'`] >>
+  `j = n' - 1` by fs [Abbr `n'`] >> fs [] >>
+  Cases_on `is_wrMEM_isa (FUNPOW Next (n'-1) a)` >-
+   (`n'+2 > n' /\ n'+2 < n'+4` by rw [] >>
+    `align_addr (FUNPOW Next (n'+2-1) a).PC <>
+     align_addr (dataB (FUNPOW Next (n'−1) a))` by fs [] >>
+    `word_at_addr (FUNPOW Next (n' − 1) a).MEM
+     (align_addr (FUNPOW Next (n' + 1) a).PC) =
+    word_at_addr (FUNPOW Next n' a).MEM
+     (align_addr (FUNPOW Next (n' + 1) a).PC)`                        
+      by fs [word_ar_addr_not_changed_after_write_mem] >> fs [] >>
+    Q.ABBREV_TAC `n'' = n' + 1` >>
+    `n' = n'' - 1` by fs [Abbr `n''`] >> fs [] >>
+    Cases_on `is_wrMEM_isa (FUNPOW Next (n''-1) a)` >-
+     (`n''+1 > n'' /\ n''+1 < n''+4` by rw [] >>
+      `align_addr (FUNPOW Next (n''+1-1) a).PC <>
+       align_addr (dataB (FUNPOW Next (n''−1) a))` by fs [] >>
+      fs [word_ar_addr_not_changed_after_write_mem]) >>
+    fs [word_ar_addr_not_changed_after_normal_instrs]) >>
+  `word_at_addr (FUNPOW Next (n' − 1) a).MEM
+   (align_addr (FUNPOW Next (n' + 1) a).PC) =
+  word_at_addr (FUNPOW Next n' a).MEM
+  (align_addr (FUNPOW Next (n' + 1) a).PC)`                        
+   by fs [word_ar_addr_not_changed_after_normal_instrs] >> fs [] >>
+  Q.ABBREV_TAC `n'' = n' + 1` >>          
+  `n' = n'' - 1` by fs [Abbr `n''`] >> fs [] >>
+  Cases_on `is_wrMEM_isa (FUNPOW Next (n''-1) a)` >-
+    (`n''+1 > n'' /\ n''+1 < n''+4` by rw [] >>
+     `align_addr (FUNPOW Next (n''+1-1) a).PC <>
+     align_addr (dataB (FUNPOW Next (n''−1) a))` by fs [] >>
+    fs [word_ar_addr_not_changed_after_write_mem]) >>
+  fs [word_ar_addr_not_changed_after_normal_instrs]          
+QED
+
+
+(* old theorems not used
 (* if there is no self-modified code,
    then the fetched instr is not affected by the memory write. *)
 Theorem SC_self_mod_not_affect_fetched_instr:
@@ -658,18 +713,53 @@ Theorem SC_self_mod_not_affect_fetched_instr:
     word_at_addr (FUNPOW Next (THE (I (1,t)) -1) a).MEM (align_addr (FUNPOW Next (THE (I (1,t)) -1) a).PC) =
     word_at_addr (FUNPOW Next (THE (I (4,t))) a).MEM (align_addr (FUNPOW Next (THE (I (1,t)) -1) a).PC)
 Proof
-  rw [] >>
-  Cases_on `is_wrMEM_isa (FUNPOW Next (THE (I' (2,t)) - 1) a)` >-
+  rw [] >> Cases_on `is_wrMEM_isa (FUNPOW Next (THE (I' (2,t)) - 1) a)` >>
+  `THE (I' (1,t)) - 1 = THE (I' (2,t))` by cheat >> fs [] >-
    (`align_addr (dataB (FUNPOW Next (THE (I' (2,t)) - 1) a)) <>
     align_addr (FUNPOW Next (THE (I' (1,t)) − 1) a).PC` by fs [] >>
-    `THE (I' (1,t)) - 1 = THE (I' (2,t))` by cheat >> fs [] >>
     `word_at_addr (FUNPOW Next (THE (I' (2,t))) a).MEM
      (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC) =
      word_at_addr (FUNPOW Next (THE (I' (2,t)) - 1) a).MEM
-     (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC)` by
-      fs [word_ar_addr_not_changed_after_write_mem] >> fs [] >>
-    cheat) >>
-  cheat
+     (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC)`
+      by fs [word_ar_addr_not_changed_after_write_mem] >> fs [] >>
+    `THE (I' (2,t)) - 1 = THE (I' (3,t))` by cheat >> fs [] >>
+    Cases_on `is_wrMEM_isa (FUNPOW Next (THE (I' (3,t)) - 1) a)` >-
+     (`align_addr (dataB (FUNPOW Next (THE (I' (3,t)) - 1) a)) <>
+      align_addr (FUNPOW Next (THE (I' (2,t))) a).PC` by fs [] >>
+      `word_at_addr (FUNPOW Next (THE (I' (3,t))) a).MEM
+       (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC) =
+      word_at_addr (FUNPOW Next (THE (I' (3,t)) - 1) a).MEM
+       (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC)`           
+        by fs [word_ar_addr_not_changed_after_write_mem] >> fs [] >>
+      `THE (I' (3,t)) - 1 = THE (I' (4,t))` by cheat >> fs []) >>
+    `word_at_addr (FUNPOW Next (THE (I' (3,t))) a).MEM
+     (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC) =
+    word_at_addr (FUNPOW Next (THE (I' (3,t)) - 1) a).MEM
+     (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC)`
+      by fs [word_ar_addr_not_changed_after_normal_instrs] >> fs [] >>
+    `THE (I' (3,t)) - 1 = THE (I' (4,t))` by cheat >> fs []) >>
+  `word_at_addr (FUNPOW Next (THE (I' (2,t))) a).MEM
+   (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC) =
+  word_at_addr (FUNPOW Next (THE (I' (2,t)) - 1) a).MEM
+   (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC)`
+    by fs [word_ar_addr_not_changed_after_normal_instrs] >> fs [] >>
+  `THE (I' (2,t)) - 1 = THE (I' (3,t))` by cheat >> fs [] >>
+  Cases_on `is_wrMEM_isa (FUNPOW Next (THE (I' (3,t)) - 1) a)` >-
+   (`align_addr (dataB (FUNPOW Next (THE (I' (3,t)) - 1) a)) <>
+    align_addr (FUNPOW Next (THE (I' (2,t))) a).PC` by fs [] >>
+    `word_at_addr (FUNPOW Next (THE (I' (3,t))) a).MEM
+     (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC) =
+    word_at_addr (FUNPOW Next (THE (I' (3,t)) - 1) a).MEM
+     (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC)`                        
+      by fs [word_ar_addr_not_changed_after_write_mem] >> fs [] >>
+    `THE (I' (3,t)) - 1 = THE (I' (4,t))` by cheat >> fs []) >>
+  `word_at_addr (FUNPOW Next (THE (I' (3,t))) a).MEM
+   (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC) =
+  word_at_addr (FUNPOW Next (THE (I' (3,t)) - 1) a).MEM
+   (align_addr (FUNPOW Next (THE (I' (2,t))) a).PC)`
+    by fs [word_ar_addr_not_changed_after_normal_instrs] >> fs [] >>
+  `THE (I' (3,t)) - 1 = THE (I' (4,t))` by cheat >> fs []
 QED
+*)
 
 val _ = export_theory ();

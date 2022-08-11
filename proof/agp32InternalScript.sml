@@ -104,7 +104,7 @@ QED
 
 
 (* IF_PC_write_enable and MEM_state_flag *)
-Theorem agp32_IF_PC_write_enable_and_MEM_state_flag:
+Theorem agp32_IF_PC_write_enable_and_EX_MEM_flags:
   !fext fbits t.
     (agp32 fext fbits t).IF.IF_PC_write_enable ==>
     (agp32 fext fbits t).ID.ID_EX_write_enable /\
@@ -115,6 +115,27 @@ Proof
   ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable) /\
   ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable) /\
   ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
+    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
+  fs [Hazard_ctrl_def] >>
+  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `(fext t).ready` >> fs [] >>
+  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+  Cases_on `s'.EX.EX_jump_sel` >> fs []
+QED
+
+(* IF_PC_write_enable is F then ID_EX_write_enable is also F *)
+Theorem agp32_IF_PC_write_disable_and_EX_disable:
+  !fext fbits t.
+    ~(agp32 fext fbits t).IF.IF_PC_write_enable ==>
+    ~(agp32 fext fbits t).ID.ID_EX_write_enable
+Proof
+  rw [] >>
+  `?s s'.
+  ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable) /\
+  ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
   fs [Hazard_ctrl_def] >>
   Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>

@@ -92,16 +92,6 @@ val carry_flag_unchanged_by_func_tac =
        by METIS_TAC [agp32_same_EX_carry_flag_as_before,Abbr `s`,Abbr `s'`,Abbr `s''`] >>    
      rw [EX_ALU_update_def] >> fs [Rel_def,Abbr `s`]);
 
-(* lemma about the scheduling function I *)
-Theorem I_2_stages_t:
-  !t k I fext fbits.
-    enable_stg k (agp32 fext fbits t) ==>
-    ((I (k,SUC t) = I (k,t) + 1) /\ (I (k,SUC t) = I (k - 1,t))) ==>       
-    I (k,t) + 1 = I (k-1,t)
-Proof
-  rw [] >> fs []
-QED
-
 (* lemmas *)
 (** lemmas copied from the hardware/ag32 repo **)
 Theorem ALU_correct_carry_lem:
@@ -314,6 +304,73 @@ QED
 *)
 
 
+(* lemma about the scheduling function I *)
+(** instr index relation between IF and EX stages **)
+Theorem IF_instr_index_with_EX_instr:
+  !I t fext fbits a.
+    is_sch_init I ==>
+    is_sch_fetch I (agp32 fext fbits) a ==>
+    is_sch_other I (agp32 fext fbits) ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    I (1,t) <> NONE ==>
+    (THE (I (1,t)) + 1 > THE (I (3,t))) /\
+    (THE (I (1,t)) < THE (I (3,t)) + 3)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  Induct_on `t` >-
+   fs [is_sch_init_def] >>
+  Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
+   (fs [is_sch_fetch_def] >> disch_tac >>
+    Cases_on `isJump_isa (FUNPOW Next (THE (I' (3,t)) − 1) a)` >-
+     (fs [] >>
+      `enable_stg 3 (agp32 fext fbits t)`
+        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+      fs [is_sch_other_def]) >>
+    Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
+    isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ I' (1,t) = NONE \/ THE (I' (1,t)) = 0` >-
+     METIS_TAC [] >>
+    fs [] >>
+    `enable_stg 3 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+    fs [is_sch_other_def]) >>
+  fs [is_sch_disable_def] >> strip_tac >>
+  `~enable_stg 3 (agp32 fext fbits t)`
+    by fs [enable_stg_def,agp32_IF_PC_write_disable_and_EX_disable] >> fs []
+QED
+
+(** instr index relation between IF and MEM stages **)
+Theorem IF_instr_index_big_then_MEM:
+  !I t fext fbits a.
+    is_sch_init I ==>
+    is_sch_fetch I (agp32 fext fbits) a ==>
+    is_sch_other I (agp32 fext fbits) ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    enable_stg 1 (agp32 fext fbits t) ==>
+    I (1,SUC t) <> NONE ==>
+    (THE (I (1,SUC t)) > THE (I (4,SUC t))) /\
+    (THE (I (1,SUC t)) < THE (I (4,SUC t)) + 4)
+Proof
+  rpt gen_tac >>
+  rpt disch_tac >>
+  Cases_on `isJump_isa (FUNPOW Next (THE (I' (3,t)) − 1) a)` >-
+   (`I' (1,SUC t) = SOME (THE (I' (3,t)) + 1)` by fs [is_sch_fetch_def] >>
+    `enable_stg 4 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+    `4 <> 1` by rw [] >>
+    `I' (4,SUC t) = SOME (THE (I' (4-1,t)))` by METIS_TAC [is_sch_other_def] >> fs []) >>
+  Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
+  isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ I' (1,t) = NONE \/ THE (I' (1,t)) = 0` >-
+   METIS_TAC [is_sch_fetch_def] >> fs [] >>
+  `enable_stg 4 (agp32 fext fbits t)`
+    by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+  `4 <> 1` by rw [] >>
+  `I' (4,SUC t) = SOME (THE (I' (4-1,t)))` by METIS_TAC [is_sch_other_def] >>
+  `I' (1,SUC t) = SOME (THE (I' (1,t)) + 1)` by METIS_TAC [is_sch_fetch_def] >> fs [] >>
+  `(THE (I' (1,t)) + 1 > THE (I' (3,t))) /\
+  (THE (I' (1,t)) < THE (I' (3,t)) + 3)` by METIS_TAC [IF_instr_index_with_EX_instr] >> fs []
+QED
+
+
 (* Init relation implies Rel at cycle 0 *)
 Theorem agp32_Init_implies_Rel:
   !fext fbits s a I.
@@ -369,7 +426,10 @@ Theorem agp32_Rel_ag32_IF_instr_correct:
   !fext fbits a t I.
     SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch_init I ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
+    is_sch_other I (agp32 fext fbits) ==>
+    is_sch_disable I (agp32 fext fbits) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
     reg_data_vaild 3 (agp32 fext fbits t) ==>
@@ -388,30 +448,39 @@ Proof
    (** different command values **)
    ((** 4: interrupt and read instr **)
    last_assum (mp_tac o is_mem_data_flush `SUC t`) >> rw [] >>
-   Cases_on `m` >-
-    (fs [] >>
-     `(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
+   Cases_on `m` >> fs [] >-
+    (`(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
        by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >>
      `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
      `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
-      THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by cheat >>
+     THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM] >>
      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
    (** multiple cycles **)
    cheat) >-
    ((** 3: write memory and read instr **)
    last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
-   Cases_on `m` >-
+   Cases_on `m` >> fs [] >-
     (fs [] >> cheat) >>
-   cheat) >-           
+   cheat) >-
    ((** 2: read memory and read instr **)
    last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
-   Cases_on `m` >-
-    (fs [] >> cheat) >>
+   Cases_on `m` >> fs [] >-
+    (`(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
+       by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >>
+     `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
+     `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
+     THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM] >>
+     METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
    cheat) >-
    ((** 1: read instr **)
    last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
-   Cases_on `m` >-
-    (fs [] >> cheat) >>
+   Cases_on `m` >> fs [] >-
+    (`(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
+       by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >>
+     `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
+     `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
+     THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM] >>
+     METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
    cheat) >>
   (** 0: do nothing, not a possible command when fetching **)
   fs [enable_stg_def] >>
@@ -439,7 +508,10 @@ Theorem agp32_Rel_ag32_IF_Rel_correct:
   !fext fbits a t I.
     SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch_init I ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
+    is_sch_other I (agp32 fext fbits) ==>
+    is_sch_disable I (agp32 fext fbits) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 1 (agp32 fext fbits t) ==>
     I (1,SUC t) <> NONE ==>
@@ -537,7 +609,7 @@ Proof
    (Cases_on `reg_data_vaild 3 (agp32 fext fbits t)` >-
      fs [agp32_Rel_ag32_IF_PC_correct] >>
     `(agp32 fext fbits t).MEM.MEM_state_flag`
-      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_MEM_state_flag] >>
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
     fs [reg_data_vaild_def,enable_stg_def]) >>
   fs [is_sch_disable_def] >>
   `I'(1,t) <> NONE` by METIS_TAC [] >>
@@ -546,7 +618,7 @@ Proof
   Cases_on `enable_stg 1 (agp32 fext fbits (t-1))` >-
    (Cases_on `reg_data_vaild 3 (agp32 fext fbits (t-1))` >> fs [] >>
     fs [reg_data_vaild_def,enable_stg_def] >>
-    METIS_TAC [agp32_IF_PC_write_enable_and_MEM_state_flag]) >>
+    METIS_TAC [agp32_IF_PC_write_enable_and_EX_MEM_flags]) >>
   fs [] >> cheat
 QED
 

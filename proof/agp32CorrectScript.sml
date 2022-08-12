@@ -460,7 +460,23 @@ Proof
    ((** 3: write memory and read instr **)
    last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
    Cases_on `m` >> fs [] >-
-    (fs [] >> cheat) >>
+    (`(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
+       by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >>
+     `(agp32 fext fbits (SUC t)).data_addr = dataB (FUNPOW Next (THE (I' (4,SUC t))-1) a)` by cheat >>
+     `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4`
+       by METIS_TAC [IF_instr_index_big_then_MEM] >> fs [] >>
+     `is_wrMEM_isa (FUNPOW Next (THE (I' (4,SUC t))-1) a)` by cheat >>
+     `align_addr (FUNPOW Next (THE (I' (1,SUC t)) − 1) a).PC <>
+      align_addr (dataB (FUNPOW Next (THE (I' (4,SUC t))-1) a))` by fs [SC_self_mod_isa_def] >>
+     `word_at_addr (mem_update (fext (SUC t)).mem
+                    (align_addr (dataB (FUNPOW Next (THE (I' (4,SUC t)) − 1) a)))
+                    (agp32 fext fbits (SUC t)).data_wdata
+                    (agp32 fext fbits (SUC t)).data_wstrb)
+      (align_addr (FUNPOW Next (THE (I' (1,SUC t)) − 1) a).PC) =
+     word_at_addr (fext (SUC t)).mem (align_addr (FUNPOW Next (THE (I' (1,SUC t)) − 1) a).PC)` 
+       by fs [word_at_addr_not_changed_after_mem_update] >> fs [] >>
+     `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
+     METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
    cheat) >-
    ((** 2: read memory and read instr **)
    last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>

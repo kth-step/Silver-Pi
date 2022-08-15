@@ -634,15 +634,7 @@ Proof
     `(agp32 fext fbits t).MEM.MEM_state_flag`
       by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
     fs [reg_data_vaild_def,enable_stg_def]) >>
-  fs [is_sch_disable_def] >>
-  `I'(1,t) <> NONE` by METIS_TAC [] >>
-  `(agp32 fext fbits (SUC t)).PC = (agp32 fext fbits t).PC` by cheat >>
-  fs [Rel_def,IF_Rel_def] >>
-  Cases_on `enable_stg 1 (agp32 fext fbits (t-1))` >-
-   (Cases_on `reg_data_vaild 3 (agp32 fext fbits (t-1))` >> fs [] >>
-    fs [reg_data_vaild_def,enable_stg_def] >>
-    METIS_TAC [agp32_IF_PC_write_enable_and_EX_MEM_flags]) >>
-  fs [IF_disable_Rel_def]
+  fs [agp32_Rel_ag32_IF_disable_PC_correct]
 QED
 
 
@@ -659,8 +651,8 @@ Theorem agp32_Rel_ag32_correct:
     is_acc accelerator_f s ==>
     is_interrupt_interface fext_accessor_circuit s fext ==>
     is_data_in fext ==>
-    Init (fext 0) (s 0) a ==>
     is_sch I s a ==>
+    Init (fext 0) (s 0) a ==>
     Rel I (fext t) (s (t-1)) (s t) a t
 Proof
   Induct_on `t` >>

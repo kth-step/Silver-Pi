@@ -102,6 +102,11 @@ Definition IF_Rel_def:
   (reg_data_vaild 3 si ==> s.PC = (FUNPOW Next (i - 1) a).PC)
 End
 
+Definition IF_disable_Rel_def:
+  IF_disable_Rel (s:state_circuit) (a:ag32_state) (i:num) <=>
+  (s.PC = (FUNPOW Next (i - 1) a).PC)
+End
+
 Definition ID_Rel_def:
   ID_Rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
   ((s.ID.ID_PC = (FUNPOW Next (i-1) a).PC) /\
@@ -245,6 +250,7 @@ Definition Rel_def:
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
   (** invisible part **)
   (enable_stg 1 si ==> (I (1,t) <> NONE) ==> IF_Rel fext si s a (THE (I (1,t)))) /\
+  (~enable_stg 1 si ==> (I (1,t) <> NONE) ==> IF_disable_Rel s a (THE (I (1,t)))) /\
   (enable_stg 2 si ==> ID_Rel fext s a (THE (I (2,t)))) /\
   (enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (reg_data_vaild 3 s ==> EX_Rel_spec s a (THE (I (3,t)))) /\

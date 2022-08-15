@@ -380,7 +380,8 @@ Theorem agp32_Init_implies_Rel:
     Rel I (fext 0) (s 0) (s 0) a 0
 Proof
   rpt strip_tac >>
-  fs [Init_def,Rel_def,is_sch_init_def] >> rw [] >-
+  fs [Init_def,Rel_def,is_sch_init_def] >>
+  rw [IF_disable_Rel_def] >-
    fs [agp32_init_IF_PC_input] >>
   fs [enable_stg_def,reg_data_vaild_def] >> fs []
 QED
@@ -533,14 +534,39 @@ Theorem agp32_Rel_ag32_IF_Rel_correct:
     I (1,SUC t) <> NONE ==>
     IF_Rel (fext (SUC t)) (agp32 fext fbits t) (agp32 fext fbits (SUC t)) a (THE (I (1,SUC t)))
 Proof
-  reverse (rw [IF_Rel_def]) >>
-  `?s s'. (agp32 fext fbits (SUC t)).IF.IF_instr =
-  (IF_instr_update (fext (SUC t)) s s').IF.IF_instr`
-    by rw [agp32_IF_instr_updated_by_IF_instr_update] >-
-   (** PC **)
-   METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >-
-  (** fetched instruction **)
-  METIS_TAC [agp32_Rel_ag32_IF_instr_correct]
+  rw [IF_Rel_def] >-
+   (** fetched instruction **)
+   METIS_TAC [agp32_Rel_ag32_IF_instr_correct] >>
+  (** PC **)
+  METIS_TAC [agp32_Rel_ag32_IF_PC_correct]
+QED
+
+
+(** PC updated by when IF is disabled **)
+Theorem agp32_Rel_ag32_IF_disable_PC_correct:
+  !fext fbits a t I.
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    ¬enable_stg 1 (agp32 fext fbits t) ==>
+    I (1,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I (1,SUC t)) - 1) a).PC
+Proof
+  rw [is_sch_disable_def] >>
+  subgoal `(agp32 fext fbits (SUC t)).PC = (agp32 fext fbits t).PC` >-
+   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+    Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                              REG_write;ID_pipeline] (fext t) s s` >>
+    `?s''.(agp32 fext fbits (SUC t)).PC = (IF_PC_update (fext (SUC t)) s'' s').PC`
+      by fs [agp32_PC_updated_by_IF_PC_update,Abbr `s`,Abbr `s'`] >>
+    `~s.IF.IF_PC_write_enable` by fs [enable_stg_def] >>
+    `~s'.IF.IF_PC_write_enable /\ s'.PC = s.PC`
+      by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s`,Abbr `s'`] >>
+    fs [IF_PC_update_def]) >>
+  fs [Rel_def,IF_Rel_def,IF_disable_Rel_def] >>
+  Cases_on `enable_stg 1 (agp32 fext fbits (t − 1))` >> fs [] >>
+  `(agp32 fext fbits (t-1)).MEM.MEM_state_flag`
+    by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+  fs [reg_data_vaild_def,enable_stg_def]
 QED
 
 
@@ -572,25 +598,6 @@ Proof
   rw [MUX_21_def] >>
   cheat
 QED
-
-(*
-Theorem test:
-  !fext fbits a t I.
-    is_sch_fetch I (agp32 fext fbits) a ==>
-    is_sch_disable I (agp32 fext fbits) ==>
-    ¬enable_stg 1 (agp32 fext fbits t) ==>
-    I (1,SUC t) <> NONE ==>
-    (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I (1,SUC t)) - 1) a).PC
-Proof
-  Induct_on `t` >> rw [] >-
-   cheat >>
-  rw [] >>
-  `I' (1,SUC (SUC t)) = I' (1,SUC t)` by fs [is_sch_disable_def] >> rw [] >>
-  `(agp32 fext fbits (SUC (SUC t))).PC = (agp32 fext fbits (SUC t)).PC` by cheat >> rw [] >>
-  Cases_on `enable_stg 1 (agp32 fext fbits t)` >> fs [] >>
-  `reg_data_vaild 3 (agp32 fext fbits t)` by cheat >>
-QED
-*)
 
 
 (* IF_PC_input when not jump *)
@@ -635,7 +642,7 @@ Proof
    (Cases_on `reg_data_vaild 3 (agp32 fext fbits (t-1))` >> fs [] >>
     fs [reg_data_vaild_def,enable_stg_def] >>
     METIS_TAC [agp32_IF_PC_write_enable_and_EX_MEM_flags]) >>
-  fs [] >> cheat
+  fs [IF_disable_Rel_def]
 QED
 
 
@@ -680,6 +687,8 @@ Proof
    cheat >-
    (** IF **)
    METIS_TAC [is_sch_def,agp32_Rel_ag32_IF_Rel_correct] >-
+   (** IF when disable **)
+   METIS_TAC [is_sch_def,IF_disable_Rel_def,agp32_Rel_ag32_IF_disable_PC_correct] >-
    (** ID **)
    cheat >-
    (** EX **)

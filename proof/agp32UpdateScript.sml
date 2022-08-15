@@ -1048,7 +1048,8 @@ QED
 Theorem ID_pipeline_unchanged_IF_items:
   !fext s s'.
     ((ID_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
-    ((ID_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+    ((ID_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
+    ((ID_pipeline fext s s').PC = s'.PC)
 Proof
   rw [ID_pipeline_def]
 QED
@@ -1101,7 +1102,8 @@ QED
 Theorem REG_write_unchanged_IF_items:
   !fext s s'.
     ((REG_write fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
-    ((REG_write fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+    ((REG_write fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
+    ((REG_write fext s s').PC = s'.PC)
 Proof
   rw [REG_write_def]
 QED
@@ -1154,7 +1156,8 @@ QED
 Theorem EX_pipeline_unchanged_IF_items:
   !fext s s'.
     ((EX_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
-    ((EX_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+    ((EX_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
+    ((EX_pipeline fext s s').PC = s'.PC)
 Proof
   rw [EX_pipeline_def]
 QED
@@ -1197,7 +1200,8 @@ QED
 Theorem MEM_pipeline_unchanged_IF_items:
   !fext s s'.
     ((MEM_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
-    ((MEM_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+    ((MEM_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
+    ((MEM_pipeline fext s s').PC = s'.PC)
 Proof
   rw [MEM_pipeline_def]
 QED
@@ -1248,7 +1252,8 @@ QED
 Theorem WB_pipeline_unchanged_IF_items:
   !fext s s'.
     ((WB_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
-    ((WB_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+    ((WB_pipeline fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
+    ((WB_pipeline fext s s').PC = s'.PC)
 Proof
   rw [WB_pipeline_def]
 QED
@@ -1300,7 +1305,8 @@ QED
 Theorem agp32_next_state_unchanged_IF_items:
   !fext s s'.
     ((agp32_next_state fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
-    ((agp32_next_state fext s s').IF.IF_PC_input = s'.IF.IF_PC_input)
+    ((agp32_next_state fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
+    ((agp32_next_state fext s s').PC = s'.PC)
 Proof
   rw [agp32_next_state_def] >>
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
@@ -1720,7 +1726,8 @@ Theorem agp32_same_IF_items_until_ID_pipeline:
     s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                 REG_write;ID_pipeline] (fext t) s s ==>
     (s'.IF.IF_PC_write_enable <=> s.IF.IF_PC_write_enable) /\
-    (s'.IF.IF_PC_input = s.IF.IF_PC_input)
+    (s'.IF.IF_PC_input = s.IF.IF_PC_input) /\
+    (s'.PC = s.PC)
 Proof
   rpt STRIP_TAC >> fs [procs_def] >>
   qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>

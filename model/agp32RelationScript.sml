@@ -245,13 +245,14 @@ Definition Rel_def:
   (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I(3,t))) a).OverflowFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
   (I (1,t) <> NONE ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (1,t)) - 1) a).PC + 4w)) /\
-  (fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\                                     
+  (fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\
+  (~fext.ready ==> ~enable_stg 1 s) /\                                     
   (s.data_out = (FUNPOW Next (THE (I (5,t))) a).data_out) /\
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
   (** invisible part **)
   (enable_stg 1 si ==> (I (1,t) <> NONE) ==> IF_Rel fext si s a (THE (I (1,t)))) /\
   (~enable_stg 1 si ==> (I (1,t) <> NONE) ==> IF_disable_Rel s a (THE (I (1,t)))) /\
-  (enable_stg 2 si ==> ID_Rel fext s a (THE (I (2,t)))) /\
+  (enable_stg 2 si ==> (I (2,t) <> NONE) ==> ID_Rel fext s a (THE (I (2,t)))) /\
   (enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (reg_data_vaild 3 s ==> EX_Rel_spec s a (THE (I (3,t)))) /\
   (enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
@@ -284,9 +285,19 @@ Definition is_sch_fetch_def:
        I (1,SUC t) = SOME (THE (I (1,t)) + 1))
 End
 
+Definition is_sch_decode_def:
+  is_sch_decode (I:num # num -> num option) (sf:num -> state_circuit) <=>
+  (!t. enable_stg 2 (sf t) ==>
+       I (1,t) <> NONE ==>
+       I (2,SUC t) = SOME (THE (I (1,t)))) /\
+  (!t. enable_stg 2 (sf t) ==>
+       I (1,t) = NONE ==>
+       I (2,SUC t) = NONE)
+End
+
 Definition is_sch_other_def:
   is_sch_other (I:num # num -> num option) (sf:num -> state_circuit) <=>
-  (!t k. enable_stg k (sf t) ==> k <> 1 ==>
+  (!t k. enable_stg k (sf t) ==> k <> 1 ==> k <> 2 ==>
          (I (k,SUC t) = SOME (THE (I (k,t)) + 1)) /\
          (I (k,SUC t) = SOME (THE (I (k - 1,t)))))
 End
@@ -300,6 +311,7 @@ Definition is_sch_def:
   is_sch (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   is_sch_init I /\
   is_sch_fetch I sf a/\
+  is_sch_decode I sf /\
   is_sch_other I sf /\
   is_sch_disable I sf
 End

@@ -221,7 +221,7 @@ Proof
 QED
 
 
-(** PC updated by when IF is disabled **)
+(** PC when IF is disabled **)
 Theorem agp32_Rel_ag32_IF_disable_PC_correct:
   !fext fbits a t I.
     is_sch_disable I (agp32 fext fbits) ==>
@@ -314,6 +314,118 @@ Proof
       by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
     fs [reg_data_vaild_def,enable_stg_def]) >>
   fs [agp32_Rel_ag32_IF_disable_PC_correct]
+QED
+
+
+
+
+(* test content *)
+(* fetch correct instr after delays *)
+Theorem is_sch_disable_fext_not_ready_several_cycles:
+  !n t fext fbits I.
+    is_sch_disable I (agp32 fext fbits) ==>
+    (!p. p < SUC n ==>
+         (fext (p + SUC t)).mem = (fext t).mem /\
+         ~(fext (p + SUC t)).ready) ==>
+    I (1,SUC n + SUC t) = I (1,SUC t)
+Proof
+  rw [is_sch_disable_def] >>
+  Induct_on `n` >> rw [] >-
+   (`~(fext (0 + SUC t)).ready` by fs [] >> fs [] >>
+    `~enable_stg 1 (agp32 fext fbits (SUC t))`
+      by fs [not_fext_ready_and_agp32_IF_PC_write_disable,enable_stg_def] >>
+    `I' (1,SUC (SUC t)) = I' (1,SUC t)` by  fs [] >>
+    `SUC t + 1 = SUC (SUC t)` by rw [] >> rw []) >>
+  `!p. p < SUC n ==> (fext (p + SUC t)).mem = (fext t).mem /\ ~(fext (p + SUC t)).ready` by fs [] >>
+  fs [] >>
+  `~(fext (SUC n + SUC t)).ready` by fs [] >> fs [] >>
+  `~enable_stg 1 (agp32 fext fbits (SUC n + SUC t))`
+    by fs [not_fext_ready_and_agp32_IF_PC_write_disable,enable_stg_def] >>
+  `I' (1,SUC (SUC n + SUC t)) = I' (1,SUC n + SUC t)` by  fs [] >>
+  `SUC t + SUC (SUC n) = SUC (SUC n + SUC t)` by rw [] >> rw []
+QED
+
+Theorem fetch_correct_instr_after_delays:
+  !n t fext fbits I a.
+    SC_self_mod_isa a ==>
+    is_sch_init I ==>
+    is_sch_fetch I (agp32 fext fbits) a ==>
+    is_sch_other I (agp32 fext fbits) ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 1 (agp32 fext fbits t) ==>
+    reg_data_vaild 3 (agp32 fext fbits t) ==>
+    I (1,SUC t) <> NONE ==>
+    (!p. p < SUC n ==>
+         (fext (p + SUC t)).mem = (fext t).mem /\
+         ~(fext (p + SUC t)).ready) ==>
+    (fext (SUC n + SUC t)).mem = (fext t).mem ==>
+    (fext (SUC n + SUC t)).inst_rdata =
+    word_at_addr (fext (SUC t)).mem (align_addr (agp32 fext fbits (SUC t)).PC) ==>
+    (fext (SUC n + SUC t)).ready ==>
+    (fext (SUC n + SUC t)).inst_rdata =
+    word_at_addr (FUNPOW Next (THE (I (1,SUC n + SUC t)) − 1) a).MEM
+                 (align_addr (FUNPOW Next (THE (I (1,SUC n + SUC t)) − 1) a).PC)
+Proof
+  rw [] >>
+  `I' (1,SUC n + SUC t) = I' (1,SUC t)` by METIS_TAC [is_sch_disable_fext_not_ready_several_cycles] >>
+  rw [] >>
+  `(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
+    by METIS_TAC [agp32_Rel_ag32_IF_PC_correct] >> fs [] >> 
+  `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
+  `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4`
+    by METIS_TAC [IF_instr_index_big_then_MEM] >>
+  METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]
+QED
+
+(* false theorem, cannot be proved because the m is not sure and only determined by the memory
+Theorem agp32_Rel_ag32_IF_instr_with_delays_correct:
+  !fext fbits a t I m.
+    SC_self_mod_isa a ==>
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch_init I ==>
+    is_sch_fetch I (agp32 fext fbits) a ==>
+    is_sch_other I (agp32 fext fbits) ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 1 (agp32 fext fbits t) ==>
+    reg_data_vaild 3 (agp32 fext fbits t) ==>
+    I (1,SUC t) <> NONE ==>
+    (fext (m + SUC t)).ready ==>
+    (agp32 fext fbits (m + SUC t)).IF.IF_instr = instr (FUNPOW Next (THE (I (1,SUC t)) - 1) a)
+Proof
+  cheat
+QED
+*)
+
+(** IF_instr updated when IF is disabled **)
+Theorem agp32_Rel_ag32_IF_disable_instr_correct:
+  !fext fbits a t I.
+    SC_self_mod_isa a ==>
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    ¬enable_stg 1 (agp32 fext fbits t) ==>
+    I (1,SUC t) <> NONE ==>
+    (fext (SUC t)).ready ==>
+    (agp32 fext fbits (SUC t)).IF.IF_instr = instr (FUNPOW Next (THE (I (1,SUC t)) - 1) a)
+Proof
+  rw [is_sch_disable_def] >>
+  `?s s'. (agp32 fext fbits (SUC t)).IF.IF_instr =
+  (IF_instr_update (fext (SUC t)) s s').IF.IF_instr`
+    by rw [agp32_IF_instr_updated_by_IF_instr_update] >>
+  rw [IF_instr_update_def,instr_def] >>
+  subgoal `(agp32 fext fbits (SUC t)).PC = (agp32 fext fbits t).PC` >-
+   (Q.ABBREV_TAC `s1 = agp32 fext fbits t` >>
+    Q.ABBREV_TAC `s2 = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                              REG_write;ID_pipeline] (fext t) s1 s1` >>
+    `(agp32 fext fbits (SUC t)).PC = (IF_PC_update (fext t) s1 s2).PC`
+      by fs [agp32_PC_updated_by_IF_PC_update,Abbr `s1`,Abbr `s2`] >>
+    `~s1.IF.IF_PC_write_enable` by fs [enable_stg_def] >>
+    `~s2.IF.IF_PC_write_enable /\ s2.PC = s1.PC`
+      by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s1`,Abbr `s2`] >>
+    fs [IF_PC_update_def]) >>
+  cheat
 QED
 
 val _ = export_theory ();

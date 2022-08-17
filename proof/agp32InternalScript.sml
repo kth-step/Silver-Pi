@@ -147,6 +147,48 @@ Proof
   Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
+(** IF_PC_write_enable and fext t.ready **)
+Theorem agp32_IF_PC_write_enable_and_fext_ready:
+  !fext fbits t.
+    (agp32 fext fbits t).IF.IF_PC_write_enable ==>
+    (fext t).ready
+Proof
+  rw [] >>
+  `?s s'.
+  ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable)`
+    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
+  fs [Hazard_ctrl_def] >>
+  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `(fext t).ready` >> fs []
+QED
+
+Theorem not_fext_ready_and_agp32_IF_PC_write_disable:
+  !fext fbits t.
+    ~(fext t).ready ==>
+    ~(agp32 fext fbits t).IF.IF_PC_write_enable
+Proof
+  rw [] >> METIS_TAC [agp32_IF_PC_write_enable_and_fext_ready]
+QED
+
+
+(* ID_ID_write_enable *)
+(** ID_ID_write_enable and fext t.ready **)
+Theorem agp32_ID_ID_write_enable_and_fext_ready:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_ID_write_enable ==>
+    (fext t).ready
+Proof
+  rw [] >>
+  `?s s'.
+  ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable)`
+    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
+  fs [Hazard_ctrl_def] >>
+  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `(fext t).ready` >> fs []
+QED
+     
 
 (* command is not possible for values 5/6/7 *)
 Theorem agp32_command_impossible_values:

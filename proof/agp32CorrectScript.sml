@@ -362,7 +362,7 @@ Proof
    (** IF when disable **)
    fs [is_sch_def,IF_disable_Rel_def,agp32_Rel_ag32_IF_disable_PC_correct] >-
    (** ID **)
-   METIS_TAC [is_sch_def,agp32_Rel_ag32_ID_Rel_correct] >-
+   fs [is_sch_def,agp32_Rel_ag32_ID_Rel_correct] >-
    (** EX **)
    cheat >-
    (** MEM **)

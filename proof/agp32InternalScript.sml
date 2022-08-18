@@ -222,4 +222,37 @@ Proof
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
 QED
 
+
+(* properties about the scheduling function *)
+Theorem well_formed_sch_SUC_t_rewrite:
+  !I sf t k.
+    well_formed_sch I sf t ==>
+    is_sch_other I sf ==>
+    enable_stg k (sf t) ==>
+    k > 2 ==>
+    I (k,SUC t) = SOME (THE (I (k,t)) + 1)
+Proof
+  rw [well_formed_sch_def,is_sch_other_def]
+QED
+
+(* TODO: sch is well_formed
+Theorem well_formed_sch_agp32:
+  !t I fext fbits.
+    is_sch_other I (agp32 fext fbits) ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    well_formed_sch I (agp32 fext fbits) t
+Proof
+  rw [] >> Induct_on `t` >-
+   (fs [is_sch_other_def,well_formed_sch_def] >> rw [] >> cheat) >>
+  rw [well_formed_sch_def] >>
+  `k - 1 > 1` by rw [] >>
+  Cases_on `enable_stg (k - 1) (agp32 fext fbits t)` >-
+   (`I' (k-1,SUC t) = SOME (THE (I' (k-1,t)) + 1)` by METIS_TAC [well_formed_sch_SUC_t_rewrite] >>
+    rw [] >> fs [is_sch_other_def] >>
+    `enable_stg k (agp32 fext fbits t)` by cheat >> fs []) >>
+  fs [is_sch_disable_def] >>
+  `enable_stg k (agp32 fext fbits t)` by cheat >> fs [is_sch_other_def]
+QED
+*)
+
 val _ = export_theory ();

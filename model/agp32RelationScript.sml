@@ -98,7 +98,6 @@ End
 Definition IF_Rel_def:
   IF_Rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
   (reg_data_vaild 3 si ==> fext.ready ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
-  (* (~fext.ready ==> s.IF.IF_instr = 63w) /\ *)
   (reg_data_vaild 3 si ==> s.PC = (FUNPOW Next (i - 1) a).PC)
 End
 
@@ -298,8 +297,7 @@ End
 Definition is_sch_other_def:
   is_sch_other (I:num # num -> num option) (sf:num -> state_circuit) <=>
   (!t k. enable_stg k (sf t) ==> k <> 1 ==> k <> 2 ==>
-         (I (k,SUC t) = SOME (THE (I (k,t)) + 1)) /\
-         (I (k,SUC t) = SOME (THE (I (k - 1,t)))))
+         I (k,SUC t) = SOME (THE (I (k - 1,t))))
 End
 
 Definition is_sch_disable_def:
@@ -314,6 +312,11 @@ Definition is_sch_def:
   is_sch_decode I sf /\
   is_sch_other I sf /\
   is_sch_disable I sf
+End
+
+Definition well_formed_sch_def:
+  well_formed_sch (I:num # num -> num option) (sf:num -> state_circuit) (t:num) <=>
+  (!k. enable_stg k (sf t) ==> k > 2 ==> I (k - 1,t) = SOME (THE (I (k,t)) + 1))
 End
 
 val _ = export_theory ();

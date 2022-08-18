@@ -329,6 +329,7 @@ Theorem agp32_Rel_ag32_correct:
     is_acc accelerator_f s ==>
     is_interrupt_interface fext_accessor_circuit s fext ==>
     is_data_in fext ==>
+    (!t. well_formed_sch I s t) ==>
     is_sch I s a ==>
     Init (fext 0) (s 0) a ==>
     Rel I (fext t) (s (t-1)) (s t) a t

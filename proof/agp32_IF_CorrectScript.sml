@@ -7,10 +7,10 @@ val _ = prefer_num ();
 val _ = guess_lengths ();
 
 
-(* lemma about the scheduling function I *)
 (** instr index relation between IF and EX stages **)
 Theorem IF_instr_index_with_EX_instr:
   !I t fext fbits a.
+    (!t. well_formed_sch I (agp32 fext fbits) t) ==>
     is_sch_init I ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
     is_sch_other I (agp32 fext fbits) ==>
@@ -28,14 +28,18 @@ Proof
      (fs [] >>
       `enable_stg 3 (agp32 fext fbits t)`
         by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
-      fs [is_sch_other_def]) >>
+      `3 > 2` by rw [] >>
+      `I' (3,SUC t) = SOME (THE (I' (3,t)) + 1)` by METIS_TAC [well_formed_sch_SUC_t_rewrite] >>
+      fs []) >>
     Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
     isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ I' (1,t) = NONE \/ THE (I' (1,t)) = 0` >-
      METIS_TAC [] >>
     fs [] >>
     `enable_stg 3 (agp32 fext fbits t)`
       by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
-    fs [is_sch_other_def]) >>
+    `3 > 2` by rw [] >>
+    `I' (3,SUC t) = SOME (THE (I' (3,t)) + 1)` by METIS_TAC [well_formed_sch_SUC_t_rewrite] >>
+    fs []) >>
   fs [is_sch_disable_def] >> strip_tac >>
   `~enable_stg 3 (agp32 fext fbits t)`
     by fs [enable_stg_def,agp32_IF_PC_write_disable_and_EX_disable] >> fs []
@@ -44,6 +48,7 @@ QED
 (** instr index relation between IF and MEM stages **)
 Theorem IF_instr_index_big_then_MEM:
   !I t fext fbits a.
+    (!t. well_formed_sch I (agp32 fext fbits) t) ==>
     is_sch_init I ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
     is_sch_other I (agp32 fext fbits) ==>
@@ -114,6 +119,7 @@ Theorem agp32_Rel_ag32_IF_instr_correct:
   !fext fbits a t I.
     SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+     (!t. well_formed_sch I (agp32 fext fbits) t) ==>
     is_sch_init I ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
     is_sch_other I (agp32 fext fbits) ==>
@@ -204,6 +210,7 @@ Theorem agp32_Rel_ag32_IF_Rel_correct:
   !fext fbits a t I.
     SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (!t. well_formed_sch I (agp32 fext fbits) t) ==>
     is_sch_init I ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
     is_sch_other I (agp32 fext fbits) ==>
@@ -317,8 +324,6 @@ Proof
 QED
 
 
-
-
 (* test content *)
 (* fetch correct instr after delays *)
 Theorem is_sch_disable_fext_not_ready_several_cycles:
@@ -348,6 +353,7 @@ QED
 Theorem fetch_correct_instr_after_delays:
   !n t fext fbits I a.
     SC_self_mod_isa a ==>
+    (!t. well_formed_sch I (agp32 fext fbits) t) ==>
     is_sch_init I ==>
     is_sch_fetch I (agp32 fext fbits) a ==>
     is_sch_other I (agp32 fext fbits) ==>
@@ -377,26 +383,6 @@ Proof
     by METIS_TAC [IF_instr_index_big_then_MEM] >>
   METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]
 QED
-
-(* false theorem, cannot be proved because the m is not sure and only determined by the memory
-Theorem agp32_Rel_ag32_IF_instr_with_delays_correct:
-  !fext fbits a t I m.
-    SC_self_mod_isa a ==>
-    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
-    is_sch_init I ==>
-    is_sch_fetch I (agp32 fext fbits) a ==>
-    is_sch_other I (agp32 fext fbits) ==>
-    is_sch_disable I (agp32 fext fbits) ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
-    enable_stg 1 (agp32 fext fbits t) ==>
-    reg_data_vaild 3 (agp32 fext fbits t) ==>
-    I (1,SUC t) <> NONE ==>
-    (fext (m + SUC t)).ready ==>
-    (agp32 fext fbits (m + SUC t)).IF.IF_instr = instr (FUNPOW Next (THE (I (1,SUC t)) - 1) a)
-Proof
-  cheat
-QED
-*)
 
 (** IF_instr updated when IF is disabled **)
 Theorem agp32_Rel_ag32_IF_disable_instr_correct:

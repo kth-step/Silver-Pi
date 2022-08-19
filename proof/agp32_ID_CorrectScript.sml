@@ -28,11 +28,7 @@ Proof
     by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >>
   rw [ID_pipeline_def] >>
   fs [Rel_def,IF_Rel_def,IF_disable_Rel_def,Abbr `s`] >>
-  Cases_on `~enable_stg 1 (agp32 fext fbits (t − 1))` >> fs [] >>
-  Cases_on `reg_data_vaild 3 (agp32 fext fbits (t − 1))` >> fs [] >>
-  `(agp32 fext fbits (t-1)).MEM.MEM_state_flag`
-    by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
-  fs [reg_data_vaild_def,enable_stg_def]
+  Cases_on `~enable_stg 1 (agp32 fext fbits (t − 1))` >> fs []
 QED
 
 
@@ -59,12 +55,8 @@ Proof
   rw [ID_pipeline_def] >>
   fs [Rel_def,IF_Rel_def,IF_disable_Rel_def,Abbr `s`] >>
   Cases_on `enable_stg 1 (agp32 fext fbits (t − 1))` >> fs [] >-
-   (Cases_on `reg_data_vaild 3 (agp32 fext fbits (t − 1))` >> fs [] >-
-     (`(fext t).ready`
-        by METIS_TAC [enable_stg_def,agp32_ID_ID_write_enable_and_fext_ready] >> fs []) >>
-    `(agp32 fext fbits (t-1)).MEM.MEM_state_flag`
-      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
-    fs [reg_data_vaild_def,enable_stg_def]) >>
+   (`(fext t).ready`
+      by METIS_TAC [enable_stg_def,agp32_ID_ID_write_enable_and_fext_ready] >> fs []) >>
   `(fext t).ready` by METIS_TAC [enable_stg_def,agp32_ID_ID_write_enable_and_fext_ready] >>
   cheat
 QED

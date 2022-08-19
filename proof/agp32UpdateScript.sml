@@ -336,6 +336,33 @@ Proof
   rw [EX_ctrl_update_def]
 QED
 
+Theorem EX_ctrl_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((EX_ctrl_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((EX_ctrl_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((EX_ctrl_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((EX_ctrl_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((EX_ctrl_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((EX_ctrl_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((EX_ctrl_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((EX_ctrl_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((EX_ctrl_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((EX_ctrl_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((EX_ctrl_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((EX_ctrl_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((EX_ctrl_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((EX_ctrl_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((EX_ctrl_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((EX_ctrl_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((EX_ctrl_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((EX_ctrl_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((EX_ctrl_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((EX_ctrl_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((EX_ctrl_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [EX_ctrl_update_def]
+QED
+
 Theorem EX_ctrl_update_unchanged_EX_pipeline_items:
   !fext s s'.
     ((EX_ctrl_update fext s s').EX.EX_PC = s'.EX.EX_PC) /\
@@ -391,6 +418,33 @@ Proof
   rw [EX_forward_data_def]
 QED
 
+Theorem EX_forward_data_unchanged_ID_data_items:
+  !fext s s'.
+    ((EX_forward_data fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((EX_forward_data fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((EX_forward_data fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((EX_forward_data fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((EX_forward_data fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((EX_forward_data fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((EX_forward_data fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((EX_forward_data fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((EX_forward_data fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((EX_forward_data fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((EX_forward_data fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((EX_forward_data fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((EX_forward_data fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((EX_forward_data fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((EX_forward_data fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((EX_forward_data fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((EX_forward_data fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((EX_forward_data fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((EX_forward_data fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((EX_forward_data fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((EX_forward_data fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [EX_forward_data_def]
+QED
+
 Theorem EX_forward_data_unchanged_EX_ctrl_items:
   !fext s s'.
     ((EX_forward_data fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
@@ -426,6 +480,33 @@ Proof
   rw [EX_ALU_input_update_def]
 QED
 
+Theorem EX_ALU_input_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((EX_ALU_input_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((EX_ALU_input_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((EX_ALU_input_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((EX_ALU_input_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((EX_ALU_input_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((EX_ALU_input_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((EX_ALU_input_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((EX_ALU_input_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((EX_ALU_input_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((EX_ALU_input_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((EX_ALU_input_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((EX_ALU_input_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((EX_ALU_input_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((EX_ALU_input_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((EX_ALU_input_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((EX_ALU_input_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((EX_ALU_input_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((EX_ALU_input_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((EX_ALU_input_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((EX_ALU_input_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((EX_ALU_input_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [EX_ALU_input_update_def]
+QED
+
 Theorem EX_ALU_input_update_unchanged_EX_ctrl_items:
   !fext s s'.
     ((EX_ALU_input_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
@@ -457,6 +538,33 @@ Theorem EX_compute_enable_update_unchanged_ID_pipeline_items:
   !fext s s'.
     ((EX_compute_enable_update fext s s').ID.ID_PC = s'.ID.ID_PC) /\
     ((EX_compute_enable_update fext s s').ID.ID_instr = s'.ID.ID_instr)
+Proof
+  rw [EX_compute_enable_update_def]
+QED
+
+Theorem EX_compute_enable_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((EX_compute_enable_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((EX_compute_enable_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((EX_compute_enable_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((EX_compute_enable_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((EX_compute_enable_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((EX_compute_enable_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((EX_compute_enable_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((EX_compute_enable_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((EX_compute_enable_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((EX_compute_enable_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((EX_compute_enable_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((EX_compute_enable_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((EX_compute_enable_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((EX_compute_enable_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((EX_compute_enable_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((EX_compute_enable_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((EX_compute_enable_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((EX_compute_enable_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((EX_compute_enable_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((EX_compute_enable_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((EX_compute_enable_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
 Proof
   rw [EX_compute_enable_update_def]
 QED
@@ -502,6 +610,34 @@ Theorem EX_ALU_update_unchanged_ID_opc_func:
   !fext s s'.
     ((EX_ALU_update fext s s').ID.ID_opc = s'.ID.ID_opc) /\
     ((EX_ALU_update fext s s').ID.ID_func = s'.ID.ID_func)
+Proof
+  rw [EX_ALU_update_def] >>
+  Cases_on_word_value `s'.EX.EX_func` >> fs []
+QED
+
+Theorem EX_ALU_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((EX_ALU_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((EX_ALU_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((EX_ALU_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((EX_ALU_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((EX_ALU_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((EX_ALU_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((EX_ALU_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((EX_ALU_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((EX_ALU_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((EX_ALU_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((EX_ALU_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((EX_ALU_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((EX_ALU_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((EX_ALU_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((EX_ALU_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((EX_ALU_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((EX_ALU_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((EX_ALU_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((EX_ALU_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((EX_ALU_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((EX_ALU_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
 Proof
   rw [EX_ALU_update_def] >>
   Cases_on_word_value `s'.EX.EX_func` >> fs []
@@ -570,6 +706,34 @@ Theorem EX_SHIFT_update_unchanged_ID_opc_func:
   !fext s s'.
     ((EX_SHIFT_update fext s s').ID.ID_opc = s'.ID.ID_opc) /\
     ((EX_SHIFT_update fext s s').ID.ID_func = s'.ID.ID_func)
+Proof
+  rw [EX_SHIFT_update_def] >>
+  Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
+QED
+
+Theorem EX_SHIFT_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((EX_SHIFT_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((EX_SHIFT_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((EX_SHIFT_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((EX_SHIFT_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((EX_SHIFT_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((EX_SHIFT_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((EX_SHIFT_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((EX_SHIFT_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((EX_SHIFT_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((EX_SHIFT_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((EX_SHIFT_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((EX_SHIFT_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((EX_SHIFT_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((EX_SHIFT_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((EX_SHIFT_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((EX_SHIFT_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((EX_SHIFT_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((EX_SHIFT_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((EX_SHIFT_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((EX_SHIFT_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((EX_SHIFT_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
 Proof
   rw [EX_SHIFT_update_def] >>
   Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
@@ -650,6 +814,33 @@ Proof
   rw [EX_jump_sel_addr_update_def]
 QED
 
+Theorem EX_jump_sel_addr_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((EX_jump_sel_addr_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((EX_jump_sel_addr_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [EX_jump_sel_addr_update_def]
+QED
+
 Theorem EX_jump_sel_addr_update_unchanged_EX_pipeline_items:
   !fext s s'.
     ((EX_jump_sel_addr_update fext s s').EX.EX_PC = s'.EX.EX_PC) /\
@@ -717,6 +908,33 @@ Theorem EX_data_rec_update_unchanged_ID_opc_func:
   !fext s s'.
     ((EX_data_rec_update fext s s').ID.ID_opc = s'.ID.ID_opc) /\   
     ((EX_data_rec_update fext s s').ID.ID_func = s'.ID.ID_func)
+Proof
+  rw [EX_data_rec_update_def]
+QED
+
+Theorem EX_data_rec_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((EX_data_rec_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((EX_data_rec_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((EX_data_rec_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((EX_data_rec_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((EX_data_rec_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((EX_data_rec_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((EX_data_rec_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((EX_data_rec_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((EX_data_rec_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((EX_data_rec_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((EX_data_rec_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((EX_data_rec_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((EX_data_rec_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((EX_data_rec_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((EX_data_rec_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((EX_data_rec_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((EX_data_rec_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((EX_data_rec_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((EX_data_rec_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((EX_data_rec_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((EX_data_rec_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
 Proof
   rw [EX_data_rec_update_def]
 QED
@@ -800,6 +1018,33 @@ Proof
   rw [MEM_ctrl_update_def]
 QED
 
+Theorem MEM_ctrl_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((MEM_ctrl_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((MEM_ctrl_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((MEM_ctrl_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((MEM_ctrl_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((MEM_ctrl_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((MEM_ctrl_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((MEM_ctrl_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((MEM_ctrl_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((MEM_ctrl_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((MEM_ctrl_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((MEM_ctrl_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((MEM_ctrl_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((MEM_ctrl_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((MEM_ctrl_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((MEM_ctrl_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((MEM_ctrl_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((MEM_ctrl_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((MEM_ctrl_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((MEM_ctrl_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((MEM_ctrl_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((MEM_ctrl_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [MEM_ctrl_update_def]
+QED
+
 Theorem MEM_ctrl_update_unchanged_EX_pipeline_items:
   !fext s s'.
     ((MEM_ctrl_update fext s s').EX.EX_PC = s'.EX.EX_PC) /\
@@ -879,6 +1124,33 @@ Proof
   rw [MEM_imm_update_def]
 QED
 
+Theorem MEM_imm_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((MEM_imm_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((MEM_imm_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((MEM_imm_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((MEM_imm_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((MEM_imm_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((MEM_imm_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((MEM_imm_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((MEM_imm_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((MEM_imm_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((MEM_imm_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((MEM_imm_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((MEM_imm_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((MEM_imm_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((MEM_imm_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((MEM_imm_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((MEM_imm_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((MEM_imm_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((MEM_imm_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((MEM_imm_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((MEM_imm_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((MEM_imm_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [MEM_imm_update_def]
+QED
+
 Theorem MEM_imm_update_unchanged_EX_ctrl_items:
   !fext s s'.
     ((MEM_imm_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
@@ -935,6 +1207,33 @@ Theorem WB_update_unchanged_ID_opc_func:
   !fext s s'.
     ((WB_update fext s s').ID.ID_opc = s'.ID.ID_opc) /\
     ((WB_update fext s s').ID.ID_func = s'.ID.ID_func)
+Proof
+  rw [WB_update_def]
+QED
+
+Theorem WB_update_unchanged_ID_data_items:
+  !fext s s'.
+    ((WB_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((WB_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((WB_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((WB_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((WB_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((WB_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((WB_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((WB_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((WB_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((WB_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((WB_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((WB_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((WB_update fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((WB_update fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((WB_update fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((WB_update fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((WB_update fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((WB_update fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((WB_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((WB_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((WB_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
 Proof
   rw [WB_update_def]
 QED
@@ -1013,6 +1312,33 @@ Theorem Hazard_ctrl_unchanged_ID_opc_func:
   !fext s s'.
     ((Hazard_ctrl fext s s').ID.ID_opc = s'.ID.ID_opc) /\
     ((Hazard_ctrl fext s s').ID.ID_func = s'.ID.ID_func)
+Proof
+  rw [Hazard_ctrl_def]
+QED
+
+Theorem Hazard_ctrl_unchanged_ID_data_items:
+  !fext s s'.
+    ((Hazard_ctrl fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
+    ((Hazard_ctrl fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
+    ((Hazard_ctrl fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
+    ((Hazard_ctrl fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
+    ((Hazard_ctrl fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
+    ((Hazard_ctrl fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
+    ((Hazard_ctrl fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
+    ((Hazard_ctrl fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
+    ((Hazard_ctrl fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
+    ((Hazard_ctrl fext s s').ID.ID_immA = s'.ID.ID_immA) /\
+    ((Hazard_ctrl fext s s').ID.ID_immB = s'.ID.ID_immB) /\
+    ((Hazard_ctrl fext s s').ID.ID_immW = s'.ID.ID_immW) /\
+    ((Hazard_ctrl fext s s').ID.ID_ForwardA = s'.ID.ID_ForwardA) /\
+    ((Hazard_ctrl fext s s').ID.ID_ForwardB = s'.ID.ID_ForwardB) /\
+    ((Hazard_ctrl fext s s').ID.ID_ForwardW = s'.ID.ID_ForwardW) /\
+    ((Hazard_ctrl fext s s').ID.ID_read_dataA_updated = s'.ID.ID_read_dataA_updated) /\
+    ((Hazard_ctrl fext s s').ID.ID_read_dataB_updated = s'.ID.ID_read_dataB_updated) /\
+    ((Hazard_ctrl fext s s').ID.ID_read_dataW_updated = s'.ID.ID_read_dataW_updated) /\
+    ((Hazard_ctrl fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
+    ((Hazard_ctrl fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
+    ((Hazard_ctrl fext s s').ID.ID_dataW = s'.ID.ID_dataW)
 Proof
   rw [Hazard_ctrl_def]
 QED
@@ -1663,7 +1989,7 @@ Proof
   fs [Abbr `ss8`,Acc_compute_unchanged_ID_items,Abbr `ss7`,IF_PC_update_unchanged_ID_pipeline_items]
 QED
 
-(** ID_opc is only chenged by the ID_opc_func_update function **)
+(** ID_func is only chenged by the ID_opc_func_update function **)
 Theorem agp32_ID_func_updated_by_ID_opc_func_update:
   !fext fbits t s s' s'' s0.
     s = agp32 fext fbits t ==>
@@ -1692,6 +2018,35 @@ Proof
       ID_data_update_def,ID_imm_update_unchanged_ID_opc_func] >>
   rw [ID_opc_func_update_def]
 QED
+
+(** ID_addrA is only chenged by the ID_data_update function **)
+Theorem agp32_ID_addrA_updated_by_ID_data_update:
+  !fext fbits t s s' s'' s0.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute]
+               (fext t) s s ==>
+    s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update; ID_imm_update]
+                (fext (SUC t)) s' s' ==>
+    (agp32 fext fbits (SUC t)).ID.ID_addrA =
+    (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrA
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
+      MEM_imm_update_unchanged_ID_data_items,MEM_ctrl_update_unchanged_ID_data_items,
+      IF_PC_input_update_def,EX_data_rec_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_items,EX_SHIFT_update_unchanged_ID_data_items,
+      EX_ALU_update_unchanged_ID_data_items,EX_compute_enable_update_unchanged_ID_data_items,
+      EX_ALU_input_update_unchanged_ID_data_items,EX_forward_data_unchanged_ID_data_items,
+      EX_ctrl_update_unchanged_ID_data_items] >>
+  rw [ID_data_update_def]
+QED
+
 
 (** EX_carry_flag, EX_ALU_res are only changed by the EX_ALU_update function **)
 Theorem agp32_EX_ALU_items_updated_by_EX_ALU_update:
@@ -2123,6 +2478,7 @@ QED
 
 
 (* lemma for correctness proof *)
+(** PC is unchanged after the IF_PC_update function **)
 Theorem agp32_same_PC_after_IF_PC_update:
   !fext fbits t s s'.
     s = agp32 fext fbits t ==>
@@ -2137,6 +2493,35 @@ Proof
     by fs [Abbr `s''`,agp32_PC_updated_by_IF_PC_update] >> fs [Abbr `s''`] >>
   slist_update_state_tac >>
   fs [Abbr `ss8`,Abbr `ss7`,Acc_compute_unchanged_IF]
+QED
+
+(** ID_instr is unchanged after the ID_pipeline function **)
+Theorem agp32_same_ID_instr_after_ID_pipeline:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute]
+               (fext t) s s ==>
+    s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update; ID_imm_update]
+                (fext (SUC t)) s' s' ==>
+    (agp32 fext fbits (SUC t)).ID.ID_instr = s''.ID.ID_instr
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
+  Q.ABBREV_TAC `s1 = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
+                            ID_opc_func_update; ID_imm_update] (fext (SUC t)) s0 s0` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Hazard_ctrl_unchanged_ID_pipeline_items,WB_update_unchanged_ID_pipeline_items,
+      MEM_imm_update_unchanged_ID_pipeline_items,MEM_ctrl_update_unchanged_ID_pipeline_items,
+      IF_PC_input_update_def,EX_data_rec_update_unchanged_ID_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
+      EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
+      EX_compute_enable_update_unchanged_ID_pipeline_items,
+      EX_ALU_input_update_unchanged_ID_pipeline_items,EX_forward_data_unchanged_ID_pipeline_items,
+      EX_ctrl_update_unchanged_ID_pipeline_items,ID_data_update_unchanged_ID_pipeline_items]
 QED
 
 

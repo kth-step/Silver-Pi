@@ -1,6 +1,6 @@
 open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib;
 
-(* correctness of IF stage and related items against the ISA *)
+(* correctness of IF stage and related items with repsect to the ISA *)
 val _ = new_theory "agp32_IF_Correct";
 
 val _ = prefer_num ();
@@ -78,6 +78,7 @@ Proof
   `(THE (I' (1,t)) + 1 > THE (I' (3,t))) /\
   (THE (I' (1,t)) < THE (I' (3,t)) + 3)` by METIS_TAC [IF_instr_index_with_EX_instr] >> fs []
 QED
+
 
 (* IF related items *)
 (** PC updated by IF between ISA and circuit states **)
@@ -239,17 +240,15 @@ Theorem agp32_Rel_ag32_IF_disable_PC_correct:
     (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I (1,SUC t)) - 1) a).PC
 Proof
   rw [is_sch_disable_def] >>
-  subgoal `(agp32 fext fbits (SUC t)).PC = (agp32 fext fbits t).PC` >-
-   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>
-    Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
-                              REG_write;ID_pipeline] (fext t) s s` >>
-    `(agp32 fext fbits (SUC t)).PC = (IF_PC_update (fext t) s s').PC`
-      by fs [agp32_PC_updated_by_IF_PC_update,Abbr `s`,Abbr `s'`] >>
-    `~s.IF.IF_PC_write_enable` by fs [enable_stg_def] >>
-    `~s'.IF.IF_PC_write_enable /\ s'.PC = s.PC`
-      by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s`,Abbr `s'`] >>
-    fs [IF_PC_update_def]) >>
-  fs [Rel_def,IF_Rel_def,IF_disable_Rel_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).PC = (IF_PC_update (fext t) s s').PC`
+    by fs [agp32_PC_updated_by_IF_PC_update,Abbr `s`,Abbr `s'`] >>
+  `~s.IF.IF_PC_write_enable` by fs [enable_stg_def] >>
+  `~s'.IF.IF_PC_write_enable /\ s'.PC = s.PC`
+    by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s`,Abbr `s'`] >>
+  fs [IF_PC_update_def,Rel_def,IF_Rel_def,IF_disable_Rel_def] >>
   Cases_on `enable_stg 1 (agp32 fext fbits (t − 1))` >> fs []
 QED
 

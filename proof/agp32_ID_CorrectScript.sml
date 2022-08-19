@@ -1,10 +1,11 @@
 open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib;
 
-(* correctness of ID stage items against the ISA *)
+(* correctness of ID stage items with respect to the ISA *)
 val _ = new_theory "agp32_ID_Correct";
 
 val _ = prefer_num ();
 val _ = guess_lengths ();
+
 
 (** ID_PC **)
 Theorem agp32_Rel_ag32_ID_PC_correct:
@@ -62,6 +63,31 @@ Proof
 QED
 
 
+(** ID_addrA **)
+Theorem agp32_Rel_ag32_ID_addrA_correct:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    I (2,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_addrA = addrA (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
+Proof
+  rw [addrA_def] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = instr (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)`
+    by fs [agp32_Rel_ag32_ID_instr_correct] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
+                             ID_imm_update] (fext (SUC t)) s' s'` >>                          
+  `?s0.(agp32 fext fbits (SUC t)).ID.ID_addrA = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrA`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_addrA_updated_by_ID_data_update] >>
+  fs [ID_data_update_def] >>
+  `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_ID_pipeline] >> fs []
+QED
+
+
 (* ID stage *)
 Theorem agp32_Rel_ag32_ID_Rel_correct:
   !fext fbits a t I.
@@ -73,7 +99,8 @@ Theorem agp32_Rel_ag32_ID_Rel_correct:
 Proof
   rw [ID_Rel_def] >-
    fs [agp32_Rel_ag32_ID_PC_correct] >-
-   fs [agp32_Rel_ag32_ID_instr_correct] >>
+   fs [agp32_Rel_ag32_ID_instr_correct] >-
+   fs [agp32_Rel_ag32_ID_addrA_correct] >>
   cheat
 QED
 

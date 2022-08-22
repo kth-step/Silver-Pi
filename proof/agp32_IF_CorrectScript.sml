@@ -66,7 +66,7 @@ Proof
     `enable_stg 4 (agp32 fext fbits t)`
       by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
     `4 <> 1 /\ 4 <> 2` by rw [] >>
-    `I' (4,SUC t) = SOME (THE (I' (4-1,t)))` by METIS_TAC [] >> fs []) >>
+    `I' (4,SUC t) = SOME (THE (I' (4-1,t)))` by METIS_TAC [is_sch_other_def] >> fs []) >>
   Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
   isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ I' (1,t) = NONE \/ THE (I' (1,t)) = 0` >-
    METIS_TAC [is_sch_fetch_def] >> fs [] >>
@@ -75,10 +75,11 @@ Proof
   `4 <> 1 /\ 4 <> 2` by rw [] >>
   `I' (4,SUC t) = SOME (THE (I' (4-1,t)))` by METIS_TAC [is_sch_other_def] >>
   `I' (1,SUC t) = SOME (THE (I' (1,t)) + 1)` by METIS_TAC [is_sch_fetch_def] >> fs [] >>
-  `(THE (I' (1,t)) >= THE (I' (3,t))) /\ (THE (I' (1,t)) < THE (I' (3,t)) + 3)`
-    by METIS_TAC [IF_instr_index_with_EX_instr] >> fs []
+  `(THE (I' (1,t)) >= THE (I' (3,t))) /\
+  (THE (I' (1,t)) < THE (I' (3,t)) + 3)` by METIS_TAC [IF_instr_index_with_EX_instr] >> fs []
 QED
 
+(* not used, to remove *)
 Theorem IF_instr_index_big_then_MEM_disable:
   !I t fext fbits a.
     (!t. well_formed_sch I (agp32 fext fbits) t) ==>
@@ -88,7 +89,7 @@ Theorem IF_instr_index_big_then_MEM_disable:
     is_sch_disable I (agp32 fext fbits) ==>
     ~enable_stg 1 (agp32 fext fbits t) ==>
     I (1,SUC t) <> NONE ==>
-    (THE (I (1,SUC t)) > THE (I (4,SUC t))) /\
+    (THE (I (1,SUC t)) >= THE (I (4,SUC t))) /\
     (THE (I (1,SUC t)) < THE (I (4,SUC t)) + 4)
 Proof
   rpt gen_tac >> rpt disch_tac >>
@@ -97,8 +98,8 @@ Proof
   rpt disch_tac >>
   `I' (1,SUC (SUC t)) = I' (1,SUC t)` by fs [is_sch_disable_def] >> fs [] >>
   Cases_on `enable_stg 4 (agp32 fext fbits (SUC t))` >-
-   (`4 > 2` by rw [] >>
-    `I' (4,SUC (SUC t)) = SOME (THE (I' (4,SUC t)) + 1)` by METIS_TAC [well_formed_sch_def] >> fs [] >>
+   (`4 <> 1 /\ 4 <> 2` by rw [] >>
+    `I' (4,SUC (SUC t)) = SOME (THE (I' (4-1,SUC t)))` by METIS_TAC [is_sch_other_def] >> fs [] >>
     `(THE (I' (1,SUC t)) >= THE (I' (3,SUC t))) /\
     (THE (I' (1,SUC t)) < THE (I' (3,SUC t)) + 3)` by METIS_TAC [IF_instr_index_with_EX_instr]>>
     fs []) >>

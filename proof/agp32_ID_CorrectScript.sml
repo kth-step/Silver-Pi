@@ -28,8 +28,7 @@ Proof
   `s'.ID.ID_ID_write_enable`
     by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >>
   rw [ID_pipeline_def] >>
-  fs [Rel_def,IF_Rel_def,IF_disable_Rel_def,Abbr `s`] >>
-  Cases_on `~enable_stg 1 (agp32 fext fbits (t − 1))` >> fs []
+  fs [Rel_def,IF_PC_Rel_def]
 QED
 
 
@@ -54,12 +53,8 @@ Proof
   `s'.ID.ID_ID_write_enable /\ s'.IF.IF_instr = s.IF.IF_instr`
     by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >>
   rw [ID_pipeline_def] >>
-  fs [Rel_def,IF_Rel_def,IF_disable_Rel_def,Abbr `s`] >>
-  Cases_on `enable_stg 1 (agp32 fext fbits (t − 1))` >> fs [] >-
-   (`(fext t).ready`
-      by METIS_TAC [enable_stg_def,agp32_ID_ID_write_enable_and_fext_ready] >> fs []) >>
   `(fext t).ready` by METIS_TAC [enable_stg_def,agp32_ID_ID_write_enable_and_fext_ready] >>
-  cheat
+  fs [Rel_def,IF_instr_Rel_def]
 QED
 
 

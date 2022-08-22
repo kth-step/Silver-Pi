@@ -77,7 +77,7 @@ Definition Init_def:
   ~s.do_interrupt /\
   (s.command = 0w) /\
   (s.data_addr = 0xFFFFFFFFw) /\
-  (s.IF.IF_instr = 0x3Fw) /\
+  (s.IF.IF_instr = instr a) /\
   ~s.IF.IF_PC_write_enable /\
   (s.ID.ID_instr = 0x3Fw) /\
   ~s.ID.ID_ID_write_enable /\
@@ -95,15 +95,14 @@ Definition Init_def:
 End
 
 (* relation between the circuit and ISA state for different pipeline stages *)
-Definition IF_Rel_def:
-  IF_Rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
-  (fext.ready ==> s.IF.IF_instr = instr (FUNPOW Next (i - 1) a)) /\
+Definition IF_PC_Rel_def:
+  IF_PC_Rel (s:state_circuit) (a:ag32_state) (i:num) <=>
   (s.PC = (FUNPOW Next (i - 1) a).PC)
 End
 
-Definition IF_disable_Rel_def:
-  IF_disable_Rel (s:state_circuit) (a:ag32_state) (i:num) <=>
-  (s.PC = (FUNPOW Next (i - 1) a).PC)
+Definition IF_instr_Rel_def:
+  IF_instr_Rel (s:state_circuit) (a:ag32_state) (i:num) <=>
+  (s.IF.IF_instr = instr (FUNPOW Next (i - 1) a))
 End
 
 Definition ID_Rel_def:
@@ -249,8 +248,8 @@ Definition Rel_def:
   (s.data_out = (FUNPOW Next (THE (I (5,t))) a).data_out) /\
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
   (** invisible part **)
-  (enable_stg 1 si ==> (I (1,t) <> NONE) ==> IF_Rel fext si s a (THE (I (1,t)))) /\
-  (~enable_stg 1 si ==> (I (1,t) <> NONE) ==> IF_disable_Rel s a (THE (I (1,t)))) /\
+  ((I (1,t) <> NONE) ==> IF_PC_Rel s a (THE (I (1,t)))) /\
+  ((I (1,t) <> NONE) ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
   (enable_stg 2 si ==> (I (2,t) <> NONE) ==> ID_Rel fext s a (THE (I (2,t)))) /\
   (enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (reg_data_vaild 3 s ==> EX_Rel_spec s a (THE (I (3,t)))) /\

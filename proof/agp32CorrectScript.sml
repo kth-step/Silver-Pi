@@ -313,9 +313,9 @@ Theorem agp32_Init_implies_Rel:
     Rel I (fext 0) (s 0) (s 0) a 0
 Proof
   rpt strip_tac >>
-  fs [Init_def,Rel_def,is_sch_init_def] >>
-  rw [IF_disable_Rel_def] >-
+  fs [Init_def,Rel_def,is_sch_init_def] >> rw [] >-
    fs [agp32_init_IF_PC_input] >>
+  fs [IF_PC_Rel_def,IF_instr_Rel_def] >>
   fs [enable_stg_def,reg_data_vaild_def] >> fs []
 QED
 
@@ -358,10 +358,10 @@ Proof
    cheat >-
    (** registers **)
    cheat >-
-   (** IF **)
-   fs [is_sch_def,agp32_Rel_ag32_IF_Rel_correct] >-
-   (** IF when disable **)
-   fs [is_sch_def,IF_disable_Rel_def,agp32_Rel_ag32_IF_disable_PC_correct] >-
+   (** IF_PC **)
+   fs [is_sch_def,agp32_Rel_ag32_IF_PC_Rel_correct] >-
+   (** IF_instr **)
+   fs [is_sch_def,agp32_Rel_ag32_IF_instr_Rel_correct] >-
    (** ID **)
    fs [is_sch_def,agp32_Rel_ag32_ID_Rel_correct] >-
    (** EX **)

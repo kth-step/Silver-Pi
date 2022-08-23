@@ -115,27 +115,27 @@ Definition ID_Rel_def:
    (s.ID.ID_addrA_disable <=> flagA (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_addrB_disable <=> flagB (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_addrW_disable <=> flagW (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_immA = immA (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_immB = immB (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_immW = immW (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_imm = imm (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_opc = opc (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_func = func (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_addrA = s.WB.WB_addrW /\ s.WB.WB_write_reg <=> s.ID.ID_ForwardA) /\
    (s.ID.ID_addrB = s.WB.WB_addrW /\ s.WB.WB_write_reg <=> s.ID.ID_ForwardB) /\
    (s.ID.ID_addrW = s.WB.WB_addrW /\ s.WB.WB_write_reg <=> s.ID.ID_ForwardW) /\
    (s.ID.ID_ForwardA ==> s.WB.WB_write_data = reg_dataA (FUNPOW Next (i - 1) a)) /\
    (~s.ID.ID_ForwardA ==> s.ID.ID_read_dataA = reg_dataA (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_ForwardB ==> s.WB.WB_write_data = reg_dataB (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_ForwardB ==> s.WB.WB_write_data = reg_dataB (FUNPOW Next (i - 1) a)) /\
+   (~s.ID.ID_ForwardB ==> s.ID.ID_read_dataB = reg_dataB (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_ForwardW ==> s.WB.WB_write_data = reg_dataW (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_ForwardW ==> s.WB.WB_write_data = reg_dataW (FUNPOW Next (i - 1) a)) /\
+   (~s.ID.ID_ForwardW ==> s.ID.ID_read_dataW = reg_dataW (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_read_dataA_updated = reg_dataA (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_read_dataB_updated = reg_dataB (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_read_dataW_updated = reg_dataW (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_immA = immA (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_immB = immB (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_immW = immW (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_imm = imm (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_opc = opc (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_func = func (FUNPOW Next (i - 1) a)))
+   (s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a)))
 End
 
 Definition EX_Rel_def:

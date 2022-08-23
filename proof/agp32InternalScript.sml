@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory agp32RelationTheory agp32UpdateTheory;
+open hardwarePreamble translatorTheory arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory agp32RelationTheory agp32UpdateTheory agp32UpdateLib;
 
 val _ = new_theory "agp32Internal";
 
@@ -187,6 +187,123 @@ Proof
   Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
   Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs []
+QED
+
+
+(* initial values *)
+(** initial EX_PC_sel = 0w **)
+Theorem agp32_init_EX_PC_sel:
+  !fext fbits.
+    (agp32 fext fbits 0).EX.EX_PC_sel = 0w
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,
+      Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Hazard_ctrl_unchanged_EX_ctrl_items,WB_update_unchanged_EX_ctrl_items,
+      MEM_imm_update_unchanged_EX_ctrl_items,MEM_ctrl_update_unchanged_EX_ctrl_items,
+      IF_PC_input_update_def,EX_data_rec_update_unchanged_EX_ctrl_items,
+      EX_jump_sel_addr_update_unchanged_EX_ctrl_items,
+      EX_SHIFT_update_unchanged_EX_ctrl_items,EX_ALU_update_unchanged_EX_ctrl_items,
+      EX_compute_enable_update_unchanged_EX_ctrl_items,
+      EX_ALU_input_update_unchanged_EX_ctrl_items,
+      EX_forward_data_unchanged_EX_ctrl_items] >>
+  Cases_on `s7.ID.ID_EX_write_enable` >-
+   fs [EX_ctrl_update_def,agp32_init_def] >>
+  rw [EX_ctrl_update_def] >>      
+  fs [Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      ID_data_update_unchanged_EX_ctrl_items,ID_imm_update_unchanged_EX_ctrl_items,
+      ID_opc_func_update_unchanged_EX_ctrl_items,IF_instr_update_def,
+      ForwardA_def,ForwardB_def,ForwardW_def] >>
+   rw [agp32_init_def]
+QED
+
+(** initial EX_jump_sel is F **)
+Theorem agp32_init_EX_jump_sel:
+  !fext fbits.
+    ~(agp32 fext fbits 0).EX.EX_jump_sel
+Proof
+  rw [] >> `(agp32 fext fbits 0).EX.EX_PC_sel = 0w` by rw [agp32_init_EX_PC_sel] >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Hazard_ctrl_unchanged_EX_jump,Hazard_ctrl_unchanged_EX_ctrl_items,
+      WB_update_unchanged_EX_jump,WB_update_unchanged_EX_ctrl_items,
+      MEM_imm_update_unchanged_EX_jump,MEM_imm_update_unchanged_EX_ctrl_items,
+      MEM_ctrl_update_unchanged_EX_jump,MEM_ctrl_update_unchanged_EX_ctrl_items,
+      IF_PC_input_update_def,EX_data_rec_update_unchanged_EX_jump,
+      EX_data_rec_update_unchanged_EX_ctrl_items,
+      EX_jump_sel_addr_update_unchanged_EX_ctrl_items] >>
+  rw [EX_jump_sel_addr_update_def]
+QED
+
+(** initial IF_PC_input = PC + 4w **)
+Theorem agp32_init_IF_PC_input:
+  !fext fbits.
+    (agp32 fext fbits 0).IF.IF_PC_input = (agp32 fext fbits 0).PC + 4w
+Proof
+  rw [] >> `~(agp32 fext fbits 0).EX.EX_jump_sel` by rw [agp32_init_EX_jump_sel] >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,
+      Hazard_ctrl_unchanged_IF,Hazard_ctrl_unchanged_EX_jump,
+      WB_update_unchanged_IF,WB_update_unchanged_EX_jump,
+      MEM_imm_update_unchanged_IF,MEM_imm_update_unchanged_EX_jump,
+      MEM_ctrl_update_unchanged_IF,MEM_ctrl_update_unchanged_EX_jump] >>
+  fs [IF_PC_input_update_def,MUX_21_def] >>
+  fs [Abbr `s15`,Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+      Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      EX_data_rec_update_unchanged_IF,EX_jump_sel_addr_update_unchanged_IF,
+      EX_SHIFT_update_unchanged_IF,EX_ALU_update_unchanged_IF,
+      EX_compute_enable_update_unchanged_IF,EX_ALU_input_update_unchanged_IF,
+      EX_forward_data_unchanged_IF,EX_ctrl_update_unchanged_IF,
+      ID_data_update_unchanged_IF,ID_imm_update_unchanged_IF,
+      ID_opc_func_update_unchanged_IF,IF_PC_input_update_def,IF_instr_update_def,
+      ForwardW_def,ForwardB_def,ForwardA_def]
+QED
+
+(** initial command is 0 **)
+Theorem agp32_init_command_0w:
+  !fext fbits.
+    (agp32 fext fbits 0).command = 0w
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_imm_update_unchanged_state_items,MEM_ctrl_update_unchanged_state_items,
+      EX_data_rec_update_unchanged_state_items,EX_jump_sel_addr_update_unchanged_state_items,
+      EX_SHIFT_update_unchanged_state_items,EX_ALU_update_unchanged_state_items,
+      EX_compute_enable_update_unchanged_state_items,EX_ALU_input_update_unchanged_state_items,
+      EX_forward_data_unchanged_state_items,EX_ctrl_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_PC_input_update_def,IF_instr_update_def,
+      ForwardW_def,ForwardB_def,ForwardA_def] >>
+  rw [agp32_init_def]
+QED
+
+(** initial state is 3 **)
+Theorem agp32_init_state_3w:
+  !fext fbits.
+    (agp32 fext fbits 0).state = 3w
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_imm_update_unchanged_state_items,MEM_ctrl_update_unchanged_state_items,
+      EX_data_rec_update_unchanged_state_items,EX_jump_sel_addr_update_unchanged_state_items,
+      EX_SHIFT_update_unchanged_state_items,EX_ALU_update_unchanged_state_items,
+      EX_compute_enable_update_unchanged_state_items,EX_ALU_input_update_unchanged_state_items,
+      EX_forward_data_unchanged_state_items,EX_ctrl_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_PC_input_update_def,IF_instr_update_def,
+      ForwardW_def,ForwardB_def,ForwardA_def] >>
+  rw [agp32_init_def]
 QED
      
 

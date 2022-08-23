@@ -58,16 +58,19 @@ Proof
 QED
 
 
-(** ID_addrA **)
-Theorem agp32_Rel_ag32_ID_addrA_correct:
+(** ID_addrA/B/W **)
+Theorem agp32_Rel_ag32_ID_addr_correct:
   !fext fbits a t I.
     is_sch_decode I (agp32 fext fbits) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
-    (agp32 fext fbits (SUC t)).ID.ID_addrA = addrA (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
+    ((agp32 fext fbits (SUC t)).ID.ID_addrA = addrA (FUNPOW Next (THE (I (2,SUC t)) − 1) a)) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_addrB = addrB (FUNPOW Next (THE (I (2,SUC t)) − 1) a)) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_addrW = addrW (FUNPOW Next (THE (I (2,SUC t)) − 1) a))
 Proof
-  rw [addrA_def] >>
+  rpt gen_tac >> rpt strip_tac >>
+  simp [addrA_def,addrB_def,addrW_def] >>
   `(agp32 fext fbits (SUC t)).ID.ID_instr = instr (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)`
     by fs [agp32_Rel_ag32_ID_instr_correct] >>
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
@@ -75,8 +78,43 @@ Proof
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
   Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
                              ID_imm_update] (fext (SUC t)) s' s'` >>                          
-  `?s0.(agp32 fext fbits (SUC t)).ID.ID_addrA = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrA`
-    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_addrA_updated_by_ID_data_update] >>
+  `?s0. (agp32 fext fbits (SUC t)).ID.ID_addrA = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrA /\
+  (agp32 fext fbits (SUC t)).ID.ID_addrB = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrB /\
+  (agp32 fext fbits (SUC t)).ID.ID_addrW = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrW`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_addr_updated_by_ID_data_update] >>
+  fs [ID_data_update_def] >>
+  `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_ID_pipeline] >> fs []
+QED
+
+
+(** flagA/B/W: indicate imm or reg **)
+Theorem agp32_Rel_ag32_ID_flag_correct:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    I (2,SUC t) <> NONE ==>
+    ((agp32 fext fbits (SUC t)).ID.ID_addrA_disable = flagA (FUNPOW Next (THE (I (2,SUC t)) − 1) a)) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_addrB_disable = flagB (FUNPOW Next (THE (I (2,SUC t)) − 1) a)) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_addrW_disable = flagW (FUNPOW Next (THE (I (2,SUC t)) − 1) a))
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  simp [flagA_def,flagB_def,flagW_def] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = instr (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)`
+    by fs [agp32_Rel_ag32_ID_instr_correct] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
+                             ID_imm_update] (fext (SUC t)) s' s'` >>                          
+  `?s0. ((agp32 fext fbits (SUC t)).ID.ID_addrA_disable <=>
+         (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrA_disable) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_addrB_disable <=>
+   (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrB_disable) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_addrW_disable <=>
+   (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrW_disable)`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_flag_updated_by_ID_data_update] >>
   fs [ID_data_update_def] >>
   `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_ID_pipeline] >> fs []
@@ -94,8 +132,9 @@ Theorem agp32_Rel_ag32_ID_Rel_correct:
 Proof
   rw [ID_Rel_def] >-
    fs [agp32_Rel_ag32_ID_PC_correct] >-
-   fs [agp32_Rel_ag32_ID_instr_correct] >-
-   fs [agp32_Rel_ag32_ID_addrA_correct] >>
+   fs [agp32_Rel_ag32_ID_instr_correct] >>
+  fs [agp32_Rel_ag32_ID_addr_correct] >>
+  fs [agp32_Rel_ag32_ID_flag_correct] >>
   cheat
 QED
 

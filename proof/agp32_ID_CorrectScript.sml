@@ -176,6 +176,117 @@ Proof
 QED
 
 
+(** ID_opc **)
+Theorem agp32_Rel_ag32_ID_opc_correct:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    I (2,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_opc = opc (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
+Proof
+  rw [] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = instr (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)`
+    by fs [agp32_Rel_ag32_ID_instr_correct] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update] (fext (SUC t)) s' s'` >>
+  `?s0.(agp32 fext fbits (SUC t)).ID.ID_opc = (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_opc_func_updated_by_ID_opc_func_update] >>
+  `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_IF_instr_update] >> fs [] >>
+  rw [ID_opc_func_update_def,opc_def]
+QED
+
+
+(** ID_func **)
+(** lemmas show the relation between the ID_opc and ID_func **)
+Theorem ID_opc_func_update_normal_func:
+  !fext s s'.
+    ((ID_opc_func_update fext s s').ID.ID_opc = 0w) \/
+    ((ID_opc_func_update fext s s').ID.ID_opc = 6w) \/
+    ((ID_opc_func_update fext s s').ID.ID_opc = 9w) \/
+    ((ID_opc_func_update fext s s').ID.ID_opc = 10w) \/
+    ((ID_opc_func_update fext s s').ID.ID_opc = 11w) ==>
+    (ID_opc_func_update fext s s').ID.ID_func = (9 >< 6) s'.ID.ID_instr
+Proof
+  rw [] >> fs [ID_opc_func_update_def] >>
+  rw [] >> fs []
+QED
+
+Theorem ID_opc_func_update_shift_func:
+  !fext s s'.
+    (ID_opc_func_update fext s s').ID.ID_opc = 1w ==>
+    (ID_opc_func_update fext s s').ID.ID_func = (3w:word2) @@ ((7 >< 6) s'.ID.ID_instr)
+Proof
+  rw [ID_opc_func_update_def] >> fs [] >>
+  Cases_on `word_bit 24 s'.ID.ID_instr` >> fs [] >>
+  Cases_on `(5 >< 0) s'.ID.ID_instr = 10w \/ (5 >< 0) s'.ID.ID_instr = 11w \/
+            (5 >< 0) s'.ID.ID_instr = 12w` >> fs [] >>
+  Cases_on `word_bit 31 s'.ID.ID_instr` >> fs [] >>
+  Cases_on `(5 >< 0) s'.ID.ID_instr <+ 10w` >> fs []
+QED
+
+Theorem ID_opc_func_update_other_func:
+  !fext s s'.
+    (ID_opc_func_update fext s s').ID.ID_opc <> 0w ==>
+    (ID_opc_func_update fext s s').ID.ID_opc <> 1w ==>
+    (ID_opc_func_update fext s s').ID.ID_opc <> 6w ==>
+    (ID_opc_func_update fext s s').ID.ID_opc <> 9w ==>
+    (ID_opc_func_update fext s s').ID.ID_opc <> 10w ==>
+    (ID_opc_func_update fext s s').ID.ID_opc <> 11w ==>
+    (ID_opc_func_update fext s s').ID.ID_func = 9w
+Proof
+  rw [ID_opc_func_update_def] >> fs [] >>
+  Cases_on `word_bit 24 s'.ID.ID_instr` >> fs [] >>
+  Cases_on `(5 >< 0) s'.ID.ID_instr = 10w \/ (5 >< 0) s'.ID.ID_instr = 11w \/
+            (5 >< 0) s'.ID.ID_instr = 12w` >> fs [] >>
+  Cases_on `word_bit 31 s'.ID.ID_instr` >> fs [] >>
+  Cases_on `(5 >< 0) s'.ID.ID_instr <+ 10w` >> fs [] >>
+  Cases_on `(23 >< 9) s'.ID.ID_instr = 0w` >> fs []
+QED
+
+(** ID_func is correct **)
+Theorem agp32_Rel_ag32_ID_func_correct:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    I (2,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_func = func (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
+Proof
+  rw [] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = instr (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)`
+    by fs [agp32_Rel_ag32_ID_instr_correct] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_opc = opc (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)`
+    by fs [agp32_Rel_ag32_ID_opc_correct] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update] (fext (SUC t)) s' s'` >>
+  `?s0.
+    (agp32 fext fbits (SUC t)).ID.ID_opc = (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc /\
+  (agp32 fext fbits (SUC t)).ID.ID_func = (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_func`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_opc_func_updated_by_ID_opc_func_update] >>
+  `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_IF_instr_update] >>
+  Cases_on `((ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc = 0w) \/
+  ((ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc = 6w) \/
+  ((ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc = 9w) \/
+  ((ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc = 10w) \/
+  ((ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc = 11w)` >-
+   (`(ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_func = (9 >< 6) s''.ID.ID_instr`
+      by fs [ID_opc_func_update_normal_func] >>
+    simp [func_def] >> fs [] >>
+    rw [] >> METIS_TAC []) >>
+  Cases_on `(ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc = 1w` >-
+   (`(ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_func = (3w:word2) @@ ((7 >< 6) s''.ID.ID_instr)`
+      by fs [ID_opc_func_update_shift_func] >> fs [func_def]) >>
+  fs [func_def,ID_opc_func_update_other_func] >> METIS_TAC []
+QED
+
+
 (* ID stage *)
 Theorem agp32_Rel_ag32_ID_Rel_correct:
   !fext fbits a t I.
@@ -188,7 +299,8 @@ Proof
   rw [ID_Rel_def] >>
   fs [agp32_Rel_ag32_ID_PC_correct,agp32_Rel_ag32_ID_instr_correct,agp32_Rel_ag32_ID_addr_correct,
       agp32_Rel_ag32_ID_flag_correct,agp32_Rel_ag32_ID_imm_data_correct,
-      agp32_Rel_ag32_ID_imm_correct] >>
+      agp32_Rel_ag32_ID_imm_correct,agp32_Rel_ag32_ID_opc_correct,
+      agp32_Rel_ag32_ID_func_correct] >>
   cheat
 QED
 

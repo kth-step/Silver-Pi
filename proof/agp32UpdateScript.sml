@@ -1889,7 +1889,7 @@ Proof
       IF_PC_input_update_def,IF_instr_update_def]
 QED
 
-(** ID_PC is only chenged by the ID_pipeline function **)
+(** ID_PC is only changed by the ID_pipeline function **)
 Theorem agp32_ID_PC_instr_updated_by_ID_pipeline:
   !fext fbits t s s'.
     s = agp32 fext fbits t ==>
@@ -1921,8 +1921,8 @@ Proof
   fs [Abbr `ss8`,Acc_compute_unchanged_ID_items,Abbr `ss7`,IF_PC_update_unchanged_ID_pipeline_items]
 QED
 
-(** ID_func is only chenged by the ID_opc_func_update function **)
-Theorem agp32_ID_func_updated_by_ID_opc_func_update:
+(** ID_opc and func are only changed by the ID_opc_func_update function **)
+Theorem agp32_ID_opc_func_updated_by_ID_opc_func_update:
   !fext fbits t s s' s'' s0.
     s = agp32 fext fbits t ==>
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
@@ -1930,12 +1930,13 @@ Theorem agp32_ID_func_updated_by_ID_opc_func_update:
                (fext t) s s ==>
     s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update]
                 (fext (SUC t)) s' s' ==>
-    (agp32 fext fbits (SUC t)).ID.ID_func =
-    (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_func
+    ((agp32 fext fbits (SUC t)).ID.ID_func = (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_func) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_opc = (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc)
 Proof
-  rw [agp32_def,mk_module_def,mk_circuit_def] >>
-  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
-  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  rpt gen_tac >> rpt disch_tac >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
   fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,
       Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
@@ -1951,7 +1952,7 @@ Proof
   rw [ID_opc_func_update_def]
 QED
 
-(** ID_addrA/B/W is only chenged by the ID_data_update function **)
+(** ID_addrA/B/W are only changed by the ID_data_update function **)
 Theorem agp32_ID_addr_updated_by_ID_data_update:
   !fext fbits t s s' s'' s0.
     s = agp32 fext fbits t ==>
@@ -1981,7 +1982,7 @@ Proof
   fs [ID_data_update_def]
 QED
 
-(** ID_addrA/B/W_disable is only chenged by the ID_data_update function **)
+(** ID_addrA/B/W_disable are only changed by the ID_data_update function **)
 Theorem agp32_ID_flag_updated_by_ID_data_update:
   !fext fbits t s s' s'' s0.
     s = agp32 fext fbits t ==>
@@ -2014,7 +2015,7 @@ Proof
   fs [ID_data_update_def]
 QED
 
-(** ID_immA/B/W is only chenged by the ID_data_update function **)
+(** ID_immA/B/W are only changed by the ID_data_update function **)
 Theorem agp32_ID_imm_data_updated_by_ID_data_update:
   !fext fbits t s s' s'' s0.
     s = agp32 fext fbits t ==>
@@ -2044,7 +2045,7 @@ Proof
   fs [ID_data_update_def]
 QED
 
-(** ID_imm is only chenged by the ID_imm_update function **)
+(** ID_imm is only changed by the ID_imm_update function **)
 Theorem agp32_ID_imm_updated_by_ID_imm_update:
   !fext fbits t s s' s''.
     s = agp32 fext fbits t ==>
@@ -2538,6 +2539,35 @@ Proof
       EX_ALU_input_update_unchanged_ID_pipeline_items,EX_forward_data_unchanged_ID_pipeline_items,
       EX_ctrl_update_unchanged_ID_pipeline_items,ID_data_update_unchanged_ID_pipeline_items,
       ID_imm_update_unchanged_ID_pipeline_items]
+QED
+
+(** after the IF_instr_update function **)
+Theorem agp32_same_ID_instr_after_IF_instr_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute]
+               (fext t) s s ==>
+    s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update] (fext (SUC t)) s' s' ==>
+    (agp32 fext fbits (SUC t)).ID.ID_instr = s''.ID.ID_instr
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
+  Q.ABBREV_TAC `s1 = procs [ForwardA; ForwardB; ForwardW; IF_instr_update] (fext (SUC t)) s0 s0` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+      Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,
+      Hazard_ctrl_unchanged_ID_pipeline_items,WB_update_unchanged_ID_pipeline_items,
+      MEM_imm_update_unchanged_ID_pipeline_items,MEM_ctrl_update_unchanged_ID_pipeline_items,
+      IF_PC_input_update_def,EX_data_rec_update_unchanged_ID_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
+      EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
+      EX_compute_enable_update_unchanged_ID_pipeline_items,
+      EX_ALU_input_update_unchanged_ID_pipeline_items,EX_forward_data_unchanged_ID_pipeline_items,
+      EX_ctrl_update_unchanged_ID_pipeline_items,ID_data_update_unchanged_ID_pipeline_items,
+      ID_imm_update_unchanged_ID_pipeline_items,ID_opc_func_update_unchanged_ID_pipeline_items]
 QED
 
 val _ = export_theory ();

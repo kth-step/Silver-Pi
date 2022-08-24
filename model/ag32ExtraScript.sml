@@ -33,6 +33,8 @@ Definition func_def:
   let opc = opc a in
     if opc = 0w \/ opc = 6w \/ opc = 9w \/ opc = 10w \/ opc = 11w then
       (9 >< 6) (instr a)
+    else if opc = 1w then
+      (3w:word2) @@ ((7 >< 6) (instr a))
     else 9w
 End
 

@@ -83,6 +83,7 @@ val is_mem_def = Define `
   (* Nothing *)
   (accessors.get_command (step n) = 0w /\ (fext (n-1)).ready ==>
    (fext n).mem = (fext (n-1)).mem /\
+   (fext n).inst_rdata = (fext (n-1)).inst_rdata /\
    (fext n).ready) /\
 
   (* Read instruction *)

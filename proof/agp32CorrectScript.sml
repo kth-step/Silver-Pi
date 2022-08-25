@@ -354,6 +354,8 @@ Proof
    cheat >-
    (** fext not ready, fetch disabled **)
    fs [enable_stg_def,not_fext_ready_and_agp32_IF_PC_write_disable] >-
+   (** fext not ready, decode disabled **)
+   (rw [enable_stg_def] >> METIS_TAC [agp32_ID_ID_write_enable_and_fext_ready]) >-
    (** data_out **)
    cheat >-
    (** registers **)

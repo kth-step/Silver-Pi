@@ -171,6 +171,73 @@ Proof
   rw [] >> METIS_TAC [agp32_IF_PC_write_enable_and_fext_ready]
 QED
 
+(** IF_PC_write_enable and EX_isAcc **)
+Theorem agp32_IF_PC_write_enable_and_EX_isAcc:
+  !fext fbits t.
+    (agp32 fext fbits t).IF.IF_PC_write_enable ==>
+    ~(agp32 fext fbits t).EX.EX_isAcc
+Proof
+  rw [] >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (clist_update_state_tac >>
+    fs [Abbr `s20`,Hazard_ctrl_def] >>
+    Cases_on `s19.state = 3w \/ s19.state = 5w` >> fs [] >>
+    Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 4w \/ s19.state = 6w` >> fs [] >>
+    Cases_on `(fext 0).ready` >> fs [] >>
+    Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
+              (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
+              (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
+    Cases_on `s19.EX.EX_isAcc` >> fs [] >>
+    Cases_on `s19.EX.EX_jump_sel` >> fs []) >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Hazard_ctrl_def] >>
+  Cases_on `s19.state = 3w \/ s19.state = 5w` >> fs [] >>
+  Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 4w \/ s19.state = 6w` >> fs [] >>
+  Cases_on `(fext (SUC n)).ready` >> fs [] >>
+  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
+            s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s19.EX.EX_isAcc` >> fs [] >>
+  Cases_on `s19.EX.EX_jump_sel` >> fs []      
+QED
+
+(** IF_PC_write_enable and state **)
+Theorem agp32_IF_PC_write_enable_and_state:
+  !fext fbits t.
+    (agp32 fext fbits t).IF.IF_PC_write_enable ==>
+    ((agp32 fext fbits t).state <> 1w) /\
+    ((agp32 fext fbits t).state <> 2w) /\
+    ((agp32 fext fbits t).state <> 3w) /\
+    ((agp32 fext fbits t).state <> 4w) /\
+    ((agp32 fext fbits t).state <> 5w) /\
+    ((agp32 fext fbits t).state <> 6w)
+Proof
+  rpt GEN_TAC >> STRIP_TAC >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (clist_update_state_tac >>
+    fs [Abbr `s20`,Hazard_ctrl_def] >>
+    Cases_on `s19.state = 3w \/ s19.state = 5w` >> fs [] >>
+    Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 4w \/ s19.state = 6w` >> fs [] >>
+    Cases_on `(fext 0).ready` >> fs [] >>
+    Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
+              (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
+              (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
+    Cases_on `s19.EX.EX_isAcc` >> fs [] >>
+    Cases_on `s19.EX.EX_jump_sel` >> fs []) >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Hazard_ctrl_def] >>
+  Cases_on `s19.state = 3w \/ s19.state = 5w` >> fs [] >>
+  Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 4w \/ s19.state = 6w` >> fs [] >>
+  Cases_on `(fext (SUC n)).ready` >> fs [] >>
+  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
+            s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s19.EX.EX_isAcc` >> fs [] >>
+  Cases_on `s19.EX.EX_jump_sel` >> fs []
+QED
+
 
 (* ID_ID_write_enable *)
 (** ID_ID_write_enable and fext t.ready **)

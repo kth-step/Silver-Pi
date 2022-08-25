@@ -234,20 +234,19 @@ Definition WB_Rel_def:
 End
 
 (* TODO: refine the definition *)
-(* si: circuit state at cycle t-1 *)
+(* si: circuit state at the previous cycle *)
 Definition Rel_def:
   Rel (I:num # num -> num option) (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (t:num) <=>
   (fext.data_in = (FUNPOW Next (THE (I (5,t))) a).data_in) /\
-  (** visible part: directly seen by ISA **)
   ((s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (3,t))) a).CarryFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I(3,t))) a).OverflowFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
   (I (1,t) <> NONE ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (1,t)) - 1) a).PC + 4w)) /\
   (fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\
-  (~fext.ready ==> ~enable_stg 1 s) /\                                     
+  (~fext.ready ==> ~enable_stg 1 s) /\
+  (~fext.ready ==> ~enable_stg 2 s) /\                                     
   (s.data_out = (FUNPOW Next (THE (I (5,t))) a).data_out) /\
   (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
-  (** invisible part **)
   ((I (1,t) <> NONE) ==> IF_PC_Rel s a (THE (I (1,t)))) /\
   ((I (1,t) <> NONE) ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
   (enable_stg 2 si ==> (I (2,t) <> NONE) ==> ID_Rel fext s a (THE (I (2,t)))) /\

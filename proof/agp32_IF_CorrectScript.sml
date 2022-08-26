@@ -93,7 +93,7 @@ Theorem IF_instr_index_big_then_MEM_disable:
 Proof
   rpt gen_tac >> rpt disch_tac >>
   Induct_on `t` >-
-   (fs [is_sch_init_def,is_sch_disable_def,enable_stg_def] >> cheat) >>
+   (fs [is_sch_init_def,is_sch_disable_def,enable_stg_def] >> rw [] >> cheat) >>
   rpt disch_tac >>
   `I' (1,SUC (SUC t)) = I' (1,SUC t)` by fs [is_sch_disable_def] >> fs [] >>
   Cases_on `enable_stg 4 (agp32 fext fbits (SUC t))` >-
@@ -224,7 +224,7 @@ Proof
      THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM] >>
      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
    (** multiple cycles **)
-   `~(fext (0+SUC t)).ready` by fs [] >> fs []) >-
+   `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
    ((** 3: write memory and read instr **)
    last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
    Cases_on `m` >> fs [] >-
@@ -236,7 +236,7 @@ Proof
      `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4`
        by METIS_TAC [IF_instr_index_big_then_MEM] >> fs [] >>
      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-   `~(fext (0+SUC t)).ready` by fs [] >> fs []) >-
+   `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
    ((** 2: read memory and read instr **)
    last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
    Cases_on `m` >> fs [] >-
@@ -246,7 +246,7 @@ Proof
      `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
      THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM] >>
      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-   `~(fext (0+SUC t)).ready` by fs [] >> fs []) >-
+   `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
    ((** 1: read instr **)
    last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
    Cases_on `m` >> fs [] >-
@@ -256,7 +256,7 @@ Proof
      `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
      THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM] >>
      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-   `~(fext (0+SUC t)).ready` by fs [] >> fs []) >>
+   `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
   (** 0: do nothing, not a possible command when fetching **)
   fs [enable_stg_def] >>
   `(agp32 fext fbits t).state = 0w`
@@ -314,7 +314,7 @@ Proof
        `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
        THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by cheat >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-     `~(fext (0+SUC t)).ready` by fs [] >> fs []) >-
+     `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
      ((** command is 3 **)
      rw [instr_def] >>
      last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
@@ -327,7 +327,7 @@ Proof
        `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4`
          by cheat >> fs [] >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-     `~(fext (0+SUC t)).ready` by fs [] >> fs []) >-
+     `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
      ((** command is 2 **)
      rw [instr_def] >>
      last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
@@ -339,7 +339,7 @@ Proof
        `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
        THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by cheat >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-     `~(fext (0+SUC t)).ready` by fs [] >> fs []) >-
+     `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
      ((** command is 1 **)
      rw [instr_def] >>
      last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
@@ -351,7 +351,7 @@ Proof
        `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
        THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by cheat >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-     `~(fext (0+SUC t)).ready` by fs [] >> fs []) >>
+     `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
    (** command is 0 **)
    `I' (1,SUC t) = I' (1,t)` by fs [is_sch_disable_def] >> fs [] >>
     last_assum (mp_tac o is_mem_do_nothing `SUC t`) >> rw [] >>
@@ -359,8 +359,29 @@ Proof
       by rw [agp32_IF_instr_exists_IF_instr_update] >>
     fs [IF_instr_update_def,Rel_def,IF_instr_Rel_def]) >>
   (** memory is NOT ready at the previous cycle **)
-  cheat
+  rw [instr_def] >>
+  `(fext (SUC t)).inst_rdata =
+  word_at_addr (fext (SUC t)).mem (align_addr (agp32 fext fbits (SUC t)).PC)` by cheat >> fs [] >>
+  `(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
+    by METIS_TAC [agp32_Rel_ag32_IF_disable_PC_correct] >>
+  `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
+  `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by cheat >>
+  METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]
 QED
+
+(* TODO discussion points :
+   1. when the ~(fext t).ready and (fext t+1).ready,
+   there is no information from the is_mem about (fext t+1).inst_rdata.
+   Check the definition of is_mem.
+   2. scheduing function oracle to show the relation between I (1,t) and I (4,t),
+   it requires the assumption that I (4,t) and I (3,t) are not NONE.
+   3. check the current is_sch_decode and an alternative, which is better.
+   Better that we can review and determine the whole sch oracle.
+ *)
+(* to add for memory
+   ~(fext (n-1)).ready ==> (fext n).ready ==>
+   (fext n).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n)))
+ *)
 
 (** IF_instr_Rel between ISA and circuit states **)
 Theorem agp32_Rel_ag32_IF_instr_Rel_correct:

@@ -716,4 +716,29 @@ Proof
   fs [word_at_addr_not_changed_after_normal_instrs]          
 QED
 
+(* correctness of ISA help funcations imm/flag/data for ports A/B/W *)
+(** data port A **)
+Theorem dataA_correct_rewrite_flag_imm_reg_data:
+  !a.
+    dataA a = if v2w [flagA a] = (0w:word1) then reg_dataA a else immA a
+Proof
+  rw [dataA_def,flagA_def,reg_dataA_def,immA_def,instr_def,DecodeReg_imm_def,ri2word_def,addrA_def]
+QED
+
+(** data port B **)
+Theorem dataB_correct_rewrite_flag_imm_reg_data:
+  !a.
+    dataB a = if v2w [flagB a] = (0w:word1) then reg_dataB a else immB a
+Proof
+  rw [dataB_def,flagB_def,reg_dataB_def,immB_def,instr_def,DecodeReg_imm_def,ri2word_def,addrB_def]
+QED
+
+(** data port W **)
+Theorem dataW_correct_rewrite_flag_imm_reg_data:
+  !a.
+    dataW a = if v2w [flagW a] = (0w:word1) then reg_dataW a else immW a
+Proof
+  rw [dataW_def,flagW_def,reg_dataW_def,immW_def,instr_def,DecodeReg_imm_def,ri2word_def,addrW_def]
+QED
+
 val _ = export_theory ();

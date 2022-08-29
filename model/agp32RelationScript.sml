@@ -2,9 +2,9 @@ open hardwarePreamble agp32StateTheory agp32EnvironmentTheory ag32Theory ag32Ext
 
 val _ = new_theory "agp32Relation";
 
-(** general variables used in this file:
+(** general variables:
     k: pipeline stage.
-    t: cycle for the hw.
+    t: cycle for the pipeline circuit.
     i: cycle (instr index) for the ISA.
  **)
 
@@ -26,11 +26,11 @@ End
 (* reg_data_vaild: the register data is vaild from the external components e.g. memory *)
 (* TODO *)
 Definition reg_data_vaild_def:
-  reg_data_vaild k s = 
+  reg_data_vaild k s =
   if k = 3 then enable_stg 4 s
   else if k = 5 then s.state = 0w
   else F
-End  
+End
 
 (* software conditions *)
 (* self modified: a memory write operation does not affect the fetched value of the next 3 instructions *)
@@ -39,7 +39,7 @@ Definition SC_self_mod_isa_def:
   !n i. is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
         i > n ==> i < n + 4 ==>
         align_addr (FUNPOW Next (i-1) a).PC <> align_addr (dataB (FUNPOW Next (n-1) a))
-End  
+End
 
 (* not used, to remove later
 Definition SC_self_mod_def:
@@ -297,6 +297,49 @@ Definition is_sch_other_def:
   (!t k. enable_stg k (sf t) ==> k <> 1 ==> k <> 2 ==>
          I (k,SUC t) = SOME (THE (I (k - 1,t))))
 End
+
+(* TOCHECK: rewrite the memory oracle other than fetch
+  Definition is_sch_init_def:
+  is_sch_init (I:num # num -> num option) = (!k.I (k,0) = if k = 0 then SOME 1 else NONE)
+  End
+
+  Definition is_sch_decode_def:
+  is_sch_decode (I:num # num -> num option) (sf:num -> state_circuit) <=>
+  (!t. enable_stg 2 (sf t) ==>
+       isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) \/
+       isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
+       I (2,SUC t) = NONE) /\
+  (!t. enable_stg 2 (sf t) ==>
+       ~ isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       ~ isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
+       I (2,SUC t) = I (1,t))
+  End
+
+  is_sch_execute (I:num # num -> num option) (sf:num -> state_circuit) <=>
+  (!t. enable_stg 3 (sf t) ==>
+       isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) \/
+       isAcc_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       I (3,SUC t) = NONE) /\
+  (!t. enable_stg 3 (sf t) ==>
+       ~ isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       ~ isAcc_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       I (3,SUC t) = I (2,t))
+  End
+
+  is_sch_memory (I:num # num -> num option) (sf:num -> state_circuit) <=>
+  (!t. enable_stg 4 (sf t) ==>
+       isMem_op_isa (FUNPOW Next (THE (I (4,t)) - 1) a) ==>
+       I (4,SUC t) = NONE) /\
+  (!t. enable_stg 4 (sf t) ==>
+       ~ isMem_op_isa (FUNPOW Next (THE (I (4,t)) - 1) a) ==>
+       I (4,SUC t) = I (3,t))
+  End
+
+  is_sch_writeback (I:num # num -> num option) (sf:num -> state_circuit) <=>
+  (!t. enable_stg 5 (sf t) ==>
+       I (5,SUC t) = I (4,t))
+  End
+*)
 
 Definition is_sch_disable_def:
   is_sch_disable (I:num # num -> num option) (sf:num -> state_circuit) =

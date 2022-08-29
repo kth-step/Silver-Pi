@@ -16,8 +16,9 @@ val is_mem_inst_read = rw_mem 2
 val is_mem_data_read = rw_mem 3
 val is_mem_data_write = rw_mem 4
 val is_mem_data_flush = rw_mem 5
+val is_mem_inst_data_ready = rw_mem 6
 (* special: *)
-val is_mem_def_mem_no_errors = el 6 o CONJUNCTS o SPEC_ALL o PURE_REWRITE_RULE [is_mem_def]
+val is_mem_def_mem_no_errors = el 7 o CONJUNCTS o SPEC_ALL o PURE_REWRITE_RULE [is_mem_def]
 end
 
 (* Can be optimized ... *)

@@ -116,6 +116,10 @@ val is_mem_def = Define `
        (fext (n + m)).mem = (fext (n-1)).mem /\
        (fext (n + m)).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n))) /\
        (fext (n + m)).ready) /\
+       
+  (* memory is not ready at n-1 and ready at n *)
+  (~(fext (n-1)).ready /\ (fext n).ready ==>
+    (fext n).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n)))) /\
 
   mem_no_errors fext`;
 

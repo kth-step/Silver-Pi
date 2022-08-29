@@ -353,15 +353,14 @@ Proof
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
    (** command is 0 **)
-   `I' (1,SUC t) = I' (1,t)` by fs [is_sch_disable_def] >> fs [] >>
+    `I' (1,SUC t) = I' (1,t)` by fs [is_sch_disable_def] >> fs [] >>
     last_assum (mp_tac o is_mem_do_nothing `SUC t`) >> rw [] >>
     `?s s'.(agp32 fext fbits t).IF.IF_instr = (IF_instr_update (fext t) s s').IF.IF_instr`
       by rw [agp32_IF_instr_exists_IF_instr_update] >>
     fs [IF_instr_update_def,Rel_def,IF_instr_Rel_def]) >>
   (** memory is NOT ready at the previous cycle **)
   rw [instr_def] >>
-  `(fext (SUC t)).inst_rdata =
-  word_at_addr (fext (SUC t)).mem (align_addr (agp32 fext fbits (SUC t)).PC)` by cheat >> fs [] >>
+  last_assum (mp_tac o is_mem_inst_data_ready `SUC t`) >> rw [] >>
   `(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
     by METIS_TAC [agp32_Rel_ag32_IF_disable_PC_correct] >>
   `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
@@ -373,15 +372,26 @@ QED
    1. when the ~(fext t).ready and (fext t+1).ready,
    there is no information from the is_mem about (fext t+1).inst_rdata.
    Check the definition of is_mem.
-   2. scheduing function oracle to show the relation between I (1,t) and I (4,t),
-   it requires the assumption that I (4,t) and I (3,t) are not NONE.
-   3. check the current is_sch_decode and an alternative, which is better.
+   2. check the current is_sch_decode and an alternative, which is better.
    Better that we can review and determine the whole sch oracle.
+   3. scheduing function oracle to show the relation between I (1,t) and I (4,t),
+   it requires the assumption that I (4,t) and I (3,t) are not NONE.
  *)
-(* to add for memory
-   ~(fext (n-1)).ready ==> (fext n).ready ==>
-   (fext n).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n)))
- *)
+
+(*
+Theorem test[local]:
+  !fext step n.
+    is_mem fext_accessor_circuit step fext ==>
+    ~(fext (n-1)).ready ==>
+    (fext n).ready ==>
+    (fext n).inst_rdata = word_at_addr (fext n).mem (align_addr (fext_accessor_circuit.get_PC (step n)))
+Proof
+  rw [] >>
+  (*Induct_on `n` >> rw []*)
+  `?m. (fext m).ready /\ m < n` by cheat >>
+   cheat
+QED
+*)
 
 (** IF_instr_Rel between ISA and circuit states **)
 Theorem agp32_Rel_ag32_IF_instr_Rel_correct:
@@ -469,6 +479,7 @@ Proof
 QED
 
 
+(*
 (* test content *)
 (* fetch correct instr after delays *)
 Theorem is_sch_disable_fext_not_ready_several_cycles:
@@ -535,5 +546,6 @@ Proof
     by METIS_TAC [IF_instr_index_big_then_MEM] >>
   METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]
 QED
+*)
 
 val _ = export_theory ();

@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory wordsExtraTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory;
 
 (* correctness of ID stage items with respect to the ISA *)
 val _ = new_theory "agp32_ID_Correct";
@@ -112,12 +112,12 @@ Proof
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
   Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
                              ID_imm_update] (fext (SUC t)) s' s'` >>                          
-  `?s0. ((agp32 fext fbits (SUC t)).ID.ID_addrA_disable <=>
-         (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrA_disable) /\
+  `((agp32 fext fbits (SUC t)).ID.ID_addrA_disable <=>
+    (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrA_disable) /\
   ((agp32 fext fbits (SUC t)).ID.ID_addrB_disable <=>
-   (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrB_disable) /\
+   (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrB_disable) /\
   ((agp32 fext fbits (SUC t)).ID.ID_addrW_disable <=>
-   (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrW_disable)`
+   (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrW_disable)`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_flag_updated_by_ID_data_update] >>
   fs [ID_data_update_def] >>
   `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
@@ -145,9 +145,9 @@ Proof
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
   Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
                              ID_imm_update] (fext (SUC t)) s' s'` >>                          
-  `?s0. (agp32 fext fbits (SUC t)).ID.ID_immA = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_immA /\
-  (agp32 fext fbits (SUC t)).ID.ID_immB = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_immB /\
-  (agp32 fext fbits (SUC t)).ID.ID_immW = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_immW`
+  `(agp32 fext fbits (SUC t)).ID.ID_immA = (ID_data_update (fext (SUC t)) s' s'').ID.ID_immA /\
+  (agp32 fext fbits (SUC t)).ID.ID_immB = (ID_data_update (fext (SUC t)) s' s'').ID.ID_immB /\
+  (agp32 fext fbits (SUC t)).ID.ID_immW = (ID_data_update (fext (SUC t)) s' s'').ID.ID_immW`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_imm_data_updated_by_ID_data_update] >>
   fs [ID_data_update_def] >>
   `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
@@ -291,6 +291,53 @@ Proof
 QED
 
 
+(** ID_data: when using the imm, dataA/B/W are correct **)
+Theorem agp32_Rel_ag32_ID_dataA_correct_using_immA:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    I (2,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_addrA_disable ==>
+    (agp32 fext fbits (SUC t)).ID.ID_dataA = dataA (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
+Proof
+  rw [] >>
+  `flagA (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)` by METIS_TAC [agp32_Rel_ag32_ID_flag_correct] >>
+  rw [dataA_correct_rewrite_flag_imm_reg_data,v2w_single_0w] >>
+  fs [agp32_ID_addrA_disable_dataA_immA,agp32_Rel_ag32_ID_imm_data_correct]
+QED
+
+Theorem agp32_Rel_ag32_ID_dataB_correct_using_immB:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    I (2,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_addrB_disable ==>
+    (agp32 fext fbits (SUC t)).ID.ID_dataB = dataB (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
+Proof
+  rw [] >>
+  `flagB (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)` by METIS_TAC [agp32_Rel_ag32_ID_flag_correct] >>
+  rw [dataB_correct_rewrite_flag_imm_reg_data,v2w_single_0w] >>
+  fs [agp32_ID_addrB_disable_dataB_immB,agp32_Rel_ag32_ID_imm_data_correct]
+QED
+
+Theorem agp32_Rel_ag32_ID_dataW_correct_using_immW:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    I (2,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_addrW_disable ==>
+    (agp32 fext fbits (SUC t)).ID.ID_dataW = dataW (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
+Proof
+  rw [] >>
+  `flagW (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)` by METIS_TAC [agp32_Rel_ag32_ID_flag_correct] >>
+  rw [dataW_correct_rewrite_flag_imm_reg_data,v2w_single_0w] >>
+  fs [agp32_ID_addrW_disable_dataW_immW,agp32_Rel_ag32_ID_imm_data_correct]
+QED
+
+
 (* ID stage *)
 Theorem agp32_Rel_ag32_ID_Rel_correct:
   !fext fbits a t I.
@@ -304,7 +351,8 @@ Proof
   fs [agp32_Rel_ag32_ID_PC_correct,agp32_Rel_ag32_ID_instr_correct,agp32_Rel_ag32_ID_addr_correct,
       agp32_Rel_ag32_ID_flag_correct,agp32_Rel_ag32_ID_imm_data_correct,
       agp32_Rel_ag32_ID_imm_correct,agp32_Rel_ag32_ID_opc_correct,
-      agp32_Rel_ag32_ID_func_correct] >>
+      agp32_Rel_ag32_ID_func_correct,agp32_Rel_ag32_ID_dataA_correct_using_immA,
+      agp32_Rel_ag32_ID_dataB_correct_using_immB,agp32_Rel_ag32_ID_dataW_correct_using_immW] >>
   cheat
 QED
 

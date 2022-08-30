@@ -46,6 +46,64 @@ Proof
   fs [ID_opc_func_update_def]
 QED
 
+(** relation between ID addr_disable imm and data singals **)
+Theorem agp32_ID_addrA_disable_dataA_immA:
+  !fext fbits t.
+    (agp32 fext fbits (SUC t)).ID.ID_addrA_disable ==>
+    (agp32 fext fbits (SUC t)).ID.ID_dataA = (agp32 fext fbits (SUC t)).ID.ID_immA
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
+                             ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  `((agp32 fext fbits (SUC t)).ID.ID_addrA_disable <=>
+  (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrA_disable) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_immA = (ID_data_update (fext (SUC t)) s' s'').ID.ID_immA) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_dataA = (ID_data_update (fext (SUC t)) s' s'').ID.ID_dataA)`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_flag_updated_by_ID_data_update,
+           agp32_ID_imm_data_updated_by_ID_data_update,agp32_ID_data_updated_by_ID_data_update] >>
+  fs [ID_data_update_def,MUX_21_def]
+QED
+
+Theorem agp32_ID_addrB_disable_dataB_immB:
+  !fext fbits t.
+    (agp32 fext fbits (SUC t)).ID.ID_addrB_disable ==>
+    (agp32 fext fbits (SUC t)).ID.ID_dataB = (agp32 fext fbits (SUC t)).ID.ID_immB
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
+                             ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  `((agp32 fext fbits (SUC t)).ID.ID_addrB_disable <=>
+  (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrB_disable) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_immB = (ID_data_update (fext (SUC t)) s' s'').ID.ID_immB) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_dataB = (ID_data_update (fext (SUC t)) s' s'').ID.ID_dataB)`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_flag_updated_by_ID_data_update,
+           agp32_ID_imm_data_updated_by_ID_data_update,agp32_ID_data_updated_by_ID_data_update] >>
+  fs [ID_data_update_def,MUX_21_def]
+QED
+
+Theorem agp32_ID_addrW_disable_dataW_immW:
+  !fext fbits t.
+    (agp32 fext fbits (SUC t)).ID.ID_addrW_disable ==>
+    (agp32 fext fbits (SUC t)).ID.ID_dataW = (agp32 fext fbits (SUC t)).ID.ID_immW
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
+                             ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  `((agp32 fext fbits (SUC t)).ID.ID_addrW_disable <=>
+  (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrW_disable) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_immW = (ID_data_update (fext (SUC t)) s' s'').ID.ID_immW) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_dataW = (ID_data_update (fext (SUC t)) s' s'').ID.ID_dataW)`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_flag_updated_by_ID_data_update,
+           agp32_ID_imm_data_updated_by_ID_data_update,agp32_ID_data_updated_by_ID_data_update] >>
+  fs [ID_data_update_def,MUX_21_def]
+QED
+
 (** EX stage **)
 Theorem agp32_EX_opc_implies_EX_func:
   !fext fbits t.

@@ -133,9 +133,9 @@ Definition ID_Rel_def:
    (s.ID.ID_read_dataA_updated = reg_dataA (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_read_dataB_updated = reg_dataB (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_read_dataW_updated = reg_dataW (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a)))
+   (s.ID.ID_addrA_disable ==> s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_addrB_disable ==> s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_addrW_disable ==> s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a)))
 End
 
 Definition EX_Rel_def:

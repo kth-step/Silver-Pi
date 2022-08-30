@@ -258,7 +258,9 @@ End
 
 (* scheduling function I *)
 Definition is_sch_init_def:
-  is_sch_init (I:num # num -> num option) = (!k.I (k,0) = SOME 0)
+  is_sch_init (I:num # num -> num option) <=>
+  (?n. n <> 0 /\ I (1,0) = SOME n) /\
+  (!k. k <> 1 ==> I (k,0) = NONE)
 End
 
 Definition is_sch_fetch_def:
@@ -283,81 +285,66 @@ Definition is_sch_fetch_def:
 End
 
 Definition is_sch_decode_def:
-  is_sch_decode (I:num # num -> num option) (sf:num -> state_circuit) <=>
+  is_sch_decode (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   (!t. enable_stg 2 (sf t) ==>
-       I (1,t) <> NONE ==>
-       I (2,SUC t) = SOME (THE (I (1,t)))) /\
-  (!t. enable_stg 2 (sf t) ==>
-       I (1,t) = NONE ==>
-       I (2,SUC t) = NONE)
-End
-
-Definition is_sch_other_def:
-  is_sch_other (I:num # num -> num option) (sf:num -> state_circuit) <=>
-  (!t k. enable_stg k (sf t) ==> k <> 1 ==> k <> 2 ==>
-         I (k,SUC t) = SOME (THE (I (k - 1,t))))
-End
-
-(* TOCHECK: rewrite the memory oracle other than fetch
-  Definition is_sch_init_def:
-  is_sch_init (I:num # num -> num option) = (!k.I (k,0) = if k = 0 then SOME 1 else NONE)
-  End
-
-  Definition is_sch_decode_def:
-  is_sch_decode (I:num # num -> num option) (sf:num -> state_circuit) <=>
-  (!t. enable_stg 2 (sf t) ==>
-       isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) \/
-       isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
+       isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) \/
+       isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
        I (2,SUC t) = NONE) /\
   (!t. enable_stg 2 (sf t) ==>
-       ~ isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
-       ~ isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
+       ~isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
+       ~isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
        I (2,SUC t) = I (1,t))
-  End
+End
 
-  is_sch_execute (I:num # num -> num option) (sf:num -> state_circuit) <=>
+Definition is_sch_execute_def:
+  is_sch_execute (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   (!t. enable_stg 3 (sf t) ==>
        isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) \/
        isAcc_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
        I (3,SUC t) = NONE) /\
   (!t. enable_stg 3 (sf t) ==>
-       ~ isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
-       ~ isAcc_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       ~isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       ~isAcc_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
        I (3,SUC t) = I (2,t))
-  End
+End
 
-  is_sch_memory (I:num # num -> num option) (sf:num -> state_circuit) <=>
+
+Definition is_sch_memory_def:
+  is_sch_memory (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   (!t. enable_stg 4 (sf t) ==>
-       isMem_op_isa (FUNPOW Next (THE (I (4,t)) - 1) a) ==>
+       isMemOp_isa (FUNPOW Next (THE (I (4,t)) - 1) a) ==>
        I (4,SUC t) = NONE) /\
   (!t. enable_stg 4 (sf t) ==>
-       ~ isMem_op_isa (FUNPOW Next (THE (I (4,t)) - 1) a) ==>
+       ~isMemOp_isa (FUNPOW Next (THE (I (4,t)) - 1) a) ==>
        I (4,SUC t) = I (3,t))
-  End
+End
 
+Definition is_sch_writeback_def:
   is_sch_writeback (I:num # num -> num option) (sf:num -> state_circuit) <=>
-  (!t. enable_stg 5 (sf t) ==>
-       I (5,SUC t) = I (4,t))
-  End
-*)
+  (!t. enable_stg 5 (sf t) ==> I (5,SUC t) = I (4,t))
+End
 
 Definition is_sch_disable_def:
   is_sch_disable (I:num # num -> num option) (sf:num -> state_circuit) =
-  (!t k. ~enable_stg k (sf t) ==> I (k,SUC t) = I (k,t))
+  (!t k. ~enable_stg k (sf t) ==> k <> 2 ==> I (k,SUC t) = I (k,t))
+End
+
+Definition is_sch_disable_ID_def:
+  is_sch_disable_ID (I:num # num -> num option) (sf:num -> state_circuit) <=>
+  (!t. (~enable_stg 2 (sf t) ==> (sf t).ID.ID_flush_flag ==> I (2,SUC t) = NONE) /\
+       (~enable_stg 2 (sf t) ==> ~(sf t).ID.ID_flush_flag ==> I (2,SUC t) = I (2,t)))
 End
 
 Definition is_sch_def:
   is_sch (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   is_sch_init I /\
   is_sch_fetch I sf a/\
-  is_sch_decode I sf /\
-  is_sch_other I sf /\
-  is_sch_disable I sf
-End
-
-Definition well_formed_sch_def:
-  well_formed_sch (I:num # num -> num option) (sf:num -> state_circuit) (t:num) <=>
-  (!k. enable_stg k (sf t) ==> k > 2 ==> I (k - 1,t) = SOME (THE (I (k,t)) + 1))
+  is_sch_decode I sf a /\
+  is_sch_execute I sf a /\
+  is_sch_memory I sf a /\
+  is_sch_writeback I sf /\
+  is_sch_disable I sf /\
+  is_sch_disable_ID I sf
 End
 
 val _ = export_theory ();

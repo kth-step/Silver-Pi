@@ -10,15 +10,17 @@ val _ = guess_lengths ();
 (** ID_PC **)
 Theorem agp32_Rel_ag32_ID_PC_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) ==>
+    is_sch_decode I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
     (agp32 fext fbits (SUC t)).ID.ID_PC = (FUNPOW Next (THE (I (2,SUC t)) − 1) a).PC
 Proof
   rw [is_sch_decode_def] >>
-  Cases_on `I' (1,t) = NONE` >> fs [] >-
+  Cases_on `isJump_isa (FUNPOW Next (THE (I' (2,t)) − 1) a) \/
+  isJump_isa (FUNPOW Next (THE (I' (3,t)) − 1) a)` >-
    METIS_TAC [] >>
+  `I' (2,SUC t) = I' (1,t)` by fs [] >> fs [] >>
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>             
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write] (fext t) s s` >>
@@ -35,15 +37,17 @@ QED
 (** ID_instr **)
 Theorem agp32_Rel_ag32_ID_instr_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) ==>
+    is_sch_decode I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
     (agp32 fext fbits (SUC t)).ID.ID_instr = instr (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
 Proof
   rw [is_sch_decode_def] >>
-  Cases_on `I' (1,t) = NONE` >> fs [] >-
+  Cases_on `isJump_isa (FUNPOW Next (THE (I' (2,t)) − 1) a) \/
+  isJump_isa (FUNPOW Next (THE (I' (3,t)) − 1) a)` >-
    METIS_TAC [] >>
+  `I' (2,SUC t) = I' (1,t)` by fs [] >> fs [] >>
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>             
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write] (fext t) s s` >>
@@ -61,7 +65,7 @@ QED
 (** ID_addrA/B/W **)
 Theorem agp32_Rel_ag32_ID_addr_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) ==>
+    is_sch_decode I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
@@ -91,7 +95,7 @@ QED
 (** flagA/B/W: indicate imm or reg **)
 Theorem agp32_Rel_ag32_ID_flag_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) ==>
+    is_sch_decode I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
@@ -124,7 +128,7 @@ QED
 (** immA/B/W **)
 Theorem agp32_Rel_ag32_ID_imm_data_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) ==>
+    is_sch_decode I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
@@ -154,7 +158,7 @@ QED
 (** imm for LoadConstant and LoadUpperConstant **)
 Theorem agp32_Rel_ag32_ID_imm_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) ==>
+    is_sch_decode I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
@@ -179,7 +183,7 @@ QED
 (** ID_opc **)
 Theorem agp32_Rel_ag32_ID_opc_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) ==>
+    is_sch_decode I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
@@ -250,7 +254,7 @@ QED
 (** ID_func is correct **)
 Theorem agp32_Rel_ag32_ID_func_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) ==>
+    is_sch_decode I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
@@ -290,7 +294,7 @@ QED
 (* ID stage *)
 Theorem agp32_Rel_ag32_ID_Rel_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) ==>
+    is_sch_decode I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>

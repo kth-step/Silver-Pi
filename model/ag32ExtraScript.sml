@@ -151,6 +151,10 @@ Definition acc_res_def:
   acc_res a = accelerator_f (acc_arg a)
 End
 
+Definition isAcc_isa_def:
+  isAcc_isa a = (opc a = 8w)
+End
+
 Definition isinterrupt_def:
   isinterrupt a = (opc a = 12w)
 End
@@ -162,6 +166,10 @@ End
 
 Definition is_wrMEM_isa_def:
   is_wrMEM_isa a = (opc a = 2w \/ opc a = 3w)
+End
+
+Definition isMemOp_isa_def:
+  isMemOp_isa a = (opc a = 2w \/ opc a = 3w \/ opc a = 4w \/ opc a = 5w \/ opc a = 12w)
 End
 
 Definition mem_iswrite_def:

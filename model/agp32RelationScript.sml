@@ -11,6 +11,26 @@ val _ = new_theory "agp32Relation";
 val _ = prefer_num ();
 val _ = guess_lengths ();
 
+
+(** extra help functions on the ISA level **)
+Definition isJump_isa_op_def:
+  isJump_isa_op nop a =
+  if nop = NONE then F
+  else isJump_isa (FUNPOW Next (THE nop - 1) a)
+End
+
+Definition isAcc_isa_op_def:
+  isAcc_isa_op nop a =
+  if nop = NONE then F
+  else isAcc_isa (FUNPOW Next (THE nop - 1) a)
+End
+
+Definition isMemOp_isa_op_def:
+  isMemOp_isa_op nop a =
+  if nop = NONE then F
+  else isMemOp_isa (FUNPOW Next (THE nop - 1) a)
+End
+
 (* Additional definitions for the pipeline correctness proofs *)
 (* enable_stg: stage k is enabled in the hardware circuit *)
 Definition enable_stg_def:
@@ -28,7 +48,7 @@ End
 Definition reg_data_vaild_def:
   reg_data_vaild k s =
   if k = 3 then enable_stg 4 s
-  else if k = 5 then s.state = 0w
+  else if k = 5 then s.WB.WB_write_reg /\ s.WB.WB_state_flag
   else F
 End
 
@@ -187,8 +207,8 @@ End
 
 (** items belong to the EX stage that are checked only when the EX stage has vaild data **)
 Definition EX_Rel_spec_def:
-   EX_Rel_spec (s:state_circuit) (a:ag32_state) (i:num) <=>
-   (s.EX.EX_jump_sel <=> isJump_isa (FUNPOW Next (i-1) a))
+   EX_Rel_spec (s:state_circuit) (a:ag32_state) (iop:num option) <=>
+   (s.EX.EX_jump_sel <=> isJump_isa_op iop a)
 End
 
 Definition MEM_Rel_def:
@@ -239,7 +259,7 @@ Definition Rel_def:
   Rel (I:num # num -> num option) (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (t:num) <=>
   (fext.data_in = (FUNPOW Next (THE (I (5,t))) a).data_in) /\
   ((s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (3,t))) a).CarryFlag)) /\
-  (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I(3,t))) a).OverflowFlag)) /\
+  (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I (3,t))) a).OverflowFlag)) /\
   (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
   (I (1,t) <> NONE ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (1,t)) - 1) a).PC + 4w)) /\
   (fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\
@@ -251,34 +271,33 @@ Definition Rel_def:
   ((I (1,t) <> NONE) ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
   (enable_stg 2 si ==> (I (2,t) <> NONE) ==> ID_Rel fext s a (THE (I (2,t)))) /\
   (enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
-  (reg_data_vaild 3 s ==> EX_Rel_spec s a (THE (I (3,t)))) /\
+  (reg_data_vaild 3 s ==> EX_Rel_spec s a (I (3,t))) /\
   (enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
   (enable_stg 5 si ==> WB_Rel fext s a (THE (I (5,t))))
 End
 
-(* scheduling function I *)
+
+(* oracle for the scheduling function I *)
 Definition is_sch_init_def:
   is_sch_init (I:num # num -> num option) <=>
-  (?n. n <> 0 /\ I (1,0) = SOME n) /\
+  (I (1,0) = SOME 1) /\
   (!k. k <> 1 ==> I (k,0) = NONE)
 End
 
 Definition is_sch_fetch_def:
   is_sch_fetch (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   (!t. enable_stg 1 (sf t) ==> 
-       isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       isJump_isa_op (I (3,t)) a ==>
        I (1,SUC t) = SOME (THE (I (3,t)) + 1)) /\
-  (!t. enable_stg 1 (sf t) ==> 
-       ~isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
-       (isJump_isa (FUNPOW Next (THE (I (1,t)) - 1) a) \/     
-        isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) \/
-        I (1,t) = NONE \/
-        THE (I (1,t)) = 0) ==>
+  (!t. enable_stg 1 (sf t) ==>
+       ~isJump_isa_op (I (3,t)) a ==>
+       (isJump_isa_op (I (1,t)) a \/ isJump_isa_op (I (2,t)) a \/
+        I (1,t) = NONE \/ THE (I (1,t)) = 0) ==>
        I (1,SUC t) = NONE) /\
   (!t. enable_stg 1 (sf t) ==>
-       ~isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
-       ~isJump_isa (FUNPOW Next (THE (I (1,t)) - 1) a) ==>
-       ~isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
+       ~isJump_isa_op (I (3,t)) a ==>
+       ~isJump_isa_op (I (1,t)) a ==>
+       ~isJump_isa_op (I (2,t)) a ==>
        I (1,t) <> NONE ==>
        THE (I (1,t)) <> 0 ==>
        I (1,SUC t) = SOME (THE (I (1,t)) + 1))
@@ -287,35 +306,32 @@ End
 Definition is_sch_decode_def:
   is_sch_decode (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   (!t. enable_stg 2 (sf t) ==>
-       isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) \/
-       isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       (isJump_isa_op (I (2,t)) a \/ isJump_isa_op (I (3,t)) a) ==>
        I (2,SUC t) = NONE) /\
   (!t. enable_stg 2 (sf t) ==>
-       ~isJump_isa (FUNPOW Next (THE (I (2,t)) - 1) a) ==>
-       ~isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       ~isJump_isa_op (I (2,t)) a ==>
+       ~isJump_isa_op (I (3,t)) a ==>
        I (2,SUC t) = I (1,t))
 End
 
 Definition is_sch_execute_def:
   is_sch_execute (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   (!t. enable_stg 3 (sf t) ==>
-       isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) \/
-       isAcc_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       (isJump_isa_op (I (3,t)) a \/ isAcc_isa_op (I (3,t)) a) ==>
        I (3,SUC t) = NONE) /\
   (!t. enable_stg 3 (sf t) ==>
-       ~isJump_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
-       ~isAcc_isa (FUNPOW Next (THE (I (3,t)) - 1) a) ==>
+       ~isJump_isa_op (I (3,t)) a ==>
+       ~isAcc_isa_op (I (3,t)) a ==>
        I (3,SUC t) = I (2,t))
 End
-
 
 Definition is_sch_memory_def:
   is_sch_memory (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   (!t. enable_stg 4 (sf t) ==>
-       isMemOp_isa (FUNPOW Next (THE (I (4,t)) - 1) a) ==>
+       isMemOp_isa_op (I (4,t)) a ==>
        I (4,SUC t) = NONE) /\
   (!t. enable_stg 4 (sf t) ==>
-       ~isMemOp_isa (FUNPOW Next (THE (I (4,t)) - 1) a) ==>
+       ~isMemOp_isa_op (I (4,t)) a ==>
        I (4,SUC t) = I (3,t))
 End
 

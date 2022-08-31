@@ -312,11 +312,17 @@ Theorem agp32_Init_implies_Rel:
     Init (fext 0) (s 0) a ==>
     Rel I (fext 0) (s 0) (s 0) a 0
 Proof
-  rw [] >> fs [Init_def,Rel_def,is_sch_init_def] >> rw [] >>
-   cheat
-  (* fs [agp32_init_IF_PC_input] >>
-  fs [IF_PC_Rel_def,IF_instr_Rel_def] >>
-  fs [enable_stg_def,reg_data_vaild_def] >> fs [] *)
+  rw [Init_def,Rel_def,is_sch_init_def] >-
+   (* THE NONE problem *)
+   cheat >-
+   cheat >-
+   cheat >-
+   fs [agp32_init_IF_PC_input] >-
+   (* THE NONE problem *)
+   cheat >-
+   cheat >-
+   cheat >>
+  fs [IF_PC_Rel_def,IF_instr_Rel_def,enable_stg_def,reg_data_vaild_def] >> fs []
 QED
 
 

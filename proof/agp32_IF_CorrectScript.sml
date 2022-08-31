@@ -31,17 +31,17 @@ Proof
   (s'.IF.IF_PC_input = s.IF.IF_PC_input)`
     by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s`,Abbr `s'`] >>
   rw [IF_PC_update_def] >>
-  `s.EX.EX_jump_sel <=> isJump_isa (FUNPOW Next (THE (I' (3,t)) - 1) a)`
-    by fs [Rel_def,EX_Rel_spec_def] >>
+  `s.EX.EX_jump_sel <=> isJump_isa_op (I' (3,t)) a` by fs [Rel_def,EX_Rel_spec_def] >>
   Cases_on `s.EX.EX_jump_sel` >> fs [Rel_def,is_sch_fetch_def,IF_PC_Rel_def] >>
   Cases_on `I' (1,t) <> NONE` >> fs [] >-
-   (Cases_on `isJump_isa (FUNPOW Next (THE (I' (1,t)) - 1) a) \/
-    isJump_isa (FUNPOW Next (THE (I' (2,t)) - 1) a) \/ THE (I' (1,t)) = 0` >-
+   (Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a \/ THE (I' (1,t)) = 0` >-
      METIS_TAC [Abbr `s`,enable_stg_def] >>
     `I' (1,SUC t) = SOME (THE (I' (1,t)) + 1)` by METIS_TAC [Abbr `s`,enable_stg_def] >> fs [] >>
     Q.ABBREV_TAC `i = THE (I' (1,t))` >>
     Cases_on `i` >> fs [] >>
-    rw [FUNPOW_SUC] >>  METIS_TAC [ag32_not_isJump_isa_Next_PC]) >>
+    rw [FUNPOW_SUC] >>
+    `~isJump_isa (FUNPOW Next (SUC n -1) a)` by METIS_TAC [isJump_isa_op_def] >> fs [] >>
+    METIS_TAC [ag32_not_isJump_isa_Next_PC]) >>
   fs [Abbr `s`,enable_stg_def] >> METIS_TAC []
 QED
 
@@ -98,8 +98,7 @@ Theorem agp32_Rel_ag32_IF_enable_instr_correct:
     (agp32 fext fbits (SUC t)).IF.IF_instr = instr (FUNPOW Next (THE (I (1,SUC t)) - 1) a)
 Proof
   rw [] >>
-  `?s s'. (agp32 fext fbits (SUC t)).IF.IF_instr =
-  (IF_instr_update (fext (SUC t)) s s').IF.IF_instr`
+  `?s s'. (agp32 fext fbits (SUC t)).IF.IF_instr = (IF_instr_update (fext (SUC t)) s s').IF.IF_instr`
     by rw [agp32_IF_instr_updated_by_IF_instr_update] >>
   rw [IF_instr_update_def,instr_def] >>
   `(fext t).ready` by METIS_TAC [enable_stg_def,agp32_IF_PC_write_enable_and_fext_ready] >>
@@ -110,13 +109,14 @@ Proof
    ((** 4: interrupt and read instr **)
    last_assum (mp_tac o is_mem_data_flush `SUC t`) >> rw [] >>
    Cases_on `m` >> fs [] >-
-    (`(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
-       by METIS_TAC [agp32_Rel_ag32_IF_enable_PC_correct,is_sch_def] >> fs [] >>
-     `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
-     `I' (4,SUC t) <> NONE` by cheat >>
-     `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
-     THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM] >>
-     METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
+    (`(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I' (1,SUC t)) - 1) a).PC`
+       by METIS_TAC [agp32_Rel_ag32_IF_enable_PC_correct,is_sch_def] >>
+     Cases_on `I' (4,SUC t) <> NONE`  >> fs [] >-
+      (`(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >>
+       `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4`
+         by METIS_TAC [IF_instr_index_big_then_MEM_enable] >> fs [] >>
+       METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
+     cheat) >>
    (** multiple cycles **)
    `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
    ((** 3: write memory and read instr **)
@@ -129,7 +129,7 @@ Proof
      `newmem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by fs [] >>
      `I' (4,SUC t) <> NONE` by cheat >>
      `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4`
-       by METIS_TAC [IF_instr_index_big_then_MEM] >> fs [] >>
+       by METIS_TAC [IF_instr_index_big_then_MEM_enable] >> fs [] >>
      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
    `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
    ((** 2: read memory and read instr **)
@@ -140,7 +140,7 @@ Proof
      `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
      `I' (4,SUC t) <> NONE` by cheat >>
      `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
-     THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM] >>
+     THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM_enable] >>
      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
    `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
    ((** 1: read instr **)
@@ -151,7 +151,7 @@ Proof
      `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >> fs [] >>
      `I' (4,SUC t) <> NONE` by cheat >>
      `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\
-     THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM] >>
+     THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4` by METIS_TAC [IF_instr_index_big_then_MEM_enable] >>
      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
    `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
   (** 0: do nothing, not a possible command when fetching **)

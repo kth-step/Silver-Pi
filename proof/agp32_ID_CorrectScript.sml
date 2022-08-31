@@ -17,8 +17,7 @@ Theorem agp32_Rel_ag32_ID_PC_correct:
     (agp32 fext fbits (SUC t)).ID.ID_PC = (FUNPOW Next (THE (I (2,SUC t)) − 1) a).PC
 Proof
   rw [is_sch_decode_def] >>
-  Cases_on `isJump_isa (FUNPOW Next (THE (I' (2,t)) − 1) a) \/
-  isJump_isa (FUNPOW Next (THE (I' (3,t)) − 1) a)` >-
+  Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >-
    METIS_TAC [] >>
   `I' (2,SUC t) = I' (1,t)` by fs [] >> fs [] >>
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>             
@@ -44,8 +43,7 @@ Theorem agp32_Rel_ag32_ID_instr_correct:
     (agp32 fext fbits (SUC t)).ID.ID_instr = instr (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
 Proof
   rw [is_sch_decode_def] >>
-  Cases_on `isJump_isa (FUNPOW Next (THE (I' (2,t)) − 1) a) \/
-  isJump_isa (FUNPOW Next (THE (I' (3,t)) − 1) a)` >-
+  Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >-
    METIS_TAC [] >>
   `I' (2,SUC t) = I' (1,t)` by fs [] >> fs [] >>
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>             
@@ -335,6 +333,23 @@ Proof
   `flagW (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)` by METIS_TAC [agp32_Rel_ag32_ID_flag_correct] >>
   rw [dataW_correct_rewrite_flag_imm_reg_data,v2w_single_0w] >>
   fs [agp32_ID_addrW_disable_dataW_immW,agp32_Rel_ag32_ID_imm_data_correct]
+QED
+
+
+(** ID_data: when using the read data, dataA/B/W are correct **)
+Theorem agp32_Rel_ag32_ID_dataA_correct_using_read_data:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    I (2,SUC t) <> NONE ==>
+    ~(agp32 fext fbits (SUC t)).ID.ID_addrA_disable ==>
+    (agp32 fext fbits (SUC t)).ID.ID_dataA = dataA (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
+Proof
+  rw [] >>
+  `~flagA (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)` by METIS_TAC [agp32_Rel_ag32_ID_flag_correct] >>
+  rw [dataA_correct_rewrite_flag_imm_reg_data,v2w_single_0w,reg_dataA_def] >>
+  cheat
 QED
 
 

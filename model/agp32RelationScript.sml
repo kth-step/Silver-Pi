@@ -257,20 +257,20 @@ End
 (* si: circuit state at the previous cycle *)
 Definition Rel_def:
   Rel (I:num # num -> num option) (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (t:num) <=>
-  (fext.data_in = (FUNPOW Next (THE (I (5,t))) a).data_in) /\
-  ((s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (3,t))) a).CarryFlag)) /\
-  (reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I (3,t))) a).OverflowFlag)) /\
-  (reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
+  (I (5,t) <> NONE ==> fext.data_in = (FUNPOW Next (THE (I (5,t))) a).data_in) /\
+  (I (3,t) <> NONE ==> reg_data_vaild 3 s ==> (s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (3,t))) a).CarryFlag)) /\
+  (I (3,t) <> NONE ==> reg_data_vaild 3 s ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I (3,t))) a).OverflowFlag)) /\
+  (I (3,t) <> NONE ==> reg_data_vaild 3 s ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
   (I (1,t) <> NONE ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (1,t)) - 1) a).PC + 4w)) /\
-  (fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\
+  (I (4,t) <> NONE ==> fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\
   (~fext.ready ==> ~enable_stg 1 s) /\
   (~fext.ready ==> ~enable_stg 2 s) /\                                     
-  (s.data_out = (FUNPOW Next (THE (I (5,t))) a).data_out) /\
-  (reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
-  ((I (1,t) <> NONE) ==> IF_PC_Rel s a (THE (I (1,t)))) /\
-  ((I (1,t) <> NONE) ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
-  (enable_stg 2 si ==> (I (2,t) <> NONE) ==> ID_Rel fext s a (THE (I (2,t)))) /\
-  (enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
+  (I (5,t) <> NONE ==> s.data_out = (FUNPOW Next (THE (I (5,t))) a).data_out) /\
+  (I (5,t) <> NONE ==> reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
+  (I (1,t) <> NONE ==> IF_PC_Rel s a (THE (I (1,t)))) /\
+  (I (1,t) <> NONE ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
+  (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_Rel fext s a (THE (I (2,t)))) /\
+  (I (3,t) <> NONE ==> enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (reg_data_vaild 3 s ==> EX_Rel_spec s a (I (3,t))) /\
   (enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
   (enable_stg 5 si ==> WB_Rel fext s a (THE (I (5,t))))

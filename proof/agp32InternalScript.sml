@@ -645,4 +645,13 @@ Proof
    by METIS_TAC [IF_instr_index_big_then_MEM_enable] >> fs []
 QED
 
+
+(** option from the ISA functions  **)
+Theorem isJump_isa_op_not_none:
+  !nop a.
+    isJump_isa_op nop a ==> nop <> NONE
+Proof
+  rw [isJump_isa_op_def]
+QED
+
 val _ = export_theory ();

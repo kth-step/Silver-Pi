@@ -31,6 +31,12 @@ Definition isMemOp_isa_op_def:
   else isMemOp_isa (FUNPOW Next (THE nop - 1) a)
 End
 
+Definition reg_iswrite_isa_op_def:
+  reg_iswrite_isa_op nop a =
+  if nop = NONE then F
+  else reg_iswrite (FUNPOW Next (THE nop - 1) a)
+End
+
 (* Additional definitions for the pipeline correctness proofs *)
 (* enable_stg: stage k is enabled in the hardware circuit *)
 Definition enable_stg_def:
@@ -126,7 +132,7 @@ Definition IF_instr_Rel_def:
 End
 
 Definition ID_Rel_def:
-  ID_Rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
+  ID_Rel (s:state_circuit) (a:ag32_state) (i:num) <=>
   ((s.ID.ID_PC = (FUNPOW Next (i-1) a).PC) /\
    (s.ID.ID_instr = instr (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_addrA = addrA (FUNPOW Next (i - 1) a)) /\
@@ -141,21 +147,46 @@ Definition ID_Rel_def:
    (s.ID.ID_imm = imm (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_opc = opc (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_func = func (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_addrA = s.WB.WB_addrW /\ s.WB.WB_write_reg <=> s.ID.ID_ForwardA) /\
-   (s.ID.ID_addrB = s.WB.WB_addrW /\ s.WB.WB_write_reg <=> s.ID.ID_ForwardB) /\
-   (s.ID.ID_addrW = s.WB.WB_addrW /\ s.WB.WB_write_reg <=> s.ID.ID_ForwardW) /\
-   (s.ID.ID_ForwardA ==> s.WB.WB_write_data = reg_dataA (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_ForwardA ==> s.ID.ID_read_dataA = reg_dataA (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_ForwardB ==> s.WB.WB_write_data = reg_dataB (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_ForwardB ==> s.ID.ID_read_dataB = reg_dataB (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_ForwardW ==> s.WB.WB_write_data = reg_dataW (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_ForwardW ==> s.ID.ID_read_dataW = reg_dataW (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_read_dataA_updated = reg_dataA (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_read_dataB_updated = reg_dataB (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_read_dataW_updated = reg_dataW (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_ForwardA <=> (s.ID.ID_addrA = s.WB.WB_addrW) /\ s.WB.WB_write_reg) /\
+   (s.ID.ID_ForwardB <=> (s.ID.ID_addrB = s.WB.WB_addrW) /\ s.WB.WB_write_reg) /\
+   (s.ID.ID_ForwardW <=> (s.ID.ID_addrW = s.WB.WB_addrW) /\ s.WB.WB_write_reg) /\
    (s.ID.ID_addrA_disable ==> s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_addrB_disable ==> s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_addrW_disable ==> s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a)))
+End
+
+Definition ID_reg_data_Rel_def:
+  ID_reg_data_Rel s a i eop mop wop <=>
+  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ ~reg_iswrite_isa_op wop a) \/
+   (~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
+    ~s.ID.ID_ForwardA) ==>
+   (s.ID.ID_read_dataA = reg_dataA (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_read_dataA_updated = reg_dataA (FUNPOW Next (i - 1) a)) /\
+   (~s.ID.ID_addrA_disable ==> s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a))) /\
+  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
+    s.ID.ID_ForwardA) ==>
+   (s.ID.ID_read_dataA_updated = reg_dataA (FUNPOW Next (i - 1) a)) /\
+   (~s.ID.ID_addrA_disable ==> s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a))) /\
+  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ ~reg_iswrite_isa_op wop a) \/
+   (~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
+    ~s.ID.ID_ForwardB) ==>
+   (s.ID.ID_read_dataB = reg_dataB (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_read_dataB_updated = reg_dataB (FUNPOW Next (i - 1) a)) /\
+   (~s.ID.ID_addrB_disable ==> s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a))) /\
+  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
+    s.ID.ID_ForwardB) ==>
+   (s.ID.ID_read_dataB_updated = reg_dataB (FUNPOW Next (i - 1) a)) /\
+   (~s.ID.ID_addrB_disable ==> s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a))) /\
+  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ ~reg_iswrite_isa_op wop a) \/
+   (~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
+    ~s.ID.ID_ForwardW) ==>
+   (s.ID.ID_read_dataW = reg_dataW (FUNPOW Next (i - 1) a)) /\
+   (s.ID.ID_read_dataW_updated = reg_dataW (FUNPOW Next (i - 1) a)) /\
+   (~s.ID.ID_addrW_disable ==> s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a))) /\
+  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
+    s.ID.ID_ForwardW) ==>
+   (s.ID.ID_read_dataW_updated = reg_dataW (FUNPOW Next (i - 1) a)) /\
+   (~s.ID.ID_addrW_disable ==> s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a)))
 End
 
 Definition EX_Rel_def:
@@ -269,7 +300,8 @@ Definition Rel_def:
   (I (5,t) <> NONE ==> reg_data_vaild 5 s ==> (s.R = (FUNPOW Next (THE (I (5,t))) a).R)) /\
   (I (1,t) <> NONE ==> IF_PC_Rel s a (THE (I (1,t)))) /\
   (I (1,t) <> NONE ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
-  (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_Rel fext s a (THE (I (2,t)))) /\
+  (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_Rel s a (THE (I (2,t)))) /\
+  (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (3,t) <> NONE ==> enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (reg_data_vaild 3 s ==> EX_Rel_spec s a (I (3,t))) /\
   (enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\

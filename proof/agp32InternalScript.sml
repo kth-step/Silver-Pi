@@ -317,7 +317,7 @@ QED
 
 
 (* ID_ID_write_enable *)
-(* ID_EX_write_enable, ID_ID_write_enable and ID_flush_flag *)
+(* ID_ID_write_enable, ID_EX_write_enable and ID_flush_flag, EX_NOP_flag *)
 Theorem agp32_ID_enable_flags_imply_flush_NOP_flags:
   !fext fbits t.
     ~((agp32 fext fbits t).ID.ID_ID_write_enable) ==>
@@ -356,6 +356,27 @@ Proof
   Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
   Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs []
+QED
+
+(** ID_ID_write_enable and WB_state_flag **)
+Theorem agp32_ID_ID_write_enable_WB_state_flag:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_ID_write_enable ==>
+    (agp32 fext fbits t).WB.WB_state_flag
+Proof
+  rw [] >>
+  `?s s'.
+  ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable) /\
+  ((agp32 fext fbits t).WB.WB_state_flag <=> (Hazard_ctrl (fext t) s s').WB.WB_state_flag)`
+    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
+  fs [Hazard_ctrl_def] >>
+  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `(fext t).ready` >> fs [] >>
+  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+  Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
 

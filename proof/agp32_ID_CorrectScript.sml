@@ -336,20 +336,41 @@ Proof
 QED
 
 
-(** ID_data: when using the read data, dataA/B/W are correct **)
-Theorem agp32_Rel_ag32_ID_dataA_correct_using_read_data:
-  !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+(** data forwarding from WB to ID stage **)
+Theorem agp32_Rel_ag32_ID_Forward_flags_correct:
+  !fext fbits t.
     enable_stg 2 (agp32 fext fbits t) ==>
-    I (2,SUC t) <> NONE ==>
-    ~(agp32 fext fbits (SUC t)).ID.ID_addrA_disable ==>
-    (agp32 fext fbits (SUC t)).ID.ID_dataA = dataA (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
+    ((agp32 fext fbits (SUC t)).ID.ID_ForwardA <=>
+     (agp32 fext fbits (SUC t)).ID.ID_addrA = (agp32 fext fbits (SUC t)).WB.WB_addrW /\
+     (agp32 fext fbits (SUC t)).WB.WB_write_reg) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_ForwardB <=>
+     (agp32 fext fbits (SUC t)).ID.ID_addrB = (agp32 fext fbits (SUC t)).WB.WB_addrW /\
+     (agp32 fext fbits (SUC t)).WB.WB_write_reg) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_ForwardW <=>
+     (agp32 fext fbits (SUC t)).ID.ID_addrW = (agp32 fext fbits (SUC t)).WB.WB_addrW /\
+     (agp32 fext fbits (SUC t)).WB.WB_write_reg)
 Proof
-  rw [] >>
-  `~flagA (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)` by METIS_TAC [agp32_Rel_ag32_ID_flag_correct] >>
-  rw [dataA_correct_rewrite_flag_imm_reg_data,v2w_single_0w,reg_dataA_def] >>
-  cheat
+  rpt gen_tac >> rpt disch_tac >>
+  fs [enable_stg_def] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
+                             ID_imm_update] (fext (SUC t)) s' s'` >>                          
+  `((agp32 fext fbits (SUC t)).ID.ID_ForwardA = (ID_data_update (fext (SUC t)) s' s'').ID.ID_ForwardA) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_ForwardB = (ID_data_update (fext (SUC t)) s' s'').ID.ID_ForwardB) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_ForwardW = (ID_data_update (fext (SUC t)) s' s'').ID.ID_ForwardW)`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_Forward_flags_updated_by_ID_data_update] >>
+  `?s0. (agp32 fext fbits (SUC t)).ID.ID_addrA = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrA /\
+  (agp32 fext fbits (SUC t)).ID.ID_addrB = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrB /\
+  (agp32 fext fbits (SUC t)).ID.ID_addrW = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrW`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_addr_updated_by_ID_data_update] >>
+  fs [ID_data_update_def] >>
+  `s.WB.WB_state_flag` by fs [Abbr `s`,agp32_ID_ID_write_enable_WB_state_flag] >>
+  `s''.WB.WB_state_flag`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_WB_state_flag_as_before] >>
+  `(s'.WB.WB_addrW = (agp32 fext fbits (SUC t)).WB.WB_addrW) /\
+  (s'.WB.WB_write_reg <=> (agp32 fext fbits (SUC t)).WB.WB_write_reg)`
+    by fs [Abbr `s`,Abbr `s'`,agp32_same_WB_pipeline_items_after_WB_pipeline] >> rw []
 QED
 
 
@@ -360,7 +381,7 @@ Theorem agp32_Rel_ag32_ID_Rel_correct:
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     enable_stg 2 (agp32 fext fbits t) ==>
     I (2,SUC t) <> NONE ==>
-    ID_Rel (fext (SUC t)) (agp32 fext fbits (SUC t)) a (THE (I (2,SUC t)))
+    ID_Rel (agp32 fext fbits (SUC t)) a (THE (I (2,SUC t)))
 Proof
   rw [ID_Rel_def] >>
   fs [agp32_Rel_ag32_ID_PC_correct,agp32_Rel_ag32_ID_instr_correct,agp32_Rel_ag32_ID_addr_correct,
@@ -368,7 +389,7 @@ Proof
       agp32_Rel_ag32_ID_imm_correct,agp32_Rel_ag32_ID_opc_correct,
       agp32_Rel_ag32_ID_func_correct,agp32_Rel_ag32_ID_dataA_correct_using_immA,
       agp32_Rel_ag32_ID_dataB_correct_using_immB,agp32_Rel_ag32_ID_dataW_correct_using_immW] >>
-  cheat
+  METIS_TAC [agp32_Rel_ag32_ID_Forward_flags_correct]
 QED
 
 val _ = export_theory ();

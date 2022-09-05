@@ -117,6 +117,11 @@ Proof
        `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4`
          by METIS_TAC [IF_instr_index_big_then_MEM_enable] >> fs [] >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
+     Cases_on `I' (3,SUC t) <> NONE`  >> fs [] >-
+      (`(fext (SUC t)).mem = (FUNPOW Next ((THE (I' (3,SUC t))) - 1) a).MEM` by cheat >>
+       `THE (I' (1,SUC t)) > THE (I' (3,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (3,SUC t)) + 3`
+         by METIS_TAC [IF_instr_index_with_EX_instr] >> fs [] >>
+       cheat) >>
      cheat) >>
    (** multiple cycles **)
    `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
@@ -265,41 +270,8 @@ Proof
     fs [IF_instr_update_def,Rel_def,IF_instr_Rel_def]) >>
   (** memory is NOT ready at the previous cycle **)
   rw [instr_def] >>
-  last_assum (mp_tac o is_mem_inst_data_ready `SUC t`) >> rw [] >>
-  `(agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`
-    by METIS_TAC [agp32_Rel_ag32_IF_disable_PC_correct,is_sch_def] >>
-  Cases_on `I' (4,SUC t) <> NONE`  >> fs [] >-
-  (`(fext (SUC t)).mem = (FUNPOW Next (THE (I' (4,SUC t))) a).MEM` by cheat >>
-   `THE (I' (1,SUC t)) > THE (I' (4,SUC t)) /\ THE (I' (1,SUC t)) < THE (I' (4,SUC t)) + 4`
-     by METIS_TAC [IF_instr_index_big_then_MEM_disable] >> fs [] >>
-   METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
   cheat
 QED
-
-(* TODO discussion points :
-   1. when the ~(fext t).ready and (fext t+1).ready,
-   there is no information from the is_mem about (fext t+1).inst_rdata.
-   Check the definition of is_mem.
-   2. check the current is_sch_decode and an alternative, which is better.
-   Better that we can review and determine the whole sch oracle.
-   3. scheduing function oracle to show the relation between I (1,t) and I (4,t),
-   it requires the assumption that I (4,t) and I (3,t) are not NONE.
- *)
-
-(*
-Theorem test[local]:
-  !fext step n.
-    is_mem fext_accessor_circuit step fext ==>
-    ~(fext (n-1)).ready ==>
-    (fext n).ready ==>
-    (fext n).inst_rdata = word_at_addr (fext n).mem (align_addr (fext_accessor_circuit.get_PC (step n)))
-Proof
-  rw [] >>
-  (*Induct_on `n` >> rw []*)
-  `?m. (fext m).ready /\ m < n` by cheat >>
-   cheat
-QED
-*)
 
 (** IF_instr_Rel between ISA and circuit states **)
 Theorem agp32_Rel_ag32_IF_instr_Rel_correct:

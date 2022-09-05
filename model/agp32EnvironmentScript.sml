@@ -81,20 +81,21 @@ val is_mem_def = Define `
   (* Mem data semantics *)
 
   (* Nothing *)
-  (accessors.get_command (step n) = 0w /\ (fext (n-1)).ready ==>
+  (* add the inital ready *)
+  (accessors.get_command (step n) = 0w /\ ((fext (n-1)).ready \/ (n-1) = 0) ==>
    (fext n).mem = (fext (n-1)).mem /\
    (fext n).inst_rdata = (fext (n-1)).inst_rdata /\
    (fext n).ready) /\
 
   (* Read instruction *)
-  (accessors.get_command (step n) = 1w /\ (fext (n-1)).ready ==>
+  (accessors.get_command (step n) = 1w /\ ((fext (n-1)).ready \/ (n-1) = 0) ==>
    ?m. (!p. p < m ==> (fext (n + p)).mem = (fext (n-1)).mem /\ ~(fext (n + p)).ready) /\
        (fext (n + m)).mem = (fext (n-1)).mem /\
        (fext (n + m)).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n))) /\
        (fext (n + m)).ready) /\
 
   (* Read instruction + read data *)
-  (accessors.get_command (step n) = 2w /\ (fext (n-1)).ready ==>
+  (accessors.get_command (step n) = 2w /\ ((fext (n-1)).ready \/ (n-1) = 0) ==>
     ?m. (!p. p < m ==> (fext (n + p)).mem = (fext (n-1)).mem /\ ~(fext (n + p)).ready) /\
         (fext (n + m)).mem = (fext (n-1)).mem /\
         (fext (n + m)).data_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_data_addr (step n))) /\
@@ -103,7 +104,7 @@ val is_mem_def = Define `
 
   (* Read instruction + write data, note that the current unverified cache layer do not allow inst read addr and
                                     data write addr to be the same... *)
-  (accessors.get_command (step n) = 3w /\ (fext (n-1)).ready ==>
+  (accessors.get_command (step n) = 3w /\ ((fext (n-1)).ready \/ (n-1) = 0) ==>
     ?m. (!p. p < m ==> (fext (n + p)).mem = (fext (n-1)).mem /\ ~(fext (n + p)).ready) /\
         (let newmem = mem_update (fext (n-1)).mem (align_addr (accessors.get_data_addr (step n))) (accessors.get_data_wdata (step n)) (accessors.get_data_wstrb (step n)) in
          (fext (n + m)).mem = newmem /\
@@ -111,15 +112,11 @@ val is_mem_def = Define `
          (fext (n + m)).ready)) /\
 
  (* Clear cache block used for printing ... exactly the same semantics as "read instruction" *)
- (accessors.get_command (step n) = 4w /\ (fext (n-1)).ready ==>
+ (accessors.get_command (step n) = 4w /\ ((fext (n-1)).ready \/ (n-1) = 0) ==>
    ?m. (!p. p < m ==> (fext (n + p)).mem = (fext (n-1)).mem /\ ~(fext (n + p)).ready) /\
        (fext (n + m)).mem = (fext (n-1)).mem /\
        (fext (n + m)).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n))) /\
        (fext (n + m)).ready) /\
-       
-  (* memory is not ready at n-1 and ready at n *)
-  (~(fext (n-1)).ready /\ (fext n).ready ==>
-    (fext n).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n)))) /\
 
   mem_no_errors fext`;
 

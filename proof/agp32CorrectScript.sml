@@ -62,7 +62,10 @@ Proof
    fs [is_sch_def,agp32_Rel_ag32_IF_PC_input_jump_correct] >-
    (** PC_input when no jump **)
    fs [is_sch_def,agp32_Rel_ag32_IF_PC_input_not_jump_correct] >-
-   (** memory **)
+   (** memory under different conditions **)
+   cheat >-
+   cheat >-
+   cheat >-
    cheat >-
    (** fext not ready, fetch disabled **)
    fs [enable_stg_def,not_fext_ready_and_agp32_IF_PC_write_disable] >-

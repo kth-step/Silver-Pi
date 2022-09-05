@@ -355,7 +355,7 @@ Proof
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
   Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
-                             ID_imm_update] (fext (SUC t)) s' s'` >>                          
+                             ID_imm_update] (fext (SUC t)) s' s'` >>
   `((agp32 fext fbits (SUC t)).ID.ID_ForwardA = (ID_data_update (fext (SUC t)) s' s'').ID.ID_ForwardA) /\
   ((agp32 fext fbits (SUC t)).ID.ID_ForwardB = (ID_data_update (fext (SUC t)) s' s'').ID.ID_ForwardB) /\
   ((agp32 fext fbits (SUC t)).ID.ID_ForwardW = (ID_data_update (fext (SUC t)) s' s'').ID.ID_ForwardW)`
@@ -390,6 +390,20 @@ Proof
       agp32_Rel_ag32_ID_func_correct,agp32_Rel_ag32_ID_dataA_correct_using_immA,
       agp32_Rel_ag32_ID_dataB_correct_using_immB,agp32_Rel_ag32_ID_dataW_correct_using_immW] >>
   METIS_TAC [agp32_Rel_ag32_ID_Forward_flags_correct]
+QED
+
+
+(* ID register data *)
+Theorem agp32_Rel_ag32_ID_reg_data_Rel_correct:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    I (2,SUC t) <> NONE ==>
+    ID_reg_data_Rel (agp32 fext fbits (SUC t)) a
+                    (THE (I (2,SUC t))) (I (3,SUC t)) (I (4,SUC t)) (I (5,SUC t))
+Proof
+  rw [ID_reg_data_Rel_def] >> cheat
 QED
 
 val _ = export_theory ();

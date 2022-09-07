@@ -101,7 +101,6 @@ Definition Init_def:
   ~s.acc_arg_ready /\
   ~s.interrupt_req /\
   ~s.do_interrupt /\
-  (s.command = 0w) /\
   (s.data_addr = 0xFFFFFFFFw) /\
   (s.IF.IF_instr = instr a) /\
   ~s.IF.IF_PC_write_enable /\

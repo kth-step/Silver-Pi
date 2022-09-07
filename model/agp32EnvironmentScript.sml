@@ -81,7 +81,6 @@ val is_mem_def = Define `
   (* Mem data semantics *)
 
   (* Nothing *)
-  (* add the inital ready *)
   (accessors.get_command (step n) = 0w /\ ((fext (n-1)).ready \/ (n-1) = 0) ==>
    (fext n).mem = (fext (n-1)).mem /\
    (fext n).inst_rdata = (fext (n-1)).inst_rdata /\

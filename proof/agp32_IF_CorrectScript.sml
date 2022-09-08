@@ -486,6 +486,7 @@ Proof
     `SUC t = t + 1` by rw [] >>
     `(fext (0 + 1)).ready` by rw [] >>
     `0 = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >> fs [] >>
+    (*`(fext 0).ready` by cheat >> fs [] *)
     `I' (1,SUC 0) = I' (1,0)` by fs [is_sch_def,is_sch_disable_def] >>
     `I' (1,1) = I' (1,0)` by fs [] >> rw [] >>
     fs [is_sch_def,is_sch_init_def] >> cheat) >>
@@ -535,10 +536,8 @@ Proof
    ((** command is 3 **)
     fs [instr_def] >>
     last_assum (mp_tac o is_mem_data_write `SUC i`) >> simp [] >> strip_tac >>
-    `m + SUC i = SUC t` by METIS_TAC [same_t_and_m_under_MAX_SET_SUC] >>
-    Q.ABBREV_TAC `newmem = mem_update (fext i).mem (align_addr (agp32 fext fbits (SUC i)).data_addr)
-                                      (agp32 fext fbits (SUC i)).data_wdata
-                                      (agp32 fext fbits (SUC i)).data_wstrb` >>
+    `m + SUC i = SUC t` by METIS_TAC [same_t_and_m_under_MAX_SET_SUC] >> fs [] >>
+    qpat_abbrev_tac `newmem = mem_update _ _ _ _` >>
     `(agp32 fext fbits (SUC i)).PC = (agp32 fext fbits (m + SUC i)).PC`
       by METIS_TAC [PC_unchanged_after_disabled_cycles] >>
     `(agp32 fext fbits (SUC i)).PC = (FUNPOW Next (THE (I'(1,SUC t)) - 1) a).PC`

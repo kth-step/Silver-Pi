@@ -2208,6 +2208,39 @@ Proof
   fs [ID_data_update_def]
 QED
 
+(** ID_read_dataA/B/W are only changed by the ID_data_update function **)
+Theorem agp32_ID_read_data_updated_by_ID_data_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute]
+               (fext t) s s ==>
+    s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update; ID_imm_update]
+                (fext (SUC t)) s' s' ==>
+    ((agp32 fext fbits (SUC t)).ID.ID_read_dataA =
+     (ID_data_update (fext (SUC t)) s' s'').ID.ID_read_dataA) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_read_dataB =
+     (ID_data_update (fext (SUC t)) s' s'').ID.ID_read_dataB) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_read_dataW =
+     (ID_data_update (fext (SUC t)) s' s'').ID.ID_read_dataW)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
+      MEM_imm_update_unchanged_ID_data_items,MEM_ctrl_update_unchanged_ID_data_items,
+      IF_PC_input_update_def,EX_data_rec_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_items,EX_SHIFT_update_unchanged_ID_data_items,
+      EX_ALU_update_unchanged_ID_data_items,EX_compute_enable_update_unchanged_ID_data_items,
+      EX_ALU_input_update_unchanged_ID_data_items,EX_forward_data_unchanged_ID_data_items,
+      EX_ctrl_update_unchanged_ID_data_items] >>
+  fs [ID_data_update_def]
+QED
+
 (** ID_immA/B/W are only changed by the ID_data_update function **)
 Theorem agp32_ID_imm_data_updated_by_ID_data_update:
   !fext fbits t s s' s''.

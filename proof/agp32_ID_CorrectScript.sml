@@ -420,7 +420,12 @@ Proof
   `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_ID_imm_update] >> fs [] >>
   qpat_abbrev_tac `i = instr _` >>
-  `s''.R = (agp32 fext fbits (SUC t)).R` by cheat >>
+  `s''.R = (agp32 fext fbits (SUC t)).R`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_R_after_ID_imm_update] >>
+  subgoal `I' (2,SUC t) = I' (1,t)` >-
+   (fs [is_sch_decode_def,Abbr `s` ] >>
+    Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >>
+    METIS_TAC []) >> fs [] >>
   cheat
 QED
 

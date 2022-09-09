@@ -316,6 +316,23 @@ Proof
   `n + SUC m = SUC (n + m)` by rw [] >> rw [] >> fs []
 QED
 
+Theorem not_ready_m_plus_n[local]:
+  !fext m n.
+    (!p. p < n ==> ~(fext (p + 1)).ready) ==>
+    (!p. p < m ==> ~(fext (n + (p + 1))).ready) ==>
+    (!p. p < m + n ==> ~(fext (p + 1)).ready)
+Proof
+  rw [] >>
+  Cases_on `p < n` >> fs [] >>
+  Cases_on `p = n` >> fs [] >-
+   (`~(fext (n + (0 + 1))).ready` by fs [] >>
+    `n + (0 + 1) = n + 1` by rw [] >> fs []) >>
+  `p > n` by fs [] >> fs [] >>
+  `p - n < m` by rw [] >>
+  `~(fext (n + (p - n + 1))).ready` by fs [] >>
+  `n + (p - n + 1) = p + 1` by rw [] >> fs []
+QED                             
+
 (** not ready at the previous cycle **)
 Theorem agp32_Rel_ag32_IF_disable_instr_not_ready_before_correct:
   !fext fbits a t I.
@@ -349,20 +366,20 @@ Proof
        by METIS_TAC [agp32_Rel_ag32_IF_disable_PC_correct,is_sch_def] >>
      `(fext (SUC m)).mem = (fext (m + 1)).mem` by rw [] >>
      `I' (1,m + 1) = I' (1,SUC m)` by rw [] >>
-     Cases_on `I' (4,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (4,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next (THE (I' (4,SUC m))) a).MEM` by cheat >>
        `(fext 0).mem = (FUNPOW Next (THE (I' (4,SUC m))) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (4,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (4,SUC m)) + 4`
          by METIS_TAC [IF_instr_index_big_then_MEM_disable] >> fs [] >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-     Cases_on `I' (3,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (3,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next ((THE (I' (3,SUC m))) - 1) a).MEM` by cheat >>
        `(fext 0).mem = (FUNPOW Next ((THE (I' (3,SUC m))) - 1) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (3,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (3,SUC m)) + 3`
          by METIS_TAC [IF_instr_index_with_EX_instr] >>
        `THE (I' (1,SUC m)) < THE (I' (3,SUC m)) + 4` by fs [] >> fs [] >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>
-     Cases_on `I' (2,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (2,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next ((THE (I' (2,SUC m))) - 1) a).MEM` by cheat >>
        `(fext 0).mem = (FUNPOW Next ((THE (I' (2,SUC m))) - 1) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (2,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (2,SUC m)) + 2`
@@ -384,20 +401,20 @@ Proof
        by METIS_TAC [agp32_Rel_ag32_IF_disable_PC_correct,is_sch_def] >>
      `(fext (SUC m)).mem = (fext (m + 1)).mem` by rw [] >>
      `I' (1,m + 1) = I' (1,SUC m)` by rw [] >>
-     Cases_on `I' (4,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (4,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next (THE (I' (4,SUC m))) a).MEM` by cheat >>
        `newmem = (FUNPOW Next (THE (I' (4,SUC m))) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (4,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (4,SUC m)) + 4`
          by METIS_TAC [IF_instr_index_big_then_MEM_disable] >> fs [] >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-     Cases_on `I' (3,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (3,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next ((THE (I' (3,SUC m))) - 1) a).MEM` by cheat >>
        `newmem = (FUNPOW Next (THE (I' (3,SUC m)) - 1) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (3,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (3,SUC m)) + 3`
          by METIS_TAC [IF_instr_index_with_EX_instr] >>
        `THE (I' (1,SUC m)) < THE (I' (3,SUC m)) + 4` by rw [] >> fs [] >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>
-      Cases_on `I' (2,SUC m) <> NONE`  >> fs [] >-
+      Cases_on `I' (2,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next ((THE (I' (2,SUC m))) - 1) a).MEM` by cheat >>
        `newmem = (FUNPOW Next (THE (I' (2,SUC m)) - 1) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (2,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (2,SUC m)) + 2`
@@ -421,20 +438,20 @@ Proof
        by METIS_TAC [agp32_Rel_ag32_IF_disable_PC_correct,is_sch_def] >>
      `(fext (SUC m)).mem = (fext (m + 1)).mem` by rw [] >>
      `I' (1,m + 1) = I' (1,SUC m)` by rw [] >>
-     Cases_on `I' (4,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (4,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next (THE (I' (4,SUC m))) a).MEM` by cheat >>
        `(fext 0).mem = (FUNPOW Next (THE (I' (4,SUC m))) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (4,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (4,SUC m)) + 4`
          by METIS_TAC [IF_instr_index_big_then_MEM_disable] >> fs [] >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-     Cases_on `I' (3,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (3,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next ((THE (I' (3,SUC m))) - 1) a).MEM` by cheat >>
        `(fext 0).mem = (FUNPOW Next ((THE (I' (3,SUC m))) - 1) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (3,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (3,SUC m)) + 3`
          by METIS_TAC [IF_instr_index_with_EX_instr] >>
        `THE (I' (1,SUC m)) < THE (I' (3,SUC m)) + 4` by fs [] >> fs [] >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>
-     Cases_on `I' (2,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (2,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next ((THE (I' (2,SUC m))) - 1) a).MEM` by cheat >>
        `(fext 0).mem = (FUNPOW Next ((THE (I' (2,SUC m))) - 1) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (2,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (2,SUC m)) + 2`
@@ -458,7 +475,7 @@ Proof
        by METIS_TAC [agp32_Rel_ag32_IF_disable_PC_correct,is_sch_def] >>
      `(fext (SUC m)).mem = (fext (m + 1)).mem` by rw [] >>
      `I' (1,m + 1) = I' (1,SUC m)` by rw [] >>
-     Cases_on `I' (4,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (4,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next (THE (I' (4,SUC m))) a).MEM` by cheat >>
        `(fext 0).mem = (FUNPOW Next (THE (I' (4,SUC m))) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (4,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (4,SUC m)) + 4`
@@ -471,7 +488,7 @@ Proof
          by METIS_TAC [IF_instr_index_with_EX_instr] >>
        `THE (I' (1,SUC m)) < THE (I' (3,SUC m)) + 4` by fs [] >> fs [] >>
        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>
-     Cases_on `I' (2,SUC m) <> NONE`  >> fs [] >-
+     Cases_on `I' (2,SUC m) <> NONE` >> fs [] >-
       (`(fext (SUC m)).mem = (FUNPOW Next ((THE (I' (2,SUC m))) - 1) a).MEM` by cheat >>
        `(fext 0).mem = (FUNPOW Next ((THE (I' (2,SUC m))) - 1) a).MEM` by fs [] >>
        `THE (I' (1,SUC m)) > THE (I' (2,SUC m)) /\ THE (I' (1,SUC m)) < THE (I' (2,SUC m)) + 2`
@@ -481,15 +498,53 @@ Proof
      `(fext (SUC m)).mem = (FUNPOW Next ((THE (I' (1,SUC m))) - 1) a).MEM` by cheat >>
      `(fext 0).mem = (FUNPOW Next ((THE (I' (1,SUC m))) - 1) a).MEM` by fs [] >> fs []) >>
     (** command is 0 **)
-    last_assum (mp_tac o is_mem_do_nothing `SUC 0`) >> rw [] >>
-    `!p. p < 0 ==> ~(fext (p + 1)).ready` by rw [] >>
+    last_assum (mp_tac o is_mem_do_nothing_spec `SUC 0`) >> rw [] >>
+    Cases_on `(fext 0).ready` >> fs [] >-
+     (`!p. p < 0 ==> ~(fext (p + 1)).ready` by rw [] >>
+      `1 = 0 + 1` by rw [] >>
+      `(fext (0 + 1)).ready` by METIS_TAC [] >>
+      `SUC t = t + 1` by rw [] >>
+      `0 = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >> fs []) >>
+    `(!p. p < m + n' ==> ~(fext (p + 1)).ready)` by METIS_TAC [not_ready_m_plus_n] >>
+    `(!p. p < m ==> ~(fext (p + (n'+1))).ready)` by fs [] >>
+    `(agp32 fext fbits (n'+1)).PC = (agp32 fext fbits (m+(n'+1))).PC`
+      by METIS_TAC [PC_unchanged_after_disabled_cycles] >>
     `SUC t = t + 1` by rw [] >>
-    `(fext (0 + 1)).ready` by rw [] >>
-    `0 = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >> fs [] >>
-    (*`(fext 0).ready` by cheat >> fs [] *)
-    `I' (1,SUC 0) = I' (1,0)` by fs [is_sch_def,is_sch_disable_def] >>
-    `I' (1,1) = I' (1,0)` by fs [] >> rw [] >>
-    fs [is_sch_def,is_sch_init_def] >> cheat) >>
+    FULL_SIMP_TAC std_ss [ADD_ASSOC] >>
+    `m + n' = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >>
+    Q.ABBREV_TAC `m' = m + n'` >>
+    `(fext 1).mem = (fext (m' + 1)).mem`
+      by (Cases_on `m'` >> fs [] >> `n' - 1 < n'` by rw [] >>
+          `(fext (n'-1+1)).mem = (fext 1).mem` by fs [] >>
+          `n'-1+1 = n'` by rw [] >> fs []) >>
+    `(agp32 fext fbits (SUC m')).PC = (FUNPOW Next (THE (I'(1,SUC m')) - 1) a).PC`
+      by METIS_TAC [agp32_Rel_ag32_IF_disable_PC_correct,is_sch_def] >>
+    `(agp32 fext fbits (m'+1)).PC = (FUNPOW Next (THE (I'(1,SUC m')) - 1) a).PC`
+      by (`m'+1 = SUC m'` by rw [] >> METIS_TAC []) >>
+    `(fext (SUC m')).mem = (fext (m' + 1)).mem` by rw [] >>
+    `I' (1,t + 1) = I' (1,SUC m')` by rw [] >>
+    Cases_on `I' (4,SUC m') <> NONE` >> fs [] >-
+      (`(fext (SUC m')).mem = (FUNPOW Next (THE (I' (4,SUC m'))) a).MEM` by cheat >>
+       `(fext 0).mem = (FUNPOW Next (THE (I' (4,SUC m'))) a).MEM` by fs [] >>
+       `THE (I' (1,SUC m')) > THE (I' (4,SUC m')) /\ THE (I' (1,SUC m')) < THE (I' (4,SUC m')) + 4`
+         by METIS_TAC [IF_instr_index_big_then_MEM_disable] >> rw [instr_def] >>
+       METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
+    Cases_on `I' (3,SUC m') <> NONE` >> fs [] >-
+     (`(fext (SUC m')).mem = (FUNPOW Next ((THE (I' (3,SUC m'))) - 1) a).MEM` by cheat >>
+      `(fext 0).mem = (FUNPOW Next ((THE (I' (3,SUC m'))) - 1) a).MEM` by fs [] >>
+      `THE (I' (1,SUC m')) > THE (I' (3,SUC m')) /\ THE (I' (1,SUC m')) < THE (I' (3,SUC m')) + 3`
+        by METIS_TAC [IF_instr_index_with_EX_instr] >>
+      `THE (I' (1,SUC m')) < THE (I' (3,SUC m')) + 4` by rw [] >> rw [instr_def] >>
+      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>
+    Cases_on `I' (2,SUC m') <> NONE` >> fs [] >-
+     (`(fext (SUC m')).mem = (FUNPOW Next ((THE (I' (2,SUC m'))) - 1) a).MEM` by cheat >>
+      `(fext 0).mem = (FUNPOW Next ((THE (I' (2,SUC m'))) - 1) a).MEM` by fs [] >>
+      `THE (I' (1,SUC m')) > THE (I' (2,SUC m')) /\ THE (I' (1,SUC m')) < THE (I' (2,SUC m')) + 2`
+        by METIS_TAC [IF_instr_index_with_ID_instr] >>
+      `THE (I' (1,SUC m')) < THE (I' (2,SUC m')) + 4` by rw [] >> rw [instr_def] >>
+      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>
+    `(fext (SUC m')).mem = (FUNPOW Next ((THE (I' (1,SUC m'))) - 1) a).MEM` by cheat >>
+    `(fext 0).mem = (FUNPOW Next ((THE (I' (1,SUC m'))) - 1) a).MEM` by fs [] >> rw [instr_def]) >>
 
   (** not fetching in the beginning **)
   Q.ABBREV_TAC `i = SUC n` >> `i <> 0` by fs [Abbr `i`] >>

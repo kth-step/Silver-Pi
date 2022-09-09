@@ -81,7 +81,7 @@ val is_mem_def = Define `
   (* Mem data semantics *)
 
   (* Nothing *)
-  (accessors.get_command (step n) = 0w /\ ((fext (n-1)).ready \/ (n-1) = 0) ==>
+  (accessors.get_command (step n) = 0w /\ (fext (n-1)).ready ==>
    (fext n).mem = (fext (n-1)).mem /\
    (fext n).inst_rdata = (fext (n-1)).inst_rdata /\
    (fext n).ready) /\
@@ -116,6 +116,20 @@ val is_mem_def = Define `
        (fext (n + m)).mem = (fext (n-1)).mem /\
        (fext (n + m)).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n))) /\
        (fext (n + m)).ready) /\
+ 
+ (* Nothing in the beginning, exists a request internally *)
+ (accessors.get_command (step n) = 0w /\ (n - 1 = 0) ==>
+   ?n' m. (fext n).mem = (fext (n-1)).mem /\ 
+          (fext n).inst_rdata = (fext (n-1)).inst_rdata /\
+          (fext n).ready = (fext (n-1)).ready /\
+          n' > 0 /\
+          (!p. p < n' ==> (fext (n + p)).mem = (fext n).mem /\ ~(fext (n + p)).ready) /\
+          (fext (n + n')).mem = (fext n).mem /\
+          ~(fext (n + n')).ready /\
+          (!p. p < m ==> (fext (n + n' + p)).mem = (fext (n + n' - 1)).mem /\ ~(fext (n + n' + p)).ready) /\
+          (fext (n + n' + m)).mem = (fext (n + n' - 1)).mem /\
+          (fext (n + n' + m)).inst_rdata = word_at_addr (fext (n+n')).mem (align_addr (accessors.get_PC (step (n+n')))) /\
+          (fext (n + n' + m)).ready) /\
 
   mem_no_errors fext`;
 

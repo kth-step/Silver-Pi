@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32_IF_CorrectTheory agp32_ID_CorrectTheory agp32_EX_CorrectTheory;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32_IF_CorrectTheory agp32_ID_CorrectTheory agp32_EX_CorrectTheory agp32_WB_CorrectTheory;
 
 (* correctness of the pipelined Silver circuit against the ISA *)
 val _ = new_theory "agp32Correct";
@@ -74,7 +74,7 @@ Proof
    (** data_out **)
    cheat >-
    (** registers **)
-   cheat >-
+   fs [agp32_Rel_ag32_R_correct] >-
    (** IF_PC **)
    fs [is_sch_def,agp32_Rel_ag32_IF_PC_Rel_correct] >-
    (** IF_instr **)

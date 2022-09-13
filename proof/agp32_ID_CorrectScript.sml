@@ -423,9 +423,14 @@ Proof
   `s''.R = (agp32 fext fbits (SUC t)).R`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_R_after_ID_imm_update] >>
   subgoal `I' (2,SUC t) = I' (1,t)` >-
-   (fs [is_sch_decode_def,Abbr `s` ] >>
+   (fs [is_sch_decode_def,Abbr `s`] >>
     Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >>
     METIS_TAC []) >> fs [] >>
+  Cases_on `I' (5,t) = NONE` >-
+   cheat >>
+  `s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
+  `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+  `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
   cheat
 QED
 

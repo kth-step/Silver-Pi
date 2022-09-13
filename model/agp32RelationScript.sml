@@ -54,7 +54,7 @@ End
 Definition reg_data_vaild_def:
   reg_data_vaild k s =
   if k = 3 then enable_stg 4 s
-  else if k = 5 then s.WB.WB_write_reg /\ s.WB.WB_state_flag
+  else if k = 5 then s.WB.WB_state_flag
   else F
 End
 
@@ -298,7 +298,7 @@ Definition Rel_def:
   (I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) = NONE ==> I (1,t) <> NONE ==> fext.ready ==> 
    fext.mem = (FUNPOW Next (THE (I (1,t)) - 1) a).MEM) /\
   (~fext.ready ==> ~enable_stg 1 s) /\
-  (~fext.ready ==> ~enable_stg 2 s) /\                                     
+  (~fext.ready ==> ~enable_stg 2 s) /\
   (I (5,t-1) <> NONE ==> s.data_out = (FUNPOW Next (THE (I (5,t-1))) a).data_out) /\
   (I (5,t-1) <> NONE ==> reg_data_vaild 5 si ==> (s.R = (FUNPOW Next (THE (I (5,t-1))) a).R)) /\
   (I (1,t) <> NONE ==> IF_PC_Rel s a (THE (I (1,t)))) /\
@@ -307,8 +307,8 @@ Definition Rel_def:
   (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (3,t) <> NONE ==> enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (reg_data_vaild 3 s ==> EX_Rel_spec s a (I (3,t))) /\
-  (enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
-  (enable_stg 5 si ==> WB_Rel fext s a (THE (I (5,t))))
+  (I (4,t) <> NONE ==> enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
+  (I (5,t) <> NONE ==> enable_stg 5 si ==> WB_Rel fext s a (THE (I (5,t))))
 End
 
 

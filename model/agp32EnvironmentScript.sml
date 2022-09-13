@@ -122,7 +122,7 @@ val is_mem_def = Define `
    ?n' m. (fext n).mem = (fext (n-1)).mem /\ 
           (fext n).inst_rdata = (fext (n-1)).inst_rdata /\
           (fext n).ready = (fext (n-1)).ready /\
-          n' > 0 /\
+          n' > 0 /\ accessors.get_command (step (n+n')) = 1w /\
           (!p. p < n' ==> (fext (n + p)).mem = (fext n).mem /\ ~(fext (n + p)).ready) /\
           (fext (n + n')).mem = (fext n).mem /\
           ~(fext (n + n')).ready /\

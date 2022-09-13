@@ -331,7 +331,7 @@ Proof
   `p - n < m` by rw [] >>
   `~(fext (n + (p - n + 1))).ready` by fs [] >>
   `n + (p - n + 1) = p + 1` by rw [] >> fs []
-QED                             
+QED
 
 (** not ready at the previous cycle **)
 Theorem agp32_Rel_ag32_IF_disable_instr_not_ready_before_correct:

@@ -22,9 +22,26 @@ Proof
   fs [REG_write_def,reg_data_vaild_def] >>
   `(s'.R = s.R) /\ (s'.WB.WB_state_flag <=> s.WB.WB_state_flag) /\
   (s'.WB.WB_write_data = s.WB.WB_write_data)` by cheat >> fs [] >>
-  Cases_on `s.WB.WB_write_reg` >> fs [] >-
-   (fs [Rel_def] >> cheat) >>
-  cheat
+  Cases_on `s.WB.WB_write_reg` >> fs [Rel_def] >-
+   (Cases_on `I' (5,t-1) = NONE` >> fs [] >-
+     (`s.R = (FUNPOW Next (THE (I' (5,t)) - 1) a).R` by cheat >> rw [] >>
+      `THE (I' (5,t)) <> 0` by cheat >>
+      `THE (I' (5,t)) = SUC (THE (I' (5,t)) − 1)` by fs [] >>
+      `(FUNPOW Next (THE (I' (5,t))) a).R =
+      (FUNPOW Next (SUC (THE (I' (5,t)) - 1)) a).R` by METIS_TAC [] >>
+      rw [FUNPOW_SUC] >>
+      qpat_abbrev_tac `a0 = FUNPOW Next _ _` >> cheat) >>
+    `reg_data_vaild 5 (agp32 fext fbits (t − 1))` by cheat >> fs [] >>
+    cheat (** I (5,t) = I (5,t-1) + 1 ? **)) >>
+  Cases_on `I' (5,t-1) = NONE` >> fs [] >-
+   (`s.R = (FUNPOW Next (THE (I' (5,t)) - 1) a).R` by cheat >> rw [] >>
+    `THE (I' (5,t)) <> 0` by cheat >>
+    `THE (I' (5,t)) = SUC (THE (I' (5,t)) − 1)` by fs [] >>
+    `(FUNPOW Next (THE (I' (5,t))) a).R =
+    (FUNPOW Next (SUC (THE (I' (5,t)) - 1)) a).R` by METIS_TAC [] >>
+    rw [FUNPOW_SUC] >>
+    qpat_abbrev_tac `a0 = FUNPOW Next _ _` >> cheat) >>
+  `reg_data_vaild 5 (agp32 fext fbits (t − 1))` by cheat >> fs [] >> cheat
 QED
 
 val _ = export_theory ();

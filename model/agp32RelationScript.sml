@@ -194,7 +194,7 @@ Definition ID_reg_data_Rel_def:
    ~reg_adr_update_isa mop a s.ID.ID_addrW ==> 
    reg_adr_update_isa wop a s.ID.ID_addrW ==>
    (s.ID.ID_read_dataW_updated = reg_dataW (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_dataW = dataA (FUNPOW Next (i - 1) a)))
+   (s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a)))
 End
 
 Definition EX_Rel_def:

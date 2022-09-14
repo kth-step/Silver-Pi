@@ -31,10 +31,10 @@ Definition isMemOp_isa_op_def:
   else isMemOp_isa (FUNPOW Next (THE nop - 1) a)
 End
 
-Definition reg_iswrite_isa_op_def:
-  reg_iswrite_isa_op nop a =
+Definition reg_adr_update_isa_def:
+  reg_adr_update_isa nop a adr =
   if nop = NONE then F
-  else reg_iswrite (FUNPOW Next (THE nop - 1) a)
+  else reg_iswrite (FUNPOW Next (THE nop - 1) a) /\ (addrW (FUNPOW Next (THE nop - 1) a) = adr)
 End
 
 (* Additional definitions for the pipeline correctness proofs *)
@@ -156,36 +156,45 @@ End
 
 Definition ID_reg_data_Rel_def:
   ID_reg_data_Rel s a i eop mop wop <=>
-  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ ~reg_iswrite_isa_op wop a) \/
-   (~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
-    ~s.ID.ID_ForwardA) ==>
+  (~s.ID.ID_addrA_disable ==>
+   ~reg_adr_update_isa eop a s.ID.ID_addrA ==> 
+   ~reg_adr_update_isa mop a s.ID.ID_addrA ==> 
+   ~reg_adr_update_isa wop a s.ID.ID_addrA ==>
    (s.ID.ID_read_dataA = reg_dataA (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_read_dataA_updated = reg_dataA (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_addrA_disable ==> s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a))) /\
-  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
-    s.ID.ID_ForwardA) ==>
+   (s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a))) /\
+  (~s.ID.ID_addrA_disable ==> 
+   ~reg_adr_update_isa eop a s.ID.ID_addrA ==> 
+   ~reg_adr_update_isa mop a s.ID.ID_addrA ==> 
+   reg_adr_update_isa wop a s.ID.ID_addrA ==>
    (s.ID.ID_read_dataA_updated = reg_dataA (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_addrA_disable ==> s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a))) /\
-  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ ~reg_iswrite_isa_op wop a) \/
-   (~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
-    ~s.ID.ID_ForwardB) ==>
+   (s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a))) /\
+  (~s.ID.ID_addrB_disable ==>
+   ~reg_adr_update_isa eop a s.ID.ID_addrB ==> 
+   ~reg_adr_update_isa mop a s.ID.ID_addrB ==> 
+   ~reg_adr_update_isa wop a s.ID.ID_addrB ==>
    (s.ID.ID_read_dataB = reg_dataB (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_read_dataB_updated = reg_dataB (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_addrB_disable ==> s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a))) /\
-  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
-    s.ID.ID_ForwardB) ==>
+   (s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a))) /\
+  (~s.ID.ID_addrB_disable ==> 
+   ~reg_adr_update_isa eop a s.ID.ID_addrB ==> 
+   ~reg_adr_update_isa mop a s.ID.ID_addrB ==> 
+   reg_adr_update_isa wop a s.ID.ID_addrB ==>
    (s.ID.ID_read_dataB_updated = reg_dataB (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_addrB_disable ==> s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a))) /\
-  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ ~reg_iswrite_isa_op wop a) \/
-   (~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
-    ~s.ID.ID_ForwardW) ==>
+   (s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a))) /\
+  (~s.ID.ID_addrW_disable ==>
+   ~reg_adr_update_isa eop a s.ID.ID_addrW ==> 
+   ~reg_adr_update_isa mop a s.ID.ID_addrW ==> 
+   ~reg_adr_update_isa wop a s.ID.ID_addrW ==>
    (s.ID.ID_read_dataW = reg_dataW (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_read_dataW_updated = reg_dataW (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_addrW_disable ==> s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a))) /\
-  ((~reg_iswrite_isa_op eop a /\ ~reg_iswrite_isa_op mop a /\ reg_iswrite_isa_op wop a /\
-    s.ID.ID_ForwardW) ==>
+   (s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a))) /\
+  (~s.ID.ID_addrW_disable ==> 
+   ~reg_adr_update_isa eop a s.ID.ID_addrW ==> 
+   ~reg_adr_update_isa mop a s.ID.ID_addrW ==> 
+   reg_adr_update_isa wop a s.ID.ID_addrW ==>
    (s.ID.ID_read_dataW_updated = reg_dataW (FUNPOW Next (i - 1) a)) /\
-   (~s.ID.ID_addrW_disable ==> s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a)))
+   (s.ID.ID_dataW = dataA (FUNPOW Next (i - 1) a)))
 End
 
 Definition EX_Rel_def:

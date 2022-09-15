@@ -432,7 +432,13 @@ Proof
   `I' (5,t) = SOME (THE (I' (5,SUC t)) - 1)` by cheat >> fs [] >>
   `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
     by (fs [Abbr `i`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >>
-  cheat
+  `(FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R ((22 >< 17) i) =
+  (FUNPOW Next (THE (I' (5,SUC t))) a).R ((22 >< 17) i)`
+    by METIS_TAC [reg_adr_update_isa_not_change_data] >> fs [] >>
+  Cases_on `I' (3,SUC t) = NONE` >-
+   cheat >>
+  `THE (I' (2,SUC t)) = THE (I' (3,SUC t)) + 1` by METIS_TAC [ID_instr_index_with_EX_instr_plus_1] >>
+  fs [] >> cheat
 QED
 
 

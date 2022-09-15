@@ -612,8 +612,7 @@ Theorem IF_instr_index_with_ID_instr:
     is_sch I (agp32 fext fbits) a ==>
     I (1,t) <> NONE ==>
     I (2,t) <> NONE ==>
-    (THE (I (1,t)) > THE (I (2,t))) /\
-    (THE (I (1,t)) < THE (I (2,t)) + 2)
+    (THE (I (1,t)) > THE (I (2,t))) /\ (THE (I (1,t)) < THE (I (2,t)) + 2)
 Proof
   rpt gen_tac >> rpt disch_tac >>
   fs [is_sch_def] >>
@@ -647,8 +646,7 @@ Theorem IF_instr_index_with_EX_instr:
     is_sch I (agp32 fext fbits) a ==>
     I (1,t) <> NONE ==>
     I (3,t) <> NONE ==>
-    (THE (I (1,t)) > THE (I (3,t))) /\
-    (THE (I (1,t)) < THE (I (3,t)) + 3)
+    (THE (I (1,t)) > THE (I (3,t))) /\ (THE (I (1,t)) < THE (I (3,t)) + 3)
 Proof
   rpt gen_tac >> rpt disch_tac >>
   Induct_on `t` >-
@@ -683,8 +681,7 @@ Theorem IF_instr_index_with_MEM_instr:
     is_sch I (agp32 fext fbits) a ==>
     I (1,t) <> NONE ==>
     I (4,t) <> NONE ==>
-    (THE (I (1,t)) > THE (I (4,t))) /\
-    (THE (I (1,t)) < THE (I (4,t)) + 4)
+    (THE (I (1,t)) > THE (I (4,t))) /\ (THE (I (1,t)) < THE (I (4,t)) + 4)
 Proof
   rpt gen_tac >> rpt disch_tac >>
   Induct_on `t` >-
@@ -725,8 +722,7 @@ Theorem ID_instr_index_with_EX_instr:
     is_sch I (agp32 fext fbits) a ==>
     I (2,t) <> NONE ==>
     I (3,t) <> NONE ==>
-    (THE (I (2,t)) > THE (I (3,t))) /\
-    (THE (I (2,t)) < THE (I (3,t)) + 2)
+    (THE (I (2,t)) > THE (I (3,t))) /\ (THE (I (2,t)) < THE (I (3,t)) + 2)
 Proof
   rpt gen_tac >> rpt disch_tac >>
   Induct_on `t` >-
@@ -756,8 +752,7 @@ Theorem ID_instr_index_with_MEM_instr:
     is_sch I (agp32 fext fbits) a ==>
     I (2,t) <> NONE ==>
     I (4,t) <> NONE ==>
-    (THE (I (2,t)) > THE (I (4,t))) /\
-    (THE (I (2,t)) < THE (I (4,t)) + 3)
+    (THE (I (2,t)) > THE (I (4,t))) /\ (THE (I (2,t)) < THE (I (4,t)) + 3)
 Proof
   rpt gen_tac >> rpt disch_tac >>
   Induct_on `t` >-
@@ -792,8 +787,7 @@ Theorem EX_instr_index_with_MEM_instr:
     is_sch I (agp32 fext fbits) a ==>
     I (3,t) <> NONE ==>
     I (4,t) <> NONE ==>
-    (THE (I (3,t)) >= THE (I (4,t))) /\
-    (THE (I (3,t)) < THE (I (4,t)) + 2)
+    (THE (I (3,t)) >= THE (I (4,t))) /\ (THE (I (3,t)) < THE (I (4,t)) + 2)
 Proof
   rpt gen_tac >> rpt disch_tac >>
   Induct_on `t` >-
@@ -895,6 +889,35 @@ Proof
      by METIS_TAC [EX_instr_index_with_MEM_instr] >> fs []) >>
   `I' (3,SUC t) = I' (3,t) /\ I' (5,SUC t) = I' (5,t)`
     by fs [is_sch_def,is_sch_disable_def] >> fs []
+QED
+
+(** instr index relation between MEM and WB stages **)
+Theorem MEM_instr_index_with_WB_instr:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (4,t) <> NONE ==>
+    I (5,t) <> NONE ==>
+    (THE (I (4,t)) >= THE (I (5,t))) /\ (THE (I (4,t)) < THE (I (5,t)) + 2)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def] >>
+  rpt disch_tac >>
+  Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
+   (Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
+     (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
+    `I' (4,SUC t) = I' (3,t)` by fs [is_sch_def,is_sch_memory_def] >> fs [] >>
+    `enable_stg 4 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_EX_write_enable_MEM_state_flag] >>
+    Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+     (`I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >> fs [] >>
+      METIS_TAC [EX_instr_index_with_MEM_instr]) >>
+    `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >> fs [] >>
+    cheat) >>
+  Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (`I' (4,SUC t) = I' (4,t) /\ I' (5,SUC t) = I' (4,t)`
+      by fs [is_sch_def,is_sch_writeback_def,is_sch_disable_def] >> fs []) >>
+  `I' (4,SUC t) = I' (4,t) /\ I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >> fs []
 QED
 
 (** instr index relation between IF and WB stages **)

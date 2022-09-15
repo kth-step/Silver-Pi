@@ -422,17 +422,16 @@ Proof
   qpat_abbrev_tac `i = instr _` >>
   `s''.R = (agp32 fext fbits (SUC t)).R`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_R_after_ID_imm_update] >> fs [] >>
-  (** uncertain **)
-  subgoal `I' (2,SUC t) = I' (1,t)` >-
-   (fs [is_sch_def,is_sch_decode_def,Abbr `s`] >>
-    Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >>
-    METIS_TAC []) >> fs [] >>
   Cases_on `I' (5,t) = NONE` >-
    cheat >>
   `s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
   `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
   `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
-  `enable_stg 3 s` by fs [enable_stg_def,agp32_ID_ID_write_enable_ID_EX_write_enable,Abbr `s`] >>
+  Cases_on `I' (5,SUC t) = NONE` >-
+   cheat >>
+  `I' (5,t) = SOME (THE (I' (5,SUC t)) - 1)` by cheat >> fs [] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
+    by (fs [Abbr `i`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >>
   cheat
 QED
 

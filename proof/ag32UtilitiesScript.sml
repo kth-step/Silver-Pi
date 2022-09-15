@@ -40,6 +40,18 @@ val get_opc_from_decode_tac =
   rw [opc_def,instr_def] >>
   fs [DecodeReg_imm_def,v2w_single_0w]);
 
+val gen_addrW_from_decode_tac =
+ (rpt GEN_TAC >> simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >>              
+  qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >> rw [] >>
+  Cases_on `dc` >> fs [] >>
+  Q.ABBREV_TAC `op = (5 >< 0) (word_at_addr ag.MEM (align_addr ag.PC))` >>
+  Cases_on_word_value `op` >> fs [] >>
+  rw [addrW_def,instr_def] >>
+  fs [DecodeReg_imm_def] >>
+  rename1 `vbit = 0w` >>
+  Cases_on `vbit = 0w` >> fs []);
+
 val get_func_from_decode_tac =
  (simp [Decode_def,boolify32_def] >>
   CONV_TAC v2w_word_bit_list_cleanup >>              
@@ -181,8 +193,8 @@ Theorem ag32_opc_3w_Decode_StoreMEMByte[local]:
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) =
     StoreMEMByte (DecodeReg_imm (v2w [word_bit 23 (word_at_addr ag.MEM (align_addr ag.PC))],
                              (22 >< 17) (word_at_addr ag.MEM (align_addr ag.PC))),
-              DecodeReg_imm (v2w [word_bit 16 (word_at_addr ag.MEM (align_addr ag.PC))],
-                             (15 >< 10) (word_at_addr ag.MEM (align_addr ag.PC))))
+                  DecodeReg_imm (v2w [word_bit 16 (word_at_addr ag.MEM (align_addr ag.PC))],
+                                 (15 >< 10) (word_at_addr ag.MEM (align_addr ag.PC))))
 Proof
   rw [opc_def,instr_def] >> simp [Decode_def,boolify32_def] >>
   CONV_TAC v2w_word_bit_list_cleanup >> fs [] >>
@@ -501,6 +513,100 @@ Proof
   rw [] >> `opc ag = 11w` by fs [ag32_Decode_JumpIfNotZero_opc_11w] >>
   UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (f,wi,a,b)`` >>
   get_func_from_decode_tac
+QED
+
+
+(* decode the addrW *)
+(** Acc **)
+Theorem ag32_Decode_Acc_addrW[local]:
+  !ag wi a.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Accelerator (wi,a) ==>
+    addrW ag = wi
+Proof
+  gen_addrW_from_decode_tac
+QED
+
+(** In **)
+Theorem ag32_Decode_In_addrW[local]:
+  !ag c.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = In c ==>
+    addrW ag = c
+Proof
+  gen_addrW_from_decode_tac
+QED
+
+(** Jump **)
+Theorem ag32_Decode_Jump_addrW[local]:
+  !ag a f wi.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (f,wi,a) ==>
+    addrW ag = wi
+Proof
+  gen_addrW_from_decode_tac
+QED
+
+(** LoadConstant **)
+Theorem ag32_Decode_LoadConstant_addrW[local]:
+  !ag w1 w2 w3.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadConstant (w1,w2,w3) ==>
+    addrW ag = w1
+Proof
+  gen_addrW_from_decode_tac
+QED
+
+(** LoadUpperConstant **)
+Theorem ag32_Decode_LoadUpperConstant_addrW[local]:
+  !ag w1 w2.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadUpperConstant (w1,w2) ==>
+    addrW ag = w1
+Proof
+  gen_addrW_from_decode_tac
+QED
+
+(** LoadMEM **)
+Theorem ag32_Decode_LoadMEM_addrW[local]:
+  !ag wi a.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadMEM (wi,a) ==>
+    addrW ag = wi
+Proof
+  gen_addrW_from_decode_tac
+QED
+
+(** LoadMEMByte **)
+Theorem ag32_Decode_LoadMEMByte_addrW[local]:
+  !ag wi a.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadMEMByte (wi,a) ==>
+    addrW ag = wi
+Proof
+  gen_addrW_from_decode_tac
+QED
+
+(** Normal **)
+Theorem ag32_Decode_Normal_addrW[local]:
+  !ag func wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (func,wi,a,b) ==>
+    addrW ag = wi
+Proof
+  gen_addrW_from_decode_tac >>
+  rename1 `v2w v1 = 0w` >>
+  Cases_on `v2w v1 :word1 = 0w` >> fs []
+QED
+
+(** Out **)
+Theorem ag32_Decode_Out_addrW[local]:
+  !ag func wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (func,wi,a,b) ==>
+    addrW ag = wi
+Proof
+  gen_addrW_from_decode_tac
+QED
+
+(** Shift **)
+Theorem ag32_Decode_Shift_addrW[local]:
+  !ag sh wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Shift (sh,wi,a,b) ==>
+    addrW ag = wi
+Proof
+  gen_addrW_from_decode_tac
 QED
 
 
@@ -849,6 +955,93 @@ Theorem dataW_correct_rewrite_flag_imm_reg_data:
     dataW a = if v2w [flagW a] = (0w:word1) then reg_dataW a else immW a
 Proof
   rw [dataW_def,flagW_def,reg_dataW_def,immW_def,instr_def,DecodeReg_imm_def,ri2word_def,addrW_def]
+QED
+
+
+(** register data is unchanged after an instruction **)
+Theorem reg_adr_update_isa_not_change_data:
+  !a nop adr.
+    ~reg_adr_update_isa nop a adr ==>
+    nop <> NONE ==>
+    (FUNPOW Next (THE nop - 1) a).R adr = (FUNPOW Next (THE nop) a).R adr
+Proof
+  rw [reg_adr_update_isa_def] >> fs [] >>
+  Cases_on `nop` >> fs [] >>
+  Cases_on `x = 0` >> fs [] >>
+  `x = SUC (x-1)` by rw [] >>
+  `FUNPOW Next x a = FUNPOW Next (SUC (x-1)) a` by METIS_TAC [] >>
+  rw [FUNPOW_SUC] >>
+  qpat_abbrev_tac `a1 = FUNPOW _ _  _` >>
+  rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr a1.MEM (align_addr a1.PC))` >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_Acc_opc_8w]) >>
+    `addrW a1 = p0` by fs [ag32_Decode_Acc_addrW] >>
+    EVAL_TAC >> fs []) >-
+   (rw [Run_def,dfn'In_def,incPC_def] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_In_opc_7w]) >>
+    `addrW a1 = c` by fs [ag32_Decode_In_addrW] >>
+    EVAL_TAC >> fs []) >-
+   (rw [Run_def,dfn'Interrupt_def,incPC_def]) >-
+   (PairCases_on `p` >> fs [Run_def,dfn'Jump_def,ALU_def] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_Jump_opc_9w]) >>
+    `addrW a1 = p1` by fs [ag32_Decode_Jump_addrW] >>
+    Cases_on `p0` >> EVAL_TAC >> fs []) >-
+   (PairCases_on `p` >> fs [Run_def,dfn'JumpIfNotZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'JumpIfZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> fs [Run_def,dfn'LoadConstant_def,incPC_def] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_LoadConstant_opc_13w]) >>
+    `addrW a1 = p0` by fs [ag32_Decode_LoadConstant_addrW] >>
+    EVAL_TAC >> fs []) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEM_def,incPC_def] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_LoadMEM_opc_4w]) >>
+    `addrW a1 = p0` by fs [ag32_Decode_LoadMEM_addrW] >>
+    EVAL_TAC >> fs []) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEMByte_def,incPC_def] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_LoadMEMByte_opc_5w]) >>
+    `addrW a1 = p0` by fs [ag32_Decode_LoadMEMByte_addrW] >>
+    EVAL_TAC >> fs []) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadUpperConstant_def,incPC_def] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_LoadUpperConstant_opc_14w]) >>
+    `addrW a1 = p0` by fs [ag32_Decode_LoadUpperConstant_addrW] >>
+    EVAL_TAC >> fs []) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Normal_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_Normal_opc_0w]) >>
+    `addrW a1 = p1` by fs [ag32_Decode_Normal_addrW] >>
+    EVAL_TAC >> fs [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Out_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_Out_opc_6w]) >>
+    `addrW a1 = p1` by fs [ag32_Decode_Out_addrW] >>
+    EVAL_TAC >> fs [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   rw [Run_def] >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def] >>
+    Cases_on `addrW a1 = adr` >> fs [] >-
+     (fs [reg_iswrite_def,ag32_Decode_Shift_opc_1w]) >>
+    `addrW a1 = p1` by fs [ag32_Decode_Shift_addrW] >>
+    EVAL_TAC >> fs []) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'StoreMEM_def,incPC_def]) >>
+  PairCases_on `p` >> rw [Run_def,dfn'StoreMEMByte_def,incPC_def]
 QED
 
 val _ = export_theory ();

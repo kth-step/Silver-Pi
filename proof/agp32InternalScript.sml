@@ -786,7 +786,6 @@ Proof
     by METIS_TAC [is_sch_def,is_sch_disable_ID_def,is_sch_disable_def] >> fs []
 QED
 
-(* TODO: when IF/ID/EX are enabled, WB must be enabled as well
 (** instr index relation between EX and MEM stages **)
 Theorem EX_instr_index_with_MEM_instr:
   !I t fext fbits a.
@@ -819,7 +818,20 @@ Proof
   `I' (3,SUC t) = I' (3,t) /\ I' (4,SUC t) = I' (4,t)` by fs [] >> fs []
 QED
 
-
+(** I (2,t) = I (3,t) + 1 **)
+Theorem ID_instr_index_with_EX_instr_plus_1:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (2,t) <> NONE ==>
+    I (3,t) <> NONE ==>
+    THE (I (2,t)) = THE (I (3,t)) + 1
+Proof
+  rw [] >>
+  `(THE (I' (2,t)) > THE (I' (3,t))) /\ (THE (I' (2,t)) < THE (I' (3,t)) + 2)`
+    by METIS_TAC [ID_instr_index_with_EX_instr] >> fs []
+QED
+ 
+(* TODO: when IF/ID/EX are enabled, WB must be enabled as well
 (** instr index relation between ID and WB stages **)
 Theorem ID_instr_index_with_WB_instr:
   !I t fext fbits a.

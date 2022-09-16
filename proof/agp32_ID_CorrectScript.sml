@@ -444,7 +444,14 @@ Proof
       `(FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R ((22 >< 17) i) =
       (FUNPOW Next (THE (I' (4,SUC t))) a).R ((22 >< 17) i)`
         by METIS_TAC [reg_adr_update_isa_not_change_data] >> fs [] >>
-      cheat) >>
+      Cases_on `I' (3,SUC t) = NONE` >-
+       cheat >>
+      `THE (I' (2,SUC t)) = THE (I' (3,SUC t)) + 1`
+        by METIS_TAC [ID_instr_index_with_EX_instr_plus_1] >> fs [] >>
+      `(THE (I' (3,SUC t)) = THE (I' (4,SUC t))) \/
+      (THE (I' (3,SUC t)) = THE (I' (4,SUC t)) + 1)` by cheat >> fs [] >>
+      `THE (I' (4,SUC t)) = THE (I' (3,SUC t)) - 1` by fs [] >> fs [] >>
+      METIS_TAC [reg_adr_update_isa_not_change_data]) >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
       by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`

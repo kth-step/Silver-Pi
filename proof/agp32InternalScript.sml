@@ -781,6 +781,50 @@ Proof
     by METIS_TAC [is_sch_def,is_sch_disable_ID_def,is_sch_disable_def] >> fs []
 QED
 
+(*
+(** instr index relation between ID and MEM stages when EX is NONE **)
+Theorem ID_instr_index_with_MEM_instr_EX_NONE:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (2,t) <> NONE ==>
+    I (3,t) = NONE ==>
+    I (4,t) <> NONE ==>
+    (THE (I (2,t)) > THE (I (4,t))) /\ (THE (I (2,t)) < THE (I (4,t)) + 2)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def] >>
+  rpt disch_tac >>
+  Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >-
+     (fs [is_sch_def,is_sch_decode_def] >> METIS_TAC []) >>
+    `I' (2,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_decode_def] >>
+    `enable_stg 4 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_MEM_state_flag] >>
+    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
+     (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
+    `I' (4,SUC t) = I' (3,t)` by fs [is_sch_def,is_sch_memory_def] >> fs [] >>
+    `enable_stg 3 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_ID_EX_write_enable] >>
+    Cases_on `isAcc_isa_op (I' (3,t)) a` >-
+     (`~enable_stg 2 (agp32 fext fbits t)` by cheat >> fs []) >>
+    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_execute_def] >>
+    fs [] >> cheat) >>
+  Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
+   (Cases_on `(agp32 fext fbits t).ID.ID_flush_flag` >-
+     (fs [is_sch_def,is_sch_disable_ID_def] >> METIS_TAC []) >>
+    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
+     (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
+    `I' (2,SUC t) = I' (2,t) /\ I' (4,SUC t) = I' (3,t)`
+      by fs [is_sch_def,is_sch_memory_def,is_sch_disable_ID_def] >> fs [] >>
+    `(THE (I' (2,t)) > THE (I' (3,t))) /\ (THE (I' (2,t)) < THE (I' (3,t)) + 2)`
+      by METIS_TAC [ID_instr_index_with_EX_instr] >> fs []) >>
+  `~enable_stg 3 (agp32 fext fbits t)` by cheat >>
+  `I' (2,SUC t) = I' (2,t) /\ I' (3,SUC t) = I' (3,t) /\ I' (4,SUC t) = I' (4,t)`
+    by METIS_TAC [is_sch_def,is_sch_disable_ID_def,is_sch_disable_def] >> fs []
+QED
+*)
+
 (** instr index relation between EX and MEM stages **)
 Theorem EX_instr_index_with_MEM_instr:
   !I t fext fbits a.

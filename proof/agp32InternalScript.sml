@@ -812,6 +812,19 @@ Proof
   `I' (3,SUC t) = I' (3,t) /\ I' (4,SUC t) = I' (4,t)` by fs [] >> fs []
 QED
 
+(** I (1,t) = I (2,t) + 1 **)
+Theorem IF_instr_index_with_ID_instr_plus_1:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (1,t) <> NONE ==>
+    I (2,t) <> NONE ==>
+    THE (I (1,t)) = THE (I (2,t)) + 1
+Proof
+  rw [] >>
+  `(THE (I' (1,t)) > THE (I' (2,t))) /\ (THE (I' (1,t)) < THE (I' (2,t)) + 2)`
+    by METIS_TAC [IF_instr_index_with_ID_instr] >> fs []
+QED
+
 (** I (2,t) = I (3,t) + 1 **)
 Theorem ID_instr_index_with_EX_instr_plus_1:
   !I t fext fbits a.
@@ -823,6 +836,21 @@ Proof
   rw [] >>
   `(THE (I' (2,t)) > THE (I' (3,t))) /\ (THE (I' (2,t)) < THE (I' (3,t)) + 2)`
     by METIS_TAC [ID_instr_index_with_EX_instr] >> fs []
+QED
+
+(** I (3,SUC t) = I (3,t) + 1 **)
+Theorem EX_instr_index_t_SUC_t_enable:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    enable_stg 3 (agp32 fext fbits t) ==>
+    I (3,t) <> NONE ==>
+    I (3,SUC t) <> NONE ==>
+    THE (I (3,SUC t)) = THE (I (3,t)) + 1
+Proof
+  rw [] >> Cases_on `isJump_isa_op (I' (3,t)) a \/ isAcc_isa_op (I' (3,t)) a` >-
+   (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
+  `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >> fs [] >>
+  METIS_TAC [ID_instr_index_with_EX_instr_plus_1]
 QED
  
 (* TODO: when IF/ID/EX are enabled, WB must be enabled as well

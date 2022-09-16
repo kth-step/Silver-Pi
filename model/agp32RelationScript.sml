@@ -310,6 +310,12 @@ Definition Rel_def:
   (~fext.ready ==> ~enable_stg 2 s) /\
   (I (5,t-1) <> NONE ==> s.data_out = (FUNPOW Next (THE (I (5,t-1))) a).data_out) /\
   (I (5,t-1) <> NONE ==> reg_data_vaild 5 si ==> (s.R = (FUNPOW Next (THE (I (5,t-1))) a).R)) /\
+  (I (5,t-1) = NONE ==> I (5,t) <> NONE ==> (s.R = (FUNPOW Next (THE (I (5,t)) - 1) a).R)) /\
+  (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) <> NONE ==> (s.R = (FUNPOW Next (THE (I (4,t)) - 1) a).R)) /\
+  (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) <> NONE ==> 
+   (s.R = (FUNPOW Next (THE (I (3,t)) - 1) a).R)) /\
+  (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) <> NONE ==>
+   (s.R = (FUNPOW Next (THE (I (2,t)) - 1) a).R)) /\
   (I (1,t) <> NONE ==> IF_PC_Rel s a (THE (I (1,t)))) /\
   (I (1,t) <> NONE ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
   (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_Rel s a (THE (I (2,t)))) /\

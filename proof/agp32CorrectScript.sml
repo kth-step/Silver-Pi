@@ -27,7 +27,8 @@ Theorem agp32_Init_implies_Rel:
     Rel I (fext 0) (s 0) (s 0) a 0
 Proof
   rw [Init_def,Rel_def,is_sch_init_def] >>
-  fs [agp32_init_IF_PC_input,IF_PC_Rel_def,IF_instr_Rel_def,enable_stg_def,reg_data_vaild_def] >> fs []
+  fs [agp32_init_IF_PC_input,IF_PC_Rel_def,IF_instr_Rel_def,
+      enable_stg_def,reg_data_vaild_def] >> fs []
 QED
 
 
@@ -75,6 +76,10 @@ Proof
    cheat >-
    (** registers **)
    fs [agp32_Rel_ag32_R_correct] >-
+   cheat >-
+   cheat >-
+   cheat >-
+   cheat >-
    (** IF_PC **)
    fs [is_sch_def,agp32_Rel_ag32_IF_PC_Rel_correct] >-
    (** IF_instr **)

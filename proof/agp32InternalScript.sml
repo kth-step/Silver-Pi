@@ -352,6 +352,29 @@ Proof
   Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
+(* ID_ID_write_enable, MEM_state_flag and ID_EX_write_enable *)
+Theorem agp32_ID_disable_MEM_state_flag_F_imply_ID_EX_write_disable:
+  !fext fbits t.
+    ~(agp32 fext fbits t).ID.ID_ID_write_enable ==>
+    ~(agp32 fext fbits t).MEM.MEM_state_flag ==>
+    ~(agp32 fext fbits t).ID.ID_EX_write_enable
+Proof
+  rw [] >>
+  `?s s'.
+  ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable) /\
+  ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable) /\
+  ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
+    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
+  fs [Hazard_ctrl_def] >>
+  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `(fext t).ready` >> fs [] >>
+  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+  Cases_on `s'.EX.EX_jump_sel` >> fs []
+QED
+
 (** ID_ID_write_enable and fext t.ready **)
 Theorem agp32_ID_ID_write_enable_and_fext_ready:
   !fext fbits t.
@@ -781,50 +804,6 @@ Proof
     by METIS_TAC [is_sch_def,is_sch_disable_ID_def,is_sch_disable_def] >> fs []
 QED
 
-(*
-(** instr index relation between ID and MEM stages when EX is NONE **)
-Theorem ID_instr_index_with_MEM_instr_EX_NONE:
-  !I t fext fbits a.
-    is_sch I (agp32 fext fbits) a ==>
-    I (2,t) <> NONE ==>
-    I (3,t) = NONE ==>
-    I (4,t) <> NONE ==>
-    (THE (I (2,t)) > THE (I (4,t))) /\ (THE (I (2,t)) < THE (I (4,t)) + 2)
-Proof
-  rpt gen_tac >> rpt disch_tac >>
-  Induct_on `t` >-
-   fs [is_sch_def,is_sch_init_def] >>
-  rpt disch_tac >>
-  Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
-   (Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >-
-     (fs [is_sch_def,is_sch_decode_def] >> METIS_TAC []) >>
-    `I' (2,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_decode_def] >>
-    `enable_stg 4 (agp32 fext fbits t)`
-      by fs [enable_stg_def,agp32_ID_ID_write_enable_MEM_state_flag] >>
-    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
-     (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
-    `I' (4,SUC t) = I' (3,t)` by fs [is_sch_def,is_sch_memory_def] >> fs [] >>
-    `enable_stg 3 (agp32 fext fbits t)`
-      by fs [enable_stg_def,agp32_ID_ID_write_enable_ID_EX_write_enable] >>
-    Cases_on `isAcc_isa_op (I' (3,t)) a` >-
-     (`~enable_stg 2 (agp32 fext fbits t)` by cheat >> fs []) >>
-    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_execute_def] >>
-    fs [] >> cheat) >>
-  Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
-   (Cases_on `(agp32 fext fbits t).ID.ID_flush_flag` >-
-     (fs [is_sch_def,is_sch_disable_ID_def] >> METIS_TAC []) >>
-    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
-     (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
-    `I' (2,SUC t) = I' (2,t) /\ I' (4,SUC t) = I' (3,t)`
-      by fs [is_sch_def,is_sch_memory_def,is_sch_disable_ID_def] >> fs [] >>
-    `(THE (I' (2,t)) > THE (I' (3,t))) /\ (THE (I' (2,t)) < THE (I' (3,t)) + 2)`
-      by METIS_TAC [ID_instr_index_with_EX_instr] >> fs []) >>
-  `~enable_stg 3 (agp32 fext fbits t)` by cheat >>
-  `I' (2,SUC t) = I' (2,t) /\ I' (3,SUC t) = I' (3,t) /\ I' (4,SUC t) = I' (4,t)`
-    by METIS_TAC [is_sch_def,is_sch_disable_ID_def,is_sch_disable_def] >> fs []
-QED
-*)
-
 (** instr index relation between EX and MEM stages **)
 Theorem EX_instr_index_with_MEM_instr:
   !I t fext fbits a.
@@ -854,6 +833,88 @@ Proof
      (fs [is_sch_memory_def] >> METIS_TAC []) >>
     `I' (4,SUC t) = I' (3,t)` by fs [is_sch_memory_def] >> fs []) >>
   `I' (3,SUC t) = I' (3,t) /\ I' (4,SUC t) = I' (4,t)` by fs [] >> fs []
+QED
+
+(** instr index relation when IF and EX stages are not NONE then ID is NOT NONE **)
+Theorem IF_EX_instr_NOT_NONE_ID_NOT_NONE:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (1,t) <> NONE ==>
+    I (3,t) <> NONE ==>
+    I (2,t) <> NONE
+Proof
+  rw [] >> Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def] >>
+  rw [] >> Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_isa_op (I' (3,t)) a` >-
+     (`enable_stg 3 (agp32 fext fbits t)`
+        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+      fs [is_sch_def,is_sch_fetch_def,is_sch_execute_def] >>
+      METIS_TAC []) >>
+    Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a \/
+    I' (1,t) = NONE \/ THE (I' (1,t)) = 0` >-
+     (fs [is_sch_def,is_sch_fetch_def,is_sch_execute_def] >> METIS_TAC []) >>
+    fs [] >>
+    `enable_stg 3 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+    Cases_on `isAcc_isa_op (I' (3,t)) a` >-
+     (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
+    Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
+     (fs [is_sch_def,is_sch_decode_def] >> METIS_TAC []) >>
+    `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >> fs [] >>
+    Cases_on `(agp32 fext fbits t).ID.ID_flush_flag` >-
+     (`(agp32 fext fbits t).EX.EX_jump_sel` by cheat >>
+      `isJump_isa_op (I' (3,t)) a` by cheat >> fs []) >>
+    fs [is_sch_def,is_sch_disable_ID_def]) >>
+  `~enable_stg 3 (agp32 fext fbits t)`
+    by fs [enable_stg_def,agp32_IF_PC_write_disable_and_EX_disable] >>
+  `~enable_stg 2 (agp32 fext fbits t) /\ ~(agp32 fext fbits t).ID.ID_flush_flag`
+    by cheat >>
+  `I' (3,SUC t) = I' (3,t) /\ I' (1,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `I' (2,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_disable_ID_def] >> fs []
+QED
+
+(** instr index relation between ID and MEM stages when EX is NONE **)
+Theorem ID_instr_index_with_MEM_instr_EX_NONE:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (2,t) <> NONE ==>
+    I (3,t) = NONE ==>
+    I (4,t) <> NONE ==>
+    (THE (I (2,t)) > THE (I (4,t))) /\ (THE (I (2,t)) < THE (I (4,t)) + 2)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def] >>
+  rpt disch_tac >>
+  Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >-
+     (fs [is_sch_def,is_sch_decode_def] >> METIS_TAC []) >>
+    `I' (2,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_decode_def] >>
+    `enable_stg 4 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_MEM_state_flag] >>
+    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
+     (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
+    `I' (4,SUC t) = I' (3,t)` by fs [is_sch_def,is_sch_memory_def] >> fs [] >>
+    `enable_stg 3 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_ID_EX_write_enable] >>
+    Cases_on `isAcc_isa_op (I' (3,t)) a` >-
+     (`~enable_stg 2 (agp32 fext fbits t)` by cheat >> fs []) >>
+    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_execute_def] >>
+    fs [] >> METIS_TAC [IF_EX_instr_NOT_NONE_ID_NOT_NONE]) >>
+  Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
+   (Cases_on `(agp32 fext fbits t).ID.ID_flush_flag` >-
+     (fs [is_sch_def,is_sch_disable_ID_def] >> METIS_TAC []) >>
+    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
+     (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
+    `I' (2,SUC t) = I' (2,t) /\ I' (4,SUC t) = I' (3,t)`
+      by fs [is_sch_def,is_sch_memory_def,is_sch_disable_ID_def] >> fs [] >>
+    `(THE (I' (2,t)) > THE (I' (3,t))) /\ (THE (I' (2,t)) < THE (I' (3,t)) + 2)`
+      by METIS_TAC [ID_instr_index_with_EX_instr] >> fs []) >>
+  `~enable_stg 3 (agp32 fext fbits t)`
+    by fs [enable_stg_def,agp32_ID_disable_MEM_state_flag_F_imply_ID_EX_write_disable] >>
+  `I' (2,SUC t) = I' (2,t) /\ I' (3,SUC t) = I' (3,t) /\ I' (4,SUC t) = I' (4,t)`
+    by METIS_TAC [is_sch_def,is_sch_disable_ID_def,is_sch_disable_def] >> fs []
 QED
 
 (** I (1,t) = I (2,t) + 1 **)
@@ -895,6 +956,19 @@ Proof
    (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
   `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >> fs [] >>
   METIS_TAC [ID_instr_index_with_EX_instr_plus_1]
+QED
+
+(** I (3,t) = I (4,t) \/ (I (4,t) + 1) **)
+Theorem EX_instr_index_with_MEM_instr_plus_1:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (3,t) <> NONE ==>
+    I (4,t) <> NONE ==>
+    (THE (I (3,t)) = THE (I (4,t)) + 1) \/ (THE (I (3,t)) = THE (I (4,t)))
+Proof
+  rw [] >>
+  `(THE (I' (3,t)) >= THE (I' (4,t))) /\ (THE (I' (3,t)) < THE (I' (4,t)) + 2)`
+    by METIS_TAC [EX_instr_index_with_MEM_instr] >> fs []
 QED
  
 (* TODO: when IF/ID/EX are enabled, WB must be enabled as well

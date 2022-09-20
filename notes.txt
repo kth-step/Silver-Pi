@@ -27,5 +27,6 @@ If the fetch or decode stage I is NONE, then we do not need to compare the value
 3. Why do we identify the jump in the EX stage, not the ID stage?
 Since we need the ALU to compute the jump target for Jump and condition result for conditional jumps.
 TO remember: check similar ISAs like Silver that require the computations from stages later than ID (i.e., jumps cannot be issued from the ID stage).
+Example: RISV-V RV32I (instr:JALR). ARMv8-A (B.<cond> <label>).
 
 4. (TODO) More the Acc from EX to the MEM stage. (would simplify our proof and circuit).

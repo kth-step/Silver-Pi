@@ -23,3 +23,9 @@ https://github.com/kth-step/hw-verification-silver/commit/859b2b2c5d10c7c02ca26b
 In order to handle the case when jump is in the fetch or decode stage that cannot be recognized by the pipeline (as the EX stage takes care of jump).
 
 If the fetch or decode stage I is NONE, then we do not need to compare the value with ISA state, since these instrs are not going to be executed in the end.
+
+3. Why we identify the jump in the EX stage, not the ID stage?
+Since we the nedd the ALU to compute the jump target for Jump and condition result for conditional jumps.
+TO remeber: check similiar ISAs like Silver that require the computations from stages later than ID (i.e., jumps cannot be issued from the ID stage).
+
+4. (TODO) More the Acc from EX to the MEM stage. (would simplify our proof and circuit).

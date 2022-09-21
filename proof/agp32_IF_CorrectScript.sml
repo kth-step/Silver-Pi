@@ -20,7 +20,7 @@ Theorem agp32_Rel_ag32_IF_enable_PC_correct:
 Proof
   rw [] >>
   `reg_data_vaild 3 (agp32 fext fbits t)`
-    by fs [enable_stg_def,reg_data_vaild_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+    by fs [enable_stg_def,reg_data_vaild_def,agp32_IF_PC_write_enable_and_MEM_flag] >>
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline] (fext t) s s` >>
@@ -214,7 +214,6 @@ Proof
   `(agp32 fext fbits t).state = 0w`
     by (Cases_on_word_value `(agp32 fext fbits t).state` >>
         METIS_TAC [agp32_IF_PC_write_enable_and_state,agp32_state_impossible_values]) >>
-  `~(agp32 fext fbits t).EX.EX_isAcc` by METIS_TAC [agp32_IF_PC_write_enable_and_EX_isAcc] >>
   `(fext t).ready` by METIS_TAC [agp32_IF_PC_write_enable_and_fext_ready] >>
   Q.ABBREV_TAC `s'' = agp32 fext fbits t` >>
   `(agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s'' s'').command`
@@ -227,7 +226,8 @@ Proof
   Cases_on `s''.MEM.MEM_read_mem` >> fs [] >>
   Cases_on `s''.MEM.MEM_write_mem` >> fs [] >>
   Cases_on `s''.MEM.MEM_write_mem_byte` >> fs [] >>
-  Cases_on_word_value `(1 >< 0) s''.MEM.MEM_dataB` >> fs []
+  Cases_on_word_value `(1 >< 0) s''.MEM.MEM_dataB` >> fs [] >>
+  Cases_on `s''.MEM.MEM_isAcc` >> fs []
 QED
 
 (** IF_instr updated when IF is disabled **)

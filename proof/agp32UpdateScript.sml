@@ -57,8 +57,7 @@ QED
 
 Theorem ID_opc_func_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((ID_opc_func_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((ID_opc_func_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (ID_opc_func_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [ID_opc_func_update_def]
 QED
@@ -144,8 +143,7 @@ QED
 
 Theorem ID_imm_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((ID_imm_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((ID_imm_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (ID_imm_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [ID_imm_update_def]
 QED
@@ -238,8 +236,7 @@ QED
 
 Theorem ID_data_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((ID_data_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((ID_data_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (ID_data_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [ID_data_update_def]
 QED
@@ -419,8 +416,7 @@ QED
 
 Theorem EX_forward_data_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_forward_data fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((EX_forward_data fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (EX_forward_data fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [EX_forward_data_def]
 QED
@@ -491,8 +487,7 @@ QED
 
 Theorem EX_ALU_input_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_ALU_input_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((EX_ALU_input_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (EX_ALU_input_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [EX_ALU_input_update_def]
 QED
@@ -563,8 +558,7 @@ QED
 
 Theorem EX_compute_enable_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_compute_enable_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((EX_compute_enable_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (EX_compute_enable_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [EX_compute_enable_update_def]
 QED
@@ -667,8 +661,7 @@ QED
 
 Theorem EX_ALU_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_ALU_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((EX_ALU_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (EX_ALU_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [EX_ALU_update_def] >>
   Cases_on_word_value `s'.EX.EX_func` >> fs []
@@ -774,8 +767,7 @@ QED
 
 Theorem EX_SHIFT_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_SHIFT_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((EX_SHIFT_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (EX_SHIFT_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [EX_SHIFT_update_def] >>
   Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
@@ -886,8 +878,7 @@ QED
      
 Theorem EX_jump_sel_addr_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_jump_sel_addr_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((EX_jump_sel_addr_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (EX_jump_sel_addr_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [EX_jump_sel_addr_update_def]
 QED
@@ -994,8 +985,7 @@ QED
 
 Theorem EX_data_rec_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_data_rec_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((EX_data_rec_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (EX_data_rec_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [EX_data_rec_update_def]
 QED
@@ -1110,8 +1100,7 @@ QED
 
 Theorem MEM_ctrl_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((MEM_ctrl_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((MEM_ctrl_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (MEM_ctrl_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [MEM_ctrl_update_def]
 QED
@@ -1207,8 +1196,7 @@ QED
 
 Theorem MEM_imm_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((MEM_imm_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((MEM_imm_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (MEM_imm_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [MEM_imm_update_def]
 QED
@@ -1323,8 +1311,7 @@ QED
 
 Theorem WB_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((WB_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((WB_update fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (WB_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [WB_update_def]
 QED
@@ -1438,8 +1425,7 @@ QED
 
 Theorem Hazard_ctrl_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((Hazard_ctrl fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
-    ((Hazard_ctrl fext s s').EX.EX_isAcc <=> s'.EX.EX_isAcc)
+    (Hazard_ctrl fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [Hazard_ctrl_def]
 QED
@@ -1680,6 +1666,7 @@ QED
 Theorem REG_write_unchanged_ID_items:
   !fext s s'.
     ((REG_write fext s s').ID.ID_ID_write_enable <=> s'.ID.ID_ID_write_enable) /\
+    ((REG_write fext s s').ID.ID_flush_flag <=> s'.ID.ID_flush_flag) /\
     ((REG_write fext s s').ID.ID_PC = s'.ID.ID_PC) /\
     ((REG_write fext s s').ID.ID_instr = s'.ID.ID_instr)
 Proof
@@ -1751,6 +1738,7 @@ QED
 Theorem EX_pipeline_unchanged_ID_items:
   !fext s s'.
     ((EX_pipeline fext s s').ID.ID_ID_write_enable <=> s'.ID.ID_ID_write_enable) /\
+    ((EX_pipeline fext s s').ID.ID_flush_flag <=> s'.ID.ID_flush_flag) /\
     ((EX_pipeline fext s s').ID.ID_PC = s'.ID.ID_PC) /\
     ((EX_pipeline fext s s').ID.ID_instr = s'.ID.ID_instr)
 Proof
@@ -1812,6 +1800,7 @@ QED
 Theorem MEM_pipeline_unchanged_ID_items:
   !fext s s'.
     ((MEM_pipeline fext s s').ID.ID_ID_write_enable <=> s'.ID.ID_ID_write_enable) /\
+    ((MEM_pipeline fext s s').ID.ID_flush_flag <=> s'.ID.ID_flush_flag) /\
     ((MEM_pipeline fext s s').ID.ID_PC = s'.ID.ID_PC) /\
     ((MEM_pipeline fext s s').ID.ID_instr = s'.ID.ID_instr)
 Proof
@@ -1881,6 +1870,7 @@ QED
 Theorem WB_pipeline_unchanged_ID_items:
   !fext s s'.
     ((WB_pipeline fext s s').ID.ID_ID_write_enable <=> s'.ID.ID_ID_write_enable) /\
+    ((WB_pipeline fext s s').ID.ID_flush_flag <=> s'.ID.ID_flush_flag) /\
     ((WB_pipeline fext s s').ID.ID_PC = s'.ID.ID_PC) /\
     ((WB_pipeline fext s s').ID.ID_instr = s'.ID.ID_instr)
 Proof
@@ -1952,6 +1942,7 @@ QED
 Theorem agp32_next_state_unchanged_ID_items:
   !fext s s'.
     ((agp32_next_state fext s s').ID.ID_ID_write_enable <=> s'.ID.ID_ID_write_enable) /\
+    ((agp32_next_state fext s s').ID.ID_flush_flag <=> s'.ID.ID_flush_flag) /\
     ((agp32_next_state fext s s').ID.ID_PC = s'.ID.ID_PC) /\
     ((agp32_next_state fext s s').ID.ID_instr = s'.ID.ID_instr)
 Proof
@@ -2610,6 +2601,7 @@ Theorem agp32_same_items_before_ID_pipeline:
     s = agp32 fext fbits t ==>
     s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;REG_write] (fext t) s s ==>
     (s'.ID.ID_ID_write_enable <=> s.ID.ID_ID_write_enable) /\
+    (s'.ID.ID_flush_flag <=> s.ID.ID_flush_flag) /\
     (s'.IF.IF_instr = s.IF.IF_instr)
 Proof
   rpt STRIP_TAC >> fs [procs_def] >>

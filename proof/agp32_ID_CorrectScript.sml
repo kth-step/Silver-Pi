@@ -54,7 +54,14 @@ Proof
   `s.ID.ID_ID_write_enable` by fs [enable_stg_def] >>
   `s'.ID.ID_ID_write_enable /\ s'.IF.IF_instr = s.IF.IF_instr`
     by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >>
-  rw [ID_pipeline_def] >>
+  rw [ID_pipeline_def] >-
+    (`s.ID.ID_flush_flag`
+       by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >> 
+     `s.EX.EX_jump_sel`
+       by fs [agp32_ID_ID_write_enable_flush_flag_then_EX_jump_sel,Abbr `s`,enable_stg_def] >>
+     `reg_data_vaild 3 s` 
+       by fs [agp32_ID_ID_write_enable_MEM_state_flag,Abbr `s`,reg_data_vaild_def,enable_stg_def] >>
+     fs [Rel_def,EX_Rel_spec_def]) >>
   `(fext t).ready` by METIS_TAC [enable_stg_def,agp32_ID_ID_write_enable_and_fext_ready] >>
   fs [Rel_def,IF_instr_Rel_def]
 QED

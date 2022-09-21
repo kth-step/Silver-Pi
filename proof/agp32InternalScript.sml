@@ -146,11 +146,10 @@ QED
 
 
 (** pipeline control flags **)
-(* IF_PC_write_enable and EX_enable/MEM_state_flag *)
-Theorem agp32_IF_PC_write_enable_and_EX_MEM_flags:
+(* IF_PC_write_enable and MEM_state_flag *)
+Theorem agp32_IF_PC_write_enable_and_MEM_flag:
   !fext fbits t.
     (agp32 fext fbits t).IF.IF_PC_write_enable ==>
-    (agp32 fext fbits t).ID.ID_EX_write_enable /\
     (agp32 fext fbits t).MEM.MEM_state_flag
 Proof
   rw [] >>
@@ -160,20 +159,19 @@ Proof
   ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
   fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs [] >>
   Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
   Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
-(* IF_PC_write_enable is F then ID_EX_write_enable is also F *)
-Theorem agp32_IF_PC_write_disable_and_EX_disable:
+(* IF_PC_write_enable and ID_EX_write_enable *)
+Theorem agp32_IF_PC_write_enable_and_ID_EX_write_enable:
   !fext fbits t.
-    ~(agp32 fext fbits t).IF.IF_PC_write_enable ==>
-    ~(agp32 fext fbits t).ID.ID_EX_write_enable
+    (agp32 fext fbits t).IF.IF_PC_write_enable =
+    (agp32 fext fbits t).ID.ID_EX_write_enable
 Proof
   rw [] >>
   `?s s'.
@@ -181,12 +179,11 @@ Proof
   ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
   fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs [] >>
   Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
   Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
@@ -201,8 +198,8 @@ Proof
   ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
   fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs []
 QED
 
@@ -212,37 +209,6 @@ Theorem not_fext_ready_and_agp32_IF_PC_write_disable:
     ~(agp32 fext fbits t).IF.IF_PC_write_enable
 Proof
   rw [] >> METIS_TAC [agp32_IF_PC_write_enable_and_fext_ready]
-QED
-
-(** IF_PC_write_enable and EX_isAcc **)
-Theorem agp32_IF_PC_write_enable_and_EX_isAcc:
-  !fext fbits t.
-    (agp32 fext fbits t).IF.IF_PC_write_enable ==>
-    ~(agp32 fext fbits t).EX.EX_isAcc
-Proof
-  rw [] >> Cases_on `t` >>
-  fs [agp32_def,mk_module_def,mk_circuit_def] >-
-   (clist_update_state_tac >>
-    fs [Abbr `s20`,Hazard_ctrl_def] >>
-    Cases_on `s19.state = 3w \/ s19.state = 5w` >> fs [] >>
-    Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 4w \/ s19.state = 6w` >> fs [] >>
-    Cases_on `(fext 0).ready` >> fs [] >>
-    Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
-              (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
-              (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
-    Cases_on `s19.EX.EX_isAcc` >> fs [] >>
-    Cases_on `s19.EX.EX_jump_sel` >> fs []) >>
-  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
-  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
-  clist_update_state_tac >>
-  fs [Abbr `s20`,Hazard_ctrl_def] >>
-  Cases_on `s19.state = 3w \/ s19.state = 5w` >> fs [] >>
-  Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 4w \/ s19.state = 6w` >> fs [] >>
-  Cases_on `(fext (SUC n)).ready` >> fs [] >>
-  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
-            s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s19.EX.EX_isAcc` >> fs [] >>
-  Cases_on `s19.EX.EX_jump_sel` >> fs []      
 QED
 
 (** IF_PC_write_enable and state **)
@@ -260,32 +226,30 @@ Proof
   fs [agp32_def,mk_module_def,mk_circuit_def] >-
    (clist_update_state_tac >>
     fs [Abbr `s20`,Hazard_ctrl_def] >>
-    Cases_on `s19.state = 3w \/ s19.state = 5w` >> fs [] >>
-    Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 4w \/ s19.state = 6w` >> fs [] >>
+    Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 3w \/
+              s19.state = 4w \/ s19.state = 5w \/ s19.state = 6w` >> fs [] >>
     Cases_on `(fext 0).ready` >> fs [] >>
     Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
               (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
-              (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
-    Cases_on `s19.EX.EX_isAcc` >> fs [] >>
+              (agp32_init fbits).MEM.MEM_opc = 8w \/ (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
     Cases_on `s19.EX.EX_jump_sel` >> fs []) >>
   qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
   clist_update_state_tac >>
   fs [Abbr `s20`,Hazard_ctrl_def] >>
-  Cases_on `s19.state = 3w \/ s19.state = 5w` >> fs [] >>
-  Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 4w \/ s19.state = 6w` >> fs [] >>
+  Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 3w \/
+            s19.state = 4w \/ s19.state = 5w \/ s19.state = 6w` >> fs [] >>
   Cases_on `(fext (SUC n)).ready` >> fs [] >>
   Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
-            s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s19.EX.EX_isAcc` >> fs [] >>
+            s''.MEM.MEM_opc = 8w \/ s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
   Cases_on `s19.EX.EX_jump_sel` >> fs []
 QED
 
-(** IF is disabled then ID flags are F **)
-Theorem agp32_IF_disable_ID_disable:
+(** IF_PC_write_enable and ID_ID_write_enable **)
+Theorem agp32_IF_PC_write_enable_and_ID_ID_write_enable:
   !fext fbits t.
-    ~(agp32 fext fbits t).IF.IF_PC_write_enable ==>
-    ~(agp32 fext fbits t).ID.ID_ID_write_enable
+    (agp32 fext fbits t).IF.IF_PC_write_enable =
+    (agp32 fext fbits t).ID.ID_ID_write_enable
 Proof
   rw [] >>
   `?s s'.
@@ -293,85 +257,33 @@ Proof
   ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
   fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs [] >>
   Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
- Cases_on `s'.EX.EX_jump_sel` >> fs []
-QED
-
-(** When IF is enabled and ID is disabled, ID_flush_flag is T **)
-Theorem agp32_IF_enable_ID_disable_imply_ID_flush_flag:
-  !fext fbits t.
-    (agp32 fext fbits t).IF.IF_PC_write_enable ==>
-    ~(agp32 fext fbits t).ID.ID_ID_write_enable ==>
-    (agp32 fext fbits t).ID.ID_flush_flag
-Proof
-  rw [] >>
-  `?s s'.
-  ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable) /\
-  ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable) /\
-  ((agp32 fext fbits t).ID.ID_flush_flag <=> (Hazard_ctrl (fext t) s s').ID.ID_flush_flag)`
-    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
- Cases_on `s'.EX.EX_jump_sel` >> fs []
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
 
 (* ID_ID_write_enable *)
-(* ID_ID_write_enable, ID_EX_write_enable and ID_flush_flag, EX_NOP_flag *)
-Theorem agp32_ID_enable_flags_imply_flush_NOP_flags:
+(** ID_ID_write_enable and ID_EX_write_enable **)
+Theorem agp32_ID_ID_write_enable_eq_ID_EX_write_enable:
   !fext fbits t.
-    ~((agp32 fext fbits t).ID.ID_ID_write_enable) ==>
-    (agp32 fext fbits t).ID.ID_EX_write_enable ==>
-    (agp32 fext fbits t).ID.ID_flush_flag /\
-    (agp32 fext fbits t).EX.EX_NOP_flag
+    (agp32 fext fbits t).ID.ID_ID_write_enable =
+    (agp32 fext fbits t).ID.ID_EX_write_enable
 Proof
   rw [] >>
   `?s s'.
   ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable) /\
-  ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable) /\
-  ((agp32 fext fbits t).ID.ID_flush_flag <=> (Hazard_ctrl (fext t) s s').ID.ID_flush_flag) /\
-  ((agp32 fext fbits t).EX.EX_NOP_flag <=> (Hazard_ctrl (fext t) s s').EX.EX_NOP_flag)`
-    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
+  ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable)`
+    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
   fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs [] >>
   Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs []
-QED
-
-(* ID_ID_write_enable, MEM_state_flag and ID_EX_write_enable *)
-Theorem agp32_ID_disable_MEM_state_flag_F_imply_ID_EX_write_disable:
-  !fext fbits t.
-    ~(agp32 fext fbits t).ID.ID_ID_write_enable ==>
-    ~(agp32 fext fbits t).MEM.MEM_state_flag ==>
-    ~(agp32 fext fbits t).ID.ID_EX_write_enable
-Proof
-  rw [] >>
-  `?s s'.
-  ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable) /\
-  ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable) /\
-  ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
-    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
   Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
@@ -386,30 +298,9 @@ Proof
   ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
   fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs []
-QED
-
-(** ID_ID_write_enable and ID_EX_write_enable **)
-Theorem agp32_ID_ID_write_enable_ID_EX_write_enable:
-  !fext fbits t.
-    (agp32 fext fbits t).ID.ID_ID_write_enable ==>
-    (agp32 fext fbits t).ID.ID_EX_write_enable
-Proof
-  rw [] >>
-  `?s s'.
-  ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable) /\
-  ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable)`
-    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
 (** ID_ID_write_enable and MEM_state_flag **)
@@ -424,12 +315,11 @@ Proof
   ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
   fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs [] >>
   Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
   Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
@@ -445,13 +335,42 @@ Proof
   ((agp32 fext fbits t).WB.WB_state_flag <=> (Hazard_ctrl (fext t) s s').WB.WB_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
   fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs [] >>
   Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
   Cases_on `s'.EX.EX_jump_sel` >> fs []
+QED
+
+(** ID_ID_write_enable and ID_flush_flag, then there is a jump **)
+Theorem agp32_ID_ID_write_enable_flush_flag_then_EX_jump_sel:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_ID_write_enable ==>
+    (agp32 fext fbits t).ID.ID_flush_flag ==>
+    (agp32 fext fbits t).EX.EX_jump_sel
+Proof
+  rw [] >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (clist_update_state_tac >>
+    fs [Abbr `s20`,Hazard_ctrl_def] >>
+    Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 3w \/
+              s19.state = 4w \/ s19.state = 5w \/ s19.state = 6w` >> fs [] >>
+    Cases_on `(fext 0).ready` >> fs [] >>
+    Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
+              (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
+              (agp32_init fbits).MEM.MEM_opc = 8w \/ (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
+    Cases_on `s19.EX.EX_jump_sel` >> fs []) >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Hazard_ctrl_def] >>
+  Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 3w \/
+            s19.state = 4w \/ s19.state = 5w \/ s19.state = 6w` >> fs [] >>
+  Cases_on `(fext (SUC n)).ready` >> fs [] >>
+  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
+            s''.MEM.MEM_opc = 8w \/ s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s19.EX.EX_jump_sel` >> fs []
 QED
 
 
@@ -468,12 +387,11 @@ Proof
   ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
   fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 3w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
   Cases_on `(fext t).ready` >> fs [] >>
   Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_isAcc` >> fs [] >>
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
   Cases_on `s'.EX.EX_jump_sel` >> fs []
 QED
 
@@ -644,22 +562,18 @@ Proof
   rpt disch_tac >>
   Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
    (Cases_on `isJump_isa_op (I' (3,t)) a` >-
-     (Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
-       (fs [is_sch_fetch_def,is_sch_decode_def] >> METIS_TAC []) >>
-      `(agp32 fext fbits t).ID.ID_flush_flag`
-        by fs [enable_stg_def,agp32_IF_enable_ID_disable_imply_ID_flush_flag] >>
-      fs [is_sch_disable_ID_def] >> METIS_TAC []) >>
+     (`enable_stg 2 (agp32 fext fbits t)`
+        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
+      fs [is_sch_fetch_def,is_sch_decode_def] >> METIS_TAC []) >>
     Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a \/
     I' (1,t) = NONE \/ THE (I' (1,t)) = 0` >-
      (fs [is_sch_fetch_def] >> METIS_TAC []) >>
-    Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
-     fs [is_sch_fetch_def,is_sch_decode_def] >>
-    `(agp32 fext fbits t).ID.ID_flush_flag`
-      by fs [enable_stg_def,agp32_IF_enable_ID_disable_imply_ID_flush_flag] >>                    
-    fs [is_sch_disable_ID_def] >> METIS_TAC []) >>
-  `~enable_stg 2 (agp32 fext fbits t)` by fs [enable_stg_def,agp32_IF_disable_ID_disable] >>
-  fs [is_sch_disable_ID_def,is_sch_disable_def] >>
-  Cases_on `(agp32 fext fbits t).ID.ID_flush_flag` >>
+    `enable_stg 2 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
+    fs [is_sch_fetch_def,is_sch_decode_def]) >>
+  `~enable_stg 2 (agp32 fext fbits t)`
+    by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
+  fs [is_sch_disable_def] >>
   METIS_TAC []
 QED
 
@@ -678,7 +592,7 @@ Proof
   Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
    (Cases_on `isJump_isa_op (I' (3,t)) a` >-
      (`enable_stg 3 (agp32 fext fbits t)`
-        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_EX_write_enable] >>
       fs [is_sch_def,is_sch_fetch_def,is_sch_execute_def] >>
       METIS_TAC []) >>
     Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a \/
@@ -686,16 +600,14 @@ Proof
      (fs [is_sch_def,is_sch_fetch_def,is_sch_execute_def] >> METIS_TAC []) >>
     fs [] >>
     `enable_stg 3 (agp32 fext fbits t)`
-      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
-    Cases_on `isAcc_isa_op (I' (3,t)) a` >-
-     (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_EX_write_enable] >>
     `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >> fs [] >>
     `(THE (I' (1,t)) > THE (I' (2,t))) /\ (THE (I' (1,t)) < THE (I' (2,t)) + 2)`
       by METIS_TAC [IF_instr_index_with_ID_instr] >> fs [is_sch_def,is_sch_fetch_def]) >>
   `~enable_stg 3 (agp32 fext fbits t)`
-    by fs [enable_stg_def,agp32_IF_PC_write_disable_and_EX_disable] >>
+    by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_EX_write_enable] >>
   fs [is_sch_def,is_sch_disable_def] >>
-  `1 <> 2 /\ 3 <> 2` by rw [] >> METIS_TAC []
+  METIS_TAC []
 QED
 
 (** instr index relation between IF and MEM stages **)
@@ -713,7 +625,7 @@ Proof
   Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
    (Cases_on `isJump_isa_op (I' (3,t)) a` >-
      (`enable_stg 4 (agp32 fext fbits t)`
-        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_MEM_flag] >>
       fs [is_sch_def,is_sch_fetch_def,is_sch_memory_def] >>
       Cases_on `isMemOp_isa_op (I' (4,t)) a` >> fs [] >>
       METIS_TAC []) >>
@@ -722,7 +634,7 @@ Proof
      (fs [is_sch_def,is_sch_fetch_def,is_sch_execute_def] >> METIS_TAC []) >>
     fs [] >>
     `enable_stg 4 (agp32 fext fbits t)`
-      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_MEM_flag] >>
     Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
      (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
     `I' (4,SUC t) = I' (3,t)` by fs [is_sch_def,is_sch_memory_def] >> fs [] >>
@@ -756,17 +668,12 @@ Proof
      (fs [is_sch_def,is_sch_decode_def] >> METIS_TAC []) >>
     `I' (2,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_decode_def] >>
     `enable_stg 3 (agp32 fext fbits t)`
-      by fs [enable_stg_def,agp32_ID_ID_write_enable_ID_EX_write_enable] >>
-    Cases_on `isAcc_isa_op (I' (3,t)) a` >-
-     (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
     `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >>
     METIS_TAC [IF_instr_index_with_ID_instr]) >>
-  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
-   (`(agp32 fext fbits t).ID.ID_flush_flag`
-      by fs [enable_stg_def,agp32_ID_enable_flags_imply_flush_NOP_flags] >>
-    fs [is_sch_def,is_sch_disable_ID_def] >> METIS_TAC []) >>
-  `I' (2,SUC t) = I' (2,t) /\ I' (3,SUC t) = I' (3,t)`
-    by METIS_TAC [is_sch_def,is_sch_disable_ID_def,is_sch_disable_def] >> fs []
+  `~enable_stg 3 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
+  fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
 QED
 
 (** instr index relation between ID and MEM stages **)
@@ -792,16 +699,13 @@ Proof
     `I' (4,SUC t) = I' (3,t)` by fs [is_sch_def,is_sch_memory_def] >> fs [] >>
     METIS_TAC [IF_instr_index_with_EX_instr]) >>
   Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
-   (Cases_on `(agp32 fext fbits t).ID.ID_flush_flag` >-
-     (fs [is_sch_def,is_sch_disable_ID_def] >> METIS_TAC []) >>
-    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
+   (Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
      (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
     `I' (2,SUC t) = I' (2,t) /\ I' (4,SUC t) = I' (3,t)`
-      by fs [is_sch_def,is_sch_memory_def,is_sch_disable_ID_def] >> fs [] >>
+      by fs [is_sch_def,is_sch_memory_def,is_sch_disable_def] >> fs [] >>
     `(THE (I' (2,t)) > THE (I' (3,t))) /\ (THE (I' (2,t)) < THE (I' (3,t)) + 2)`
       by METIS_TAC [ID_instr_index_with_EX_instr] >> fs []) >>
-  `I' (2,SUC t) = I' (2,t) /\ I' (4,SUC t) = I' (4,t)`
-    by METIS_TAC [is_sch_def,is_sch_disable_ID_def,is_sch_disable_def] >> fs []
+  fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
 QED
 
 (** instr index relation between EX and MEM stages **)
@@ -817,7 +721,7 @@ Proof
    fs [is_sch_def,is_sch_init_def] >>
   rpt disch_tac >>
   Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
-   (Cases_on `isJump_isa_op (I' (3,t)) a \/ isAcc_isa_op (I' (3,t)) a` >-
+   (Cases_on `isJump_isa_op (I' (3,t)) a` >-
      (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
     `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >> fs [] >>
     `enable_stg 4 (agp32 fext fbits t)`
@@ -835,6 +739,62 @@ Proof
   `I' (3,SUC t) = I' (3,t) /\ I' (4,SUC t) = I' (4,t)` by fs [] >> fs []
 QED
 
+(** I (1,t) = I (2,t) + 1 **)
+Theorem IF_instr_index_with_ID_instr_plus_1:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (1,t) <> NONE ==>
+    I (2,t) <> NONE ==>
+    THE (I (1,t)) = THE (I (2,t)) + 1
+Proof
+  rw [] >>
+  `(THE (I' (1,t)) > THE (I' (2,t))) /\ (THE (I' (1,t)) < THE (I' (2,t)) + 2)`
+    by METIS_TAC [IF_instr_index_with_ID_instr] >> fs []
+QED
+
+(** I (2,t) = I (3,t) + 1 **)
+Theorem ID_instr_index_with_EX_instr_plus_1:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (2,t) <> NONE ==>
+    I (3,t) <> NONE ==>
+    THE (I (2,t)) = THE (I (3,t)) + 1
+Proof
+  rw [] >>
+  `(THE (I' (2,t)) > THE (I' (3,t))) /\ (THE (I' (2,t)) < THE (I' (3,t)) + 2)`
+    by METIS_TAC [ID_instr_index_with_EX_instr] >> fs []
+QED
+
+(** I (3,SUC t) = I (3,t) + 1 **)
+Theorem EX_instr_index_t_SUC_t_enable:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    enable_stg 3 (agp32 fext fbits t) ==>
+    I (3,t) <> NONE ==>
+    I (3,SUC t) <> NONE ==>
+    THE (I (3,SUC t)) = THE (I (3,t)) + 1
+Proof
+  rw [] >> Cases_on `isJump_isa_op (I' (3,t)) a` >-
+   (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
+  `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >> fs [] >>
+  METIS_TAC [ID_instr_index_with_EX_instr_plus_1]
+QED
+
+(** I (3,t) = I (4,t) \/ (I (4,t) + 1) **)
+Theorem EX_instr_index_with_MEM_instr_plus_1:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (3,t) <> NONE ==>
+    I (4,t) <> NONE ==>
+    (THE (I (3,t)) = THE (I (4,t)) + 1) \/ (THE (I (3,t)) = THE (I (4,t)))
+Proof
+  rw [] >>
+  `(THE (I' (3,t)) >= THE (I' (4,t))) /\ (THE (I' (3,t)) < THE (I' (4,t)) + 2)`
+    by METIS_TAC [EX_instr_index_with_MEM_instr] >> fs []
+QED
+
+
+(*
 (** instr index relation when IF and EX stages are not NONE then ID is NOT NONE **)
 Theorem IF_EX_instr_NOT_NONE_ID_NOT_NONE:
   !I t fext fbits a.
@@ -864,6 +824,8 @@ Proof
     `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >> fs [] >>
     Cases_on `(agp32 fext fbits t).ID.ID_flush_flag` >-
      (`(agp32 fext fbits t).EX.EX_jump_sel` by cheat >>
+      `reg_data_vaild 3 (agp32 fext fbits t)`
+        by fs [reg_data_vaild_def,enable_stg_def,agp32_IF_PC_write_enable_and_EX_MEM_flags] >>
       `isJump_isa_op (I' (3,t)) a` by cheat >> fs []) >>
     fs [is_sch_def,is_sch_disable_ID_def]) >>
   `~enable_stg 3 (agp32 fext fbits t)`
@@ -916,60 +878,7 @@ Proof
   `I' (2,SUC t) = I' (2,t) /\ I' (3,SUC t) = I' (3,t) /\ I' (4,SUC t) = I' (4,t)`
     by METIS_TAC [is_sch_def,is_sch_disable_ID_def,is_sch_disable_def] >> fs []
 QED
-
-(** I (1,t) = I (2,t) + 1 **)
-Theorem IF_instr_index_with_ID_instr_plus_1:
-  !I t fext fbits a.
-    is_sch I (agp32 fext fbits) a ==>
-    I (1,t) <> NONE ==>
-    I (2,t) <> NONE ==>
-    THE (I (1,t)) = THE (I (2,t)) + 1
-Proof
-  rw [] >>
-  `(THE (I' (1,t)) > THE (I' (2,t))) /\ (THE (I' (1,t)) < THE (I' (2,t)) + 2)`
-    by METIS_TAC [IF_instr_index_with_ID_instr] >> fs []
-QED
-
-(** I (2,t) = I (3,t) + 1 **)
-Theorem ID_instr_index_with_EX_instr_plus_1:
-  !I t fext fbits a.
-    is_sch I (agp32 fext fbits) a ==>
-    I (2,t) <> NONE ==>
-    I (3,t) <> NONE ==>
-    THE (I (2,t)) = THE (I (3,t)) + 1
-Proof
-  rw [] >>
-  `(THE (I' (2,t)) > THE (I' (3,t))) /\ (THE (I' (2,t)) < THE (I' (3,t)) + 2)`
-    by METIS_TAC [ID_instr_index_with_EX_instr] >> fs []
-QED
-
-(** I (3,SUC t) = I (3,t) + 1 **)
-Theorem EX_instr_index_t_SUC_t_enable:
-  !I t fext fbits a.
-    is_sch I (agp32 fext fbits) a ==>
-    enable_stg 3 (agp32 fext fbits t) ==>
-    I (3,t) <> NONE ==>
-    I (3,SUC t) <> NONE ==>
-    THE (I (3,SUC t)) = THE (I (3,t)) + 1
-Proof
-  rw [] >> Cases_on `isJump_isa_op (I' (3,t)) a \/ isAcc_isa_op (I' (3,t)) a` >-
-   (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
-  `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >> fs [] >>
-  METIS_TAC [ID_instr_index_with_EX_instr_plus_1]
-QED
-
-(** I (3,t) = I (4,t) \/ (I (4,t) + 1) **)
-Theorem EX_instr_index_with_MEM_instr_plus_1:
-  !I t fext fbits a.
-    is_sch I (agp32 fext fbits) a ==>
-    I (3,t) <> NONE ==>
-    I (4,t) <> NONE ==>
-    (THE (I (3,t)) = THE (I (4,t)) + 1) \/ (THE (I (3,t)) = THE (I (4,t)))
-Proof
-  rw [] >>
-  `(THE (I' (3,t)) >= THE (I' (4,t))) /\ (THE (I' (3,t)) < THE (I' (4,t)) + 2)`
-    by METIS_TAC [EX_instr_index_with_MEM_instr] >> fs []
-QED
+*)
  
 (* TODO: when IF/ID/EX are enabled, WB must be enabled as well
 (** instr index relation between ID and WB stages **)

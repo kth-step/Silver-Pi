@@ -136,7 +136,6 @@ End
 Definition EX_ctrl_update_def:
   EX_ctrl_update (fext:ext) s s' =
   if s'.ID.ID_EX_write_enable then
-    let s' = s' with EX := s'.EX with EX_isAcc := (s.EX.EX_opc = 8w) in
       s' with EX := s'.EX with EX_PC_sel := if s.EX.EX_opc = 9w then 1w
                                             else if s.EX.EX_opc = 10w then 2w
                                             else if s.EX.EX_opc = 11w then 3w
@@ -280,7 +279,8 @@ Definition MEM_ctrl_update_def:
   if s'.MEM.MEM_state_flag \/ s.MEM.MEM_enable then
     let s' = s' with MEM := s'.MEM with MEM_read_mem := (s.MEM.MEM_opc = 4w \/ s.MEM.MEM_opc = 5w);
         s' = s' with MEM := s'.MEM with MEM_write_mem := (s.MEM.MEM_opc = 2w);
-        s' = s' with MEM := s'.MEM with MEM_write_mem_byte := (s.MEM.MEM_opc = 3w) in
+        s' = s' with MEM := s'.MEM with MEM_write_mem_byte := (s.MEM.MEM_opc = 3w);
+        s' = s' with MEM := s'.MEM with MEM_isAcc := (s.MEM.MEM_opc = 8w) in
       s' with MEM := s'.MEM with MEM_isInterrupt := (s.MEM.MEM_opc = 12w)
   else s'
 End
@@ -328,16 +328,8 @@ Theorem WB_update_trans = REWRITE_RULE [MUX_41_def,MUX_81_def] WB_update_def
 (** hazard handling **)
 Definition Hazard_ctrl_def:
   Hazard_ctrl fext s s' =
-  if s'.state = 3w \/ s'.state = 5w then
-    let s' = s' with IF := s'.IF with IF_PC_write_enable := F;
-        s' = s' with ID := s'.ID with ID_ID_write_enable := F;
-        s' = s' with ID := s'.ID with ID_flush_flag := T;
-        s' = s' with ID := s'.ID with ID_EX_write_enable := F;
-        s' = s' with EX := s'.EX with EX_NOP_flag := F;
-        s' = s' with MEM := s'.MEM with MEM_state_flag := F;
-        s' = s' with MEM := s'.MEM with MEM_NOP_flag := F in
-    s' with WB := s'.WB with WB_state_flag := F
-  else if s'.state = 1w \/ s'.state = 2w \/ s'.state = 4w \/ s'.state = 6w then
+  if s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/ 
+     s'.state = 5w \/ s'.state = 4w \/ s'.state = 6w then
     let s' = s' with IF := s'.IF with IF_PC_write_enable := F;
         s' = s' with ID := s'.ID with ID_ID_write_enable := F;
         s' = s' with ID := s'.ID with ID_flush_flag := F;
@@ -356,27 +348,18 @@ Definition Hazard_ctrl_def:
         s' = s' with MEM := s'.MEM with MEM_NOP_flag := F in
     s' with WB := s'.WB with WB_state_flag := F
   else if s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-          s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 12w then
+          s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w then
     let s' = s' with IF := s'.IF with IF_PC_write_enable := F;
         s' = s' with ID := s'.ID with ID_ID_write_enable := F;
         s' = s' with ID := s'.ID with ID_flush_flag := F;
         s' = s' with ID := s'.ID with ID_EX_write_enable := F;
         s' = s' with EX := s'.EX with EX_NOP_flag := F;
-        s' = s' with MEM := s'.MEM with MEM_state_flag := F;
-        s' = s' with MEM := s'.MEM with MEM_NOP_flag := T in
-    s' with WB := s'.WB with WB_state_flag := T
-  else if s'.EX.EX_isAcc then
-    let s' = s' with IF := s'.IF with IF_PC_write_enable := F;
-        s' = s' with ID := s'.ID with ID_ID_write_enable := F;
-        s' = s' with ID := s'.ID with ID_flush_flag := F;
-        s' = s' with ID := s'.ID with ID_EX_write_enable := F;
-        s' = s' with EX := s'.EX with EX_NOP_flag := T;
         s' = s' with MEM := s'.MEM with MEM_state_flag := T;
-        s' = s' with MEM := s'.MEM with MEM_NOP_flag := F in
+        s' = s' with MEM := s'.MEM with MEM_NOP_flag := T in
     s' with WB := s'.WB with WB_state_flag := T
   else if s'.EX.EX_jump_sel then
     let s' = s' with IF := s'.IF with IF_PC_write_enable := T;
-        s' = s' with ID := s'.ID with ID_ID_write_enable := F;
+        s' = s' with ID := s'.ID with ID_ID_write_enable := T;
         s' = s' with ID := s'.ID with ID_flush_flag := T;
         s' = s' with ID := s'.ID with ID_EX_write_enable := T;
         s' = s' with EX := s'.EX with EX_NOP_flag := T;
@@ -458,9 +441,7 @@ Definition ID_pipeline_def:
   ID_pipeline (fext:ext) s s' =
   if s'.ID.ID_ID_write_enable then
     let s' = s' with ID := s'.ID with ID_PC := s.PC in
-    s' with ID := s'.ID with ID_instr := s'.IF.IF_instr
-  else if s'.ID.ID_flush_flag then
-    s' with ID := s'.ID with ID_instr := 0x0000003Fw
+    s' with ID := s'.ID with ID_instr := if s'.ID.ID_flush_flag then 0x0000003Fw else s'.IF.IF_instr
   else s'
 End
 
@@ -496,27 +477,22 @@ End
 (** memory: EX -> MEM **)
 Definition MEM_pipeline_def:
   MEM_pipeline (fext:ext) s s' =
-  let s' = (if s'.MEM.MEM_state_flag \/ s.MEM.MEM_enable then
-              let s' = s' with MEM := s'.MEM with MEM_PC := s.EX.EX_PC;
-                  s' = s' with MEM := s'.MEM with MEM_dataA := s'.EX.EX_dataA_rec;
-                  s' = s' with MEM := s'.MEM with MEM_dataB := s'.EX.EX_dataB_rec;
-                  s' = s' with MEM := s'.MEM with MEM_dataW := s'.EX.EX_dataW_rec;
-                  s' = s' with MEM := s'.MEM with MEM_imm := s.EX.EX_imm;
-                  s' = s' with MEM := s'.MEM with MEM_ALU_res := s'.EX.EX_ALU_res;
-                  s' = s' with MEM := s'.MEM with MEM_SHIFT_res := s'.EX.EX_SHIFT_res;
-                  s' = s' with MEM := s'.MEM with MEM_write_enable := T;
-                  s' = s' with MEM := s'.MEM with MEM_addrW := s.EX.EX_addrW;
-                  s' = s' with MEM := s'.MEM with MEM_opc := s.EX.EX_opc in
-                s' with MEM := s'.MEM with MEM_write_reg :=
-                ((s.EX.EX_opc = 0w) \/ (s.EX.EX_opc = 1w) \/ (s.EX.EX_opc = 4w) \/
-                (s.EX.EX_opc = 5w) \/ (s.EX.EX_opc = 6w) \/ (s.EX.EX_opc = 7w) \/
-                (s.EX.EX_opc = 8w) \/ (s.EX.EX_opc = 9w) \/ (s.EX.EX_opc = 13w) \/
-                (s.EX.EX_opc = 14w))
-            else
-              s' with MEM := s'.MEM with MEM_write_enable := F) in
-    if s'.MEM.MEM_NOP_flag then
-      s' with MEM := s'.MEM with MEM_opc := 16w
-    else s'
+  if s'.MEM.MEM_state_flag \/ s.MEM.MEM_enable then
+    let s' = s' with MEM := s'.MEM with MEM_PC := s.EX.EX_PC;
+        s' = s' with MEM := s'.MEM with MEM_dataA := s'.EX.EX_dataA_rec;
+        s' = s' with MEM := s'.MEM with MEM_dataB := s'.EX.EX_dataB_rec;
+        s' = s' with MEM := s'.MEM with MEM_dataW := s'.EX.EX_dataW_rec;
+        s' = s' with MEM := s'.MEM with MEM_imm := s.EX.EX_imm;
+        s' = s' with MEM := s'.MEM with MEM_ALU_res := s'.EX.EX_ALU_res;
+        s' = s' with MEM := s'.MEM with MEM_SHIFT_res := s'.EX.EX_SHIFT_res;
+        s' = s' with MEM := s'.MEM with MEM_write_enable := T;
+        s' = s' with MEM := s'.MEM with MEM_addrW := s.EX.EX_addrW;
+        s' = s' with MEM := s'.MEM with MEM_opc := if s'.MEM.MEM_NOP_flag then 16w else s.EX.EX_opc in
+      s' with MEM := s'.MEM with MEM_write_reg := ((s.EX.EX_opc = 0w) \/ (s.EX.EX_opc = 1w) \/ (s.EX.EX_opc = 4w) \/
+                                                   (s.EX.EX_opc = 5w) \/ (s.EX.EX_opc = 6w) \/ (s.EX.EX_opc = 7w) \/
+                                                   (s.EX.EX_opc = 8w) \/ (s.EX.EX_opc = 9w) \/ (s.EX.EX_opc = 13w) \/
+                                                   (s.EX.EX_opc = 14w))
+  else s' with MEM := s'.MEM with MEM_write_enable := F
 End
 
 (** write back: MEM -> WB **)
@@ -573,10 +549,10 @@ Definition agp32_next_state_def:
                | 1w => s' with data_wdata := bit_field_insert 15 8 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
                | 2w => s' with data_wdata := bit_field_insert 23 16 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
                | 3w => s' with data_wdata := bit_field_insert 31 24 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
-              else if s'.EX.EX_isAcc then
+              else if s'.MEM.MEM_isAcc then
                 let s' = s' with state := 2w;
                     s' = s' with command := 0w;
-                s' = s' with acc_arg := s'.EX.EX_dataA_updated in
+                    s' = s' with acc_arg := s.MEM.MEM_dataA in
                   s' with acc_arg_ready := T
               else s' with command := 1w)
     | 1w => (let s' = if fext.ready /\ s.command = 0w then

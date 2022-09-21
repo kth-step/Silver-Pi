@@ -85,7 +85,6 @@ logic[31:0] EX_SHIFT_res = 'x;
 logic EX_addrA_disable = 'x;
 logic EX_addrB_disable = 'x;
 logic EX_addrW_disable = 'x;
-logic EX_isAcc = 'x;
 logic EX_NOP_flag = 'x;
 logic EX_compute_enable = 'x;
 logic[1:0] EX_PC_sel = 2'd0;
@@ -112,6 +111,7 @@ logic MEM_read_mem = 'x;
 logic MEM_write_mem = 'x;
 logic MEM_write_mem_byte = 'x;
 logic MEM_write_reg = 0;
+logic MEM_isAcc = 'x;
 logic MEM_isInterrupt = 'x;
 logic MEM_state_flag = 'x;
 logic MEM_NOP_flag = 'x;
@@ -153,6 +153,7 @@ if (MEM_state_flag || MEM_enable) begin
 MEM_read_mem = (MEM_opc == 6'd4) || (MEM_opc == 6'd5);
 MEM_write_mem = MEM_opc == 6'd2;
 MEM_write_mem_byte = MEM_opc == 6'd3;
+MEM_isAcc = MEM_opc == 6'd8;
 MEM_isInterrupt = MEM_opc == 6'd12;
 end
 end
@@ -263,7 +264,6 @@ end
 
 always_comb begin
 if (ID_EX_write_enable) begin
-EX_isAcc = EX_opc == 6'd8;
 EX_PC_sel = (EX_opc == 6'd9) ? 2'd1 : ((EX_opc == 6'd10) ? 2'd2 : ((EX_opc == 6'd11) ? 2'd3 : 2'd0));
 end
 end
@@ -365,17 +365,7 @@ EX_ForwardA = ((EX_addrA == MEM_addrW) && (MEM_write_reg && (((MEM_opc == 6'd4) 
 end
 
 always_comb begin
-if ((state == 3'd3) || (state == 3'd5)) begin
-IF_PC_write_enable = 0;
-ID_ID_write_enable = 0;
-ID_flush_flag = 1;
-ID_EX_write_enable = 0;
-EX_NOP_flag = 0;
-MEM_state_flag = 0;
-MEM_NOP_flag = 0;
-WB_state_flag = 0;
-end else begin
-if ((state == 3'd1) || ((state == 3'd2) || ((state == 3'd4) || (state == 3'd6)))) begin
+if ((state == 3'd1) || ((state == 3'd2) || ((state == 3'd3) || ((state == 3'd5) || ((state == 3'd4) || (state == 3'd6)))))) begin
 IF_PC_write_enable = 0;
 ID_ID_write_enable = 0;
 ID_flush_flag = 0;
@@ -395,29 +385,19 @@ MEM_state_flag = 0;
 MEM_NOP_flag = 0;
 WB_state_flag = 0;
 end else begin
-if ((MEM_opc == 6'd2) || ((MEM_opc == 6'd3) || ((MEM_opc == 6'd4) || ((MEM_opc == 6'd5) || (MEM_opc == 6'd12))))) begin
+if ((MEM_opc == 6'd2) || ((MEM_opc == 6'd3) || ((MEM_opc == 6'd4) || ((MEM_opc == 6'd5) || ((MEM_opc == 6'd8) || (MEM_opc == 6'd12)))))) begin
 IF_PC_write_enable = 0;
 ID_ID_write_enable = 0;
 ID_flush_flag = 0;
 ID_EX_write_enable = 0;
 EX_NOP_flag = 0;
-MEM_state_flag = 0;
-MEM_NOP_flag = 1;
-WB_state_flag = 1;
-end else begin
-if (EX_isAcc) begin
-IF_PC_write_enable = 0;
-ID_ID_write_enable = 0;
-ID_flush_flag = 0;
-ID_EX_write_enable = 0;
-EX_NOP_flag = 1;
 MEM_state_flag = 1;
-MEM_NOP_flag = 0;
+MEM_NOP_flag = 1;
 WB_state_flag = 1;
 end else begin
 if (EX_jump_sel) begin
 IF_PC_write_enable = 1;
-ID_ID_write_enable = 0;
+ID_ID_write_enable = 1;
 ID_flush_flag = 1;
 ID_EX_write_enable = 1;
 EX_NOP_flag = 1;
@@ -438,8 +418,6 @@ end
 end
 end
 end
-end
-end
 
 always_ff @ (posedge clk) begin
 if (IF_PC_write_enable) begin
@@ -450,11 +428,7 @@ end
 always_ff @ (posedge clk) begin
 if (ID_ID_write_enable) begin
 ID_PC <= PC;
-ID_instr = IF_instr;
-end else begin
-if (ID_flush_flag) begin
-ID_instr = 32'd63;
-end
+ID_instr = ID_flush_flag ? 32'd63 : IF_instr;
 end
 end
 
@@ -493,13 +467,10 @@ MEM_ALU_res <= EX_ALU_res;
 MEM_SHIFT_res <= EX_SHIFT_res;
 MEM_write_enable <= 1;
 MEM_addrW <= EX_addrW;
-MEM_opc <= EX_opc;
+MEM_opc <= MEM_NOP_flag ? 6'd16 : EX_opc;
 MEM_write_reg = (EX_opc == 6'd0) || ((EX_opc == 6'd1) || ((EX_opc == 6'd4) || ((EX_opc == 6'd5) || ((EX_opc == 6'd6) || ((EX_opc == 6'd7) || ((EX_opc == 6'd8) || ((EX_opc == 6'd9) || ((EX_opc == 6'd13) || (EX_opc == 6'd14)))))))));
 end else begin
 MEM_write_enable <= 0;
-end
-if (MEM_NOP_flag) begin
-MEM_opc <= 6'd16;
 end
 end
 
@@ -556,10 +527,10 @@ case (MEM_dataB[1:0])
 2'd3 : data_wdata[31:24] <= MEM_dataA[7:0];
 endcase
 end else begin
-if (EX_isAcc) begin
+if (MEM_isAcc) begin
 state = 3'd2;
 command <= 3'd0;
-acc_arg <= EX_dataA_updated;
+acc_arg <= MEM_dataA;
 acc_arg_ready <= 1;
 end else begin
 command <= 3'd1;

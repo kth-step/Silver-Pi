@@ -66,7 +66,6 @@ Datatype:
                  EX_addrA_disable: bool;
                  EX_addrB_disable: bool;
                  EX_addrW_disable: bool;
-                 EX_isAcc: bool;
                  EX_NOP_flag: bool;
                  EX_compute_enable: bool;
                  EX_PC_sel: word2;
@@ -97,7 +96,8 @@ Datatype:
                   MEM_read_mem: bool;            
                   MEM_write_mem: bool;              
                   MEM_write_mem_byte: bool;                
-                  MEM_write_reg: bool;            
+                  MEM_write_reg: bool;
+                  MEM_isAcc: bool;
                   MEM_isInterrupt: bool;          
                   MEM_state_flag: bool;
                   MEM_NOP_flag: bool;             

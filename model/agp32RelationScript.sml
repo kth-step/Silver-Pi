@@ -235,7 +235,6 @@ Definition EX_Rel_def:
    (s.EX.EX_ALU_input2 = ALU_input2 (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_ALU_res = ALU_res (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_SHIFT_res = shift_res (FUNPOW Next (i-1) a)) /\
-   (s.EX.EX_opc = 8w <=> s.EX.EX_isAcc) /\
    (s.EX.EX_opc = 9w ==> s.EX.EX_PC_sel = 1w) /\
    (s.EX.EX_opc = 10w ==> s.EX.EX_PC_sel = 2w) /\
    (s.EX.EX_opc = 11w ==> s.EX.EX_PC_sel = 3w) /\
@@ -267,6 +266,7 @@ Definition MEM_Rel_def:
    (s.MEM.MEM_read_mem = mem_isread (FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_write_mem = mem_iswrite (FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_write_mem_byte = mem_iswrite_byte (FUNPOW Next (i-1) a)) /\
+   (s.MEM.MEM_isAcc = isAcc_isa(FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_isInterrupt = isinterrupt (FUNPOW Next (i-1) a)) /\
    (s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
    (s.data_wstrb = mem_data_wstrb (FUNPOW Next (i-1) a)) /\
@@ -367,11 +367,10 @@ End
 Definition is_sch_execute_def:
   is_sch_execute (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   (!t. enable_stg 3 (sf t) ==>
-       (isJump_isa_op (I (3,t)) a \/ isAcc_isa_op (I (3,t)) a) ==>
+       isJump_isa_op (I (3,t)) a ==>
        I (3,SUC t) = NONE) /\
   (!t. enable_stg 3 (sf t) ==>
        ~isJump_isa_op (I (3,t)) a ==>
-       ~isAcc_isa_op (I (3,t)) a ==>
        I (3,SUC t) = I (2,t))
 End
 

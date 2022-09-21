@@ -29,4 +29,5 @@ Since we need the ALU to compute the jump target for Jump and condition result f
 TO remember: check similar ISAs like Silver that require the computations from stages later than ID (i.e., jumps cannot be issued from the ID stage).
 Example: RISV-V RV32I (instr:JALR). ARMv8-A (B.<cond> <label>).
 
-4. (TODO) More the Acc from EX to the MEM stage. (would simplify our proof and circuit).
+4. Move the Acc from EX to the MEM stage.
+EX stage only handles ALU and shift computations, and MEM can handle the instructions that require the response from the external components, like memory and accelerator.

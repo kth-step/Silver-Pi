@@ -391,13 +391,7 @@ End
 
 Definition is_sch_disable_def:
   is_sch_disable (I:num # num -> num option) (sf:num -> state_circuit) =
-  (!t k. ~enable_stg k (sf t) ==> k <> 2 ==> I (k,SUC t) = I (k,t))
-End
-
-Definition is_sch_disable_ID_def:
-  is_sch_disable_ID (I:num # num -> num option) (sf:num -> state_circuit) <=>
-  (!t. (~enable_stg 2 (sf t) ==> (sf t).ID.ID_flush_flag ==> I (2,SUC t) = NONE) /\
-       (~enable_stg 2 (sf t) ==> ~(sf t).ID.ID_flush_flag ==> I (2,SUC t) = I (2,t)))
+  (!t k. ~enable_stg k (sf t) ==> I (k,SUC t) = I (k,t))
 End
 
 Definition is_sch_def:
@@ -408,8 +402,7 @@ Definition is_sch_def:
   is_sch_execute I sf a /\
   is_sch_memory I sf a /\
   is_sch_writeback I sf /\
-  is_sch_disable I sf /\
-  is_sch_disable_ID I sf
+  is_sch_disable I sf
 End
 
 val _ = export_theory ();

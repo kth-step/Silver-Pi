@@ -551,7 +551,7 @@ Definition agp32_next_state_def:
                | 3w => s' with data_wdata := bit_field_insert 31 24 ((7 >< 0) s.MEM.MEM_dataA) s'.data_wdata
               else if s'.MEM.MEM_isAcc then
                 let s' = s' with state := 2w;
-                    s' = s' with command := 0w;
+                    s' = s' with command := 1w;
                     s' = s' with acc_arg := s.MEM.MEM_dataA in
                   s' with acc_arg_ready := T
               else s' with command := 1w)

@@ -529,7 +529,7 @@ endcase
 end else begin
 if (MEM_isAcc) begin
 state = 3'd2;
-command <= 3'd0;
+command <= 3'd1;
 acc_arg <= MEM_dataA;
 acc_arg_ready <= 1;
 end else begin

@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory agp32RelationTheory agp32UpdateTheory agp32UpdateLib;
+open hardwarePreamble translatorTheory arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib ag32ExtraTheory agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory agp32RelationTheory agp32UpdateTheory agp32UpdateLib;
 
 val _ = new_theory "agp32Internal";
 
@@ -385,6 +385,27 @@ Proof
   `?s s'.
   ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable) /\
   ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
+    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
+  fs [Hazard_ctrl_def] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `(fext t).ready` >> fs [] >>
+  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s'.EX.EX_jump_sel` >> fs []
+QED
+
+(* MEM_state_flag *)
+(** MEM_state_flag and WB_state_flag **)
+Theorem agp32_MEM_state_flag_eq_WB_state_flag:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_state_flag =
+    (agp32 fext fbits t).WB.WB_state_flag
+Proof
+  rw [] >>
+  `?s s'.
+  ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag) /\
+  ((agp32 fext fbits t).WB.WB_state_flag <=> (Hazard_ctrl (fext t) s s').WB.WB_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
   fs [Hazard_ctrl_def] >>
   Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
@@ -875,7 +896,55 @@ Proof
   `(THE (I' (2,t)) > THE (I' (4,t))) /\ (THE (I' (2,t)) < THE (I' (4,t)) + 2)`
     by METIS_TAC [ID_instr_index_with_MEM_instr_EX_NONE] >> fs []
 QED
- 
+
+
+(** instr index relation between ID and WB stages when EX and MEM are NONE **)
+Theorem ID_instr_index_with_WB_instr_EX_MEM_NONE:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (2,t) <> NONE ==>
+    I (3,t) = NONE ==>
+    I (4,t) = NONE ==>
+    I (5,t) <> NONE ==>
+    (THE (I (2,t)) > THE (I (5,t))) /\ (THE (I (2,t)) < THE (I (5,t)) + 2)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def] >>
+  rpt disch_tac >>
+  Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >-
+     (fs [is_sch_def,is_sch_decode_def] >> METIS_TAC []) >>
+    `I' (2,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_decode_def] >> fs [] >>
+    `enable_stg 5 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >> fs [] >>
+    `enable_stg 4 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_MEM_state_flag] >>
+    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
+     (fs [isMemOp_isa_op_def] >> cheat) >>
+    `I' (4,SUC t) = I' (3,t)` by METIS_TAC [is_sch_def,is_sch_memory_def] >>
+    `enable_stg 3 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
+    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_execute_def] >> fs [] >>
+    cheat) >>
+  Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (`I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `~enable_stg 3 (agp32 fext fbits t)`
+        by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
+    `I' (2,SUC t) = I' (2,t) /\ I' (3,SUC t) = I' (3,t)`
+      by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs [] >>
+    METIS_TAC [ID_instr_index_with_MEM_instr_EX_NONE]) >>
+  Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
+   (fs [enable_stg_def] >> fs [agp32_MEM_state_flag_eq_WB_state_flag] >>
+    cheat (** TO PROVE: mem_enable = wb_enable **)) >>
+  `~enable_stg 3 (agp32 fext fbits t)`
+    by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
+  fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
+QED
+        
+
+
 (* TODO: when IF/ID/EX are enabled, WB must be enabled as well
 (** instr index relation between ID and WB stages **)
 Theorem ID_instr_index_with_WB_instr:

@@ -401,7 +401,7 @@ QED
 
 
 (** ID_read_dataA: when instrs in EX, MEM and WB do not change registers **)
-Theorem agp32_Rel_ag32_ID_read_dataA_no_write:
+Theorem agp32_Rel_ag32_ID_read_dataA_no_write_before:
   !fext fbits a t I.
     is_sch I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
@@ -493,7 +493,7 @@ Theorem agp32_Rel_ag32_ID_reg_data_Rel_correct:
                     (THE (I (2,SUC t))) (I (3,SUC t)) (I (4,SUC t)) (I (5,SUC t))
 Proof
   rw [ID_reg_data_Rel_def] >>
-  fs [agp32_Rel_ag32_ID_read_dataA_no_write] >>
+  fs [agp32_Rel_ag32_ID_read_dataA_no_write_before] >>
   cheat
 QED
 

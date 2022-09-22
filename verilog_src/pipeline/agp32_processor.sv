@@ -106,7 +106,6 @@ logic[31:0] MEM_imm = 'x;
 logic[31:0] MEM_imm_updated = 'x;
 logic[31:0] MEM_ALU_res = 'x;
 logic[31:0] MEM_SHIFT_res = 'x;
-logic MEM_write_enable = 'x;
 logic MEM_read_mem = 'x;
 logic MEM_write_mem = 'x;
 logic MEM_write_mem_byte = 'x;
@@ -137,7 +136,7 @@ logic[5:0] WB_opc = 'x;
 always_comb begin
 WB_read_data = data_rdata;
 WB_read_data_byte = (WB_dataA[1:0] == 2'd0) ? 32'({WB_read_data[7:0]}) : ((WB_dataA[1:0] == 2'd1) ? 32'({WB_read_data[15:8]}) : ((WB_dataA[1:0] == 2'd2) ? 32'({WB_read_data[23:16]}) : 32'({WB_read_data[31:24]})));
-if ((MEM_write_enable && WB_state_flag) || WB_enable) begin
+if (WB_state_flag || WB_enable) begin
 WB_isOut = WB_opc == 6'd6;
 WB_data_sel = ((WB_opc == 6'd0) || (WB_opc == 6'd6)) ? 3'd0 : ((WB_opc == 6'd1) ? 3'd1 : ((WB_opc == 6'd7) ? 3'd2 : ((WB_opc == 6'd9) ? 3'd3 : (((WB_opc == 6'd13) || (WB_opc == 6'd14)) ? 3'd4 : ((WB_opc == 6'd4) ? 3'd5 : ((WB_opc == 6'd5) ? 3'd6 : ((WB_opc == 6'd8) ? 3'd7 : 3'd0)))))));
 end
@@ -465,17 +464,14 @@ MEM_dataW = EX_dataW_rec;
 MEM_imm = EX_imm;
 MEM_ALU_res <= EX_ALU_res;
 MEM_SHIFT_res <= EX_SHIFT_res;
-MEM_write_enable <= 1;
 MEM_addrW <= EX_addrW;
 MEM_opc <= MEM_NOP_flag ? 6'd16 : EX_opc;
 MEM_write_reg = (EX_opc == 6'd0) || ((EX_opc == 6'd1) || ((EX_opc == 6'd4) || ((EX_opc == 6'd5) || ((EX_opc == 6'd6) || ((EX_opc == 6'd7) || ((EX_opc == 6'd8) || ((EX_opc == 6'd9) || ((EX_opc == 6'd13) || (EX_opc == 6'd14)))))))));
-end else begin
-MEM_write_enable <= 0;
 end
 end
 
 always_ff @ (posedge clk) begin
-if ((MEM_write_enable && WB_state_flag) || WB_enable) begin
+if (WB_state_flag || WB_enable) begin
 WB_PC = MEM_PC;
 WB_dataA = MEM_dataA;
 WB_imm = MEM_imm_updated;

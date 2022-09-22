@@ -91,8 +91,7 @@ Datatype:
                   MEM_imm: word32;
                   MEM_imm_updated: word32;               
                   MEM_ALU_res: word32;           
-                  MEM_SHIFT_res: word32;             
-                  MEM_write_enable: bool;                  
+                  MEM_SHIFT_res: word32;                 
                   MEM_read_mem: bool;            
                   MEM_write_mem: bool;              
                   MEM_write_mem_byte: bool;                

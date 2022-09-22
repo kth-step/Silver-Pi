@@ -303,7 +303,7 @@ Definition WB_update_def:
                                                                 (w2w ((15 >< 8) s'.WB.WB_read_data))
                                                                 (w2w ((23 >< 16) s'.WB.WB_read_data))
                                                                 (w2w ((31 >< 24) s'.WB.WB_read_data));
-      s' = (if (s.MEM.MEM_write_enable /\ s'.WB.WB_state_flag) \/ s.WB.WB_enable then
+      s' = (if s'.WB.WB_state_flag \/ s.WB.WB_enable then
               let s' = s' with WB := s'.WB with WB_isOut := (s'.WB.WB_opc = 6w) in
                 s' with WB := s'.WB with WB_data_sel :=
                 if s'.WB.WB_opc = 0w \/ s'.WB.WB_opc = 6w then 0w
@@ -485,20 +485,19 @@ Definition MEM_pipeline_def:
         s' = s' with MEM := s'.MEM with MEM_imm := s.EX.EX_imm;
         s' = s' with MEM := s'.MEM with MEM_ALU_res := s'.EX.EX_ALU_res;
         s' = s' with MEM := s'.MEM with MEM_SHIFT_res := s'.EX.EX_SHIFT_res;
-        s' = s' with MEM := s'.MEM with MEM_write_enable := T;
         s' = s' with MEM := s'.MEM with MEM_addrW := s.EX.EX_addrW;
         s' = s' with MEM := s'.MEM with MEM_opc := if s'.MEM.MEM_NOP_flag then 16w else s.EX.EX_opc in
       s' with MEM := s'.MEM with MEM_write_reg := ((s.EX.EX_opc = 0w) \/ (s.EX.EX_opc = 1w) \/ (s.EX.EX_opc = 4w) \/
                                                    (s.EX.EX_opc = 5w) \/ (s.EX.EX_opc = 6w) \/ (s.EX.EX_opc = 7w) \/
                                                    (s.EX.EX_opc = 8w) \/ (s.EX.EX_opc = 9w) \/ (s.EX.EX_opc = 13w) \/
                                                    (s.EX.EX_opc = 14w))
-  else s' with MEM := s'.MEM with MEM_write_enable := F
+  else s'
 End
 
 (** write back: MEM -> WB **)
 Definition WB_pipeline_def:
   WB_pipeline (fext:ext) s s' =
-  if (s.MEM.MEM_write_enable /\ s'.WB.WB_state_flag) \/ s.WB.WB_enable then
+  if s'.WB.WB_state_flag \/ s.WB.WB_enable then
     let s' = s' with WB := s'.WB with WB_PC := s.MEM.MEM_PC;
         s' = s' with WB := s'.WB with WB_dataA := s.MEM.MEM_dataA;
         s' = s' with WB := s'.WB with WB_imm := s'.MEM.MEM_imm_updated;

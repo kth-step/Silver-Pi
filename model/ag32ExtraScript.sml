@@ -168,8 +168,8 @@ Definition is_wrMEM_isa_def:
   is_wrMEM_isa a = (opc a = 2w \/ opc a = 3w)
 End
 
-Definition isMemOp_isa_def:
-  isMemOp_isa a = (opc a = 2w \/ opc a = 3w \/ opc a = 4w \/ opc a = 5w \/ opc a = 12w)
+Definition isMEM_stg_op_isa_def:
+  isMEM_stg_op_isa a = (opc a = 2w \/ opc a = 3w \/ opc a = 4w \/ opc a = 5w \/ opc a = 8w \/ opc a = 12w)
 End
 
 Definition mem_iswrite_def:

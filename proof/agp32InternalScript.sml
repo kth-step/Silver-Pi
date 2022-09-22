@@ -417,6 +417,37 @@ Proof
 QED
 
 
+(* MEM_enable and WB_enable flags *)
+(** MEM_enable = WB_enable **)
+Theorem agp32_MEM_enable_eq_WB_enable:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_enable = (agp32 fext fbits t).WB.WB_enable
+Proof
+  rw [] >> Induct_on `t` >-
+   (rw [agp32_def,mk_module_def,mk_circuit_def] >>
+    clist_update_state_tac >>
+    fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+        Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+        Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+        Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+        MEM_imm_update_unchanged_state_items,MEM_ctrl_update_unchanged_state_items,
+        EX_data_rec_update_unchanged_state_items,EX_jump_sel_addr_update_unchanged_state_items,
+        EX_SHIFT_update_unchanged_state_items,EX_ALU_update_unchanged_state_items,
+        EX_compute_enable_update_unchanged_state_items,EX_ALU_input_update_unchanged_state_items,
+        EX_forward_data_unchanged_state_items,EX_ctrl_update_unchanged_state_items,
+        ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+        ID_opc_func_update_unchanged_state_items,IF_PC_input_update_def,IF_instr_update_def,
+        ForwardW_def,ForwardB_def,ForwardA_def] >>
+    rw [agp32_init_def]) >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `((agp32 fext fbits (SUC t)).MEM.MEM_enable = (agp32_next_state (fext t) s s).MEM.MEM_enable) /\
+  ((agp32 fext fbits (SUC t)).WB.WB_enable = (agp32_next_state (fext t) s s).WB.WB_enable)`
+    by fs [agp32_MEM_WB_enable_updated_by_agp32_next_state,Abbr `s`] >> fs [] >>
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
+
 (* initial values *)
 (** initial EX_PC_sel = 0w **)
 Theorem agp32_init_EX_PC_sel:
@@ -936,8 +967,7 @@ Proof
       by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs [] >>
     METIS_TAC [ID_instr_index_with_MEM_instr_EX_NONE]) >>
   Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
-   (fs [enable_stg_def] >> fs [agp32_MEM_state_flag_eq_WB_state_flag] >>
-    cheat (** TO PROVE: mem_enable = wb_enable **)) >>
+   (fs [enable_stg_def] >> fs [agp32_MEM_state_flag_eq_WB_state_flag,agp32_MEM_enable_eq_WB_enable]) >>
   `~enable_stg 3 (agp32 fext fbits t)`
     by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
   fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []

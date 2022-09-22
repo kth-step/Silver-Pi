@@ -90,7 +90,9 @@ Theorem ID_opc_func_update_unchanged_state_items:
   !fext s s'.
     ((ID_opc_func_update fext s s').command = s'.command) /\
     ((ID_opc_func_update fext s s').state = s'.state) /\
-    ((ID_opc_func_update fext s s').R = s'.R)
+    ((ID_opc_func_update fext s s').R = s'.R) /\
+    ((ID_opc_func_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((ID_opc_func_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [ID_opc_func_update_def]
 QED
@@ -176,7 +178,9 @@ Theorem ID_imm_update_unchanged_state_items:
   !fext s s'.
     ((ID_imm_update fext s s').command = s'.command) /\
     ((ID_imm_update fext s s').state = s'.state) /\
-    ((ID_imm_update fext s s').R = s'.R)
+    ((ID_imm_update fext s s').R = s'.R) /\
+    ((ID_imm_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((ID_imm_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [ID_imm_update_def]
 QED
@@ -262,7 +266,9 @@ Theorem ID_data_update_unchanged_state_items:
   !fext s s'.
     ((ID_data_update fext s s').command = s'.command) /\
     ((ID_data_update fext s s').state = s'.state) /\
-    ((ID_data_update fext s s').R = s'.R)
+    ((ID_data_update fext s s').R = s'.R) /\
+    ((ID_data_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((ID_data_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [ID_data_update_def]
 QED
@@ -362,7 +368,9 @@ Theorem EX_ctrl_update_unchanged_state_items:
   !fext s s'.
     ((EX_ctrl_update fext s s').command = s'.command) /\
     ((EX_ctrl_update fext s s').state = s'.state) /\
-    ((EX_ctrl_update fext s s').R = s'.R)
+    ((EX_ctrl_update fext s s').R = s'.R) /\
+    ((EX_ctrl_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((EX_ctrl_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [EX_ctrl_update_def]
 QED
@@ -433,7 +441,9 @@ Theorem EX_forward_data_unchanged_state_items:
   !fext s s'.
     ((EX_forward_data fext s s').command = s'.command) /\
     ((EX_forward_data fext s s').state = s'.state) /\
-    ((EX_forward_data fext s s').R = s'.R)
+    ((EX_forward_data fext s s').R = s'.R) /\
+    ((EX_forward_data fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((EX_forward_data fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [EX_forward_data_def]
 QED
@@ -504,7 +514,9 @@ Theorem EX_ALU_input_update_unchanged_state_items:
   !fext s s'.
     ((EX_ALU_input_update fext s s').command = s'.command) /\
     ((EX_ALU_input_update fext s s').state = s'.state) /\
-    ((EX_ALU_input_update fext s s').R = s'.R)
+    ((EX_ALU_input_update fext s s').R = s'.R) /\
+    ((EX_ALU_input_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((EX_ALU_input_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [EX_ALU_input_update_def]
 QED
@@ -575,7 +587,9 @@ Theorem EX_compute_enable_update_unchanged_state_items:
   !fext s s'.
     ((EX_compute_enable_update fext s s').command = s'.command) /\
     ((EX_compute_enable_update fext s s').state = s'.state) /\
-    ((EX_compute_enable_update fext s s').R = s'.R)
+    ((EX_compute_enable_update fext s s').R = s'.R) /\
+    ((EX_compute_enable_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((EX_compute_enable_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [EX_compute_enable_update_def]
 QED
@@ -680,7 +694,9 @@ Theorem EX_ALU_update_unchanged_state_items:
   !fext s s'.
     ((EX_ALU_update fext s s').command = s'.command) /\
     ((EX_ALU_update fext s s').state = s'.state) /\
-    ((EX_ALU_update fext s s').R = s'.R)
+    ((EX_ALU_update fext s s').R = s'.R) /\
+    ((EX_ALU_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((EX_ALU_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [EX_ALU_update_def] >>
   Cases_on_word_value `s'.EX.EX_func` >> fs []
@@ -796,7 +812,9 @@ Theorem EX_SHIFT_update_unchanged_state_items:
   !fext s s'.
     ((EX_SHIFT_update fext s s').command = s'.command) /\
     ((EX_SHIFT_update fext s s').state = s'.state) /\
-    ((EX_SHIFT_update fext s s').R = s'.R)
+    ((EX_SHIFT_update fext s s').R = s'.R) /\
+    ((EX_SHIFT_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((EX_SHIFT_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [EX_SHIFT_update_def] >>
   Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
@@ -904,7 +922,9 @@ Theorem EX_jump_sel_addr_update_unchanged_state_items:
   !fext s s'.
     ((EX_jump_sel_addr_update fext s s').command = s'.command) /\
     ((EX_jump_sel_addr_update fext s s').state = s'.state) /\
-    ((EX_jump_sel_addr_update fext s s').R = s'.R)
+    ((EX_jump_sel_addr_update fext s s').R = s'.R) /\
+    ((EX_jump_sel_addr_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [EX_jump_sel_addr_update_def]
 QED
@@ -1019,7 +1039,9 @@ Theorem EX_data_rec_update_unchanged_state_items:
   !fext s s'.
     ((EX_data_rec_update fext s s').command = s'.command) /\
     ((EX_data_rec_update fext s s').state = s'.state) /\
-    ((EX_data_rec_update fext s s').R = s'.R)
+    ((EX_data_rec_update fext s s').R = s'.R) /\
+    ((EX_data_rec_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((EX_data_rec_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [EX_data_rec_update_def]
 QED
@@ -1134,7 +1156,9 @@ Theorem MEM_ctrl_update_unchanged_state_items:
   !fext s s'.
     ((MEM_ctrl_update fext s s').command = s'.command) /\
     ((MEM_ctrl_update fext s s').state = s'.state) /\
-    ((MEM_ctrl_update fext s s').R = s'.R)
+    ((MEM_ctrl_update fext s s').R = s'.R) /\
+    ((MEM_ctrl_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((MEM_ctrl_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [MEM_ctrl_update_def]
 QED
@@ -1230,7 +1254,9 @@ Theorem MEM_imm_update_unchanged_state_items:
   !fext s s'.
     ((MEM_imm_update fext s s').command = s'.command) /\
     ((MEM_imm_update fext s s').state = s'.state) /\
-    ((MEM_imm_update fext s s').R = s'.R)
+    ((MEM_imm_update fext s s').R = s'.R) /\
+    ((MEM_imm_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((MEM_imm_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [MEM_imm_update_def]
 QED
@@ -1345,7 +1371,9 @@ Theorem WB_update_unchanged_state_items:
   !fext s s'.
     ((WB_update fext s s').command = s'.command) /\
     ((WB_update fext s s').state = s'.state) /\
-    ((WB_update fext s s').R = s'.R)
+    ((WB_update fext s s').R = s'.R) /\
+    ((WB_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((WB_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [WB_update_def]
 QED
@@ -1459,7 +1487,9 @@ Theorem Hazard_ctrl_unchanged_state_items:
   !fext s s'.
     ((Hazard_ctrl fext s s').command = s'.command) /\
     ((Hazard_ctrl fext s s').state = s'.state) /\
-    ((Hazard_ctrl fext s s').R = s'.R)
+    ((Hazard_ctrl fext s s').R = s'.R) /\
+    ((Hazard_ctrl fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((Hazard_ctrl fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [Hazard_ctrl_def]
 QED
@@ -1526,7 +1556,9 @@ QED
 Theorem Acc_compute_unchanged_state_items:
   !fext s s'.
     ((Acc_compute fext s s').command = s'.command) /\
-    ((Acc_compute fext s s').state = s'.state)
+    ((Acc_compute fext s s').state = s'.state) /\
+    ((Acc_compute fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((Acc_compute fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [Acc_compute_def]
 QED
@@ -1586,7 +1618,9 @@ QED
 Theorem IF_PC_update_unchanged_state_items:
   !fext s s'.
     ((IF_PC_update fext s s').command = s'.command) /\
-    ((IF_PC_update fext s s').state = s'.state)
+    ((IF_PC_update fext s s').state = s'.state) /\
+    ((IF_PC_update fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((IF_PC_update fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [IF_PC_update_def]
 QED
@@ -1647,7 +1681,9 @@ QED
 Theorem ID_pipeline_unchanged_state_items:
   !fext s s'.
     ((ID_pipeline fext s s').command = s'.command) /\
-    ((ID_pipeline fext s s').state = s'.state)
+    ((ID_pipeline fext s s').state = s'.state) /\
+    ((ID_pipeline fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((ID_pipeline fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [ID_pipeline_def]
 QED
@@ -1719,7 +1755,9 @@ QED
 Theorem REG_write_unchanged_state_items:
   !fext s s'.
     ((REG_write fext s s').command = s'.command) /\
-    ((REG_write fext s s').state = s'.state)
+    ((REG_write fext s s').state = s'.state) /\
+    ((REG_write fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((REG_write fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [REG_write_def]
 QED
@@ -1772,7 +1810,9 @@ QED
 Theorem EX_pipeline_unchanged_state_items:
   !fext s s'.
     ((EX_pipeline fext s s').command = s'.command) /\
-    ((EX_pipeline fext s s').state = s'.state)
+    ((EX_pipeline fext s s').state = s'.state) /\
+    ((EX_pipeline fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((EX_pipeline fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [EX_pipeline_def]
 QED
@@ -1842,7 +1882,9 @@ QED
 Theorem MEM_pipeline_unchanged_state_items:
   !fext s s'.
     ((MEM_pipeline fext s s').command = s'.command) /\
-    ((MEM_pipeline fext s s').state = s'.state)
+    ((MEM_pipeline fext s s').state = s'.state) /\
+    ((MEM_pipeline fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((MEM_pipeline fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [MEM_pipeline_def]
 QED
@@ -1912,7 +1954,9 @@ QED
 Theorem WB_pipeline_unchanged_state_items:
   !fext s s'.
     ((WB_pipeline fext s s').command = s'.command) /\
-    ((WB_pipeline fext s s').state = s'.state)
+    ((WB_pipeline fext s s').state = s'.state) /\
+    ((WB_pipeline fext s s').MEM.MEM_enable = s'.MEM.MEM_enable) /\
+    ((WB_pipeline fext s s').WB.WB_enable = s'.WB.WB_enable)
 Proof
   rw [WB_pipeline_def]
 QED
@@ -2425,12 +2469,44 @@ Proof
   rw [EX_pipeline_def]
 QED
 
-(** command is updated by the agp32_next_state function **)
+(** command and state are updated by the agp32_next_state function **)
 Theorem agp32_command_state_updated_by_agp32_next_state:
   !fext fbits t s.
     s = agp32 fext fbits t ==>
     ((agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s s).command) /\
     ((agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state)
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_imm_update_unchanged_state_items,MEM_ctrl_update_unchanged_state_items,
+      EX_data_rec_update_unchanged_state_items,EX_jump_sel_addr_update_unchanged_state_items,
+      EX_SHIFT_update_unchanged_state_items,EX_ALU_update_unchanged_state_items,
+      EX_compute_enable_update_unchanged_state_items,EX_ALU_input_update_unchanged_state_items,
+      EX_forward_data_unchanged_state_items,EX_ctrl_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_PC_input_update_def,IF_instr_update_def,
+      ForwardW_def,ForwardB_def,ForwardA_def] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Abbr `ss7`,Abbr `ss6`,Abbr `ss5`,
+      Abbr `ss4`,Abbr `ss3`,Abbr `ss2`,
+      Acc_compute_unchanged_state_items,IF_PC_update_unchanged_state_items,
+      ID_pipeline_unchanged_state_items,REG_write_unchanged_state_items,
+      EX_pipeline_unchanged_state_items,MEM_pipeline_unchanged_state_items,
+      WB_pipeline_unchanged_state_items]
+QED
+
+(** MEM_enable and WB_enable are updated by the agp32_next_state function **)
+Theorem agp32_MEM_WB_enable_updated_by_agp32_next_state:
+  !fext fbits t s.
+    s = agp32 fext fbits t ==>
+    ((agp32 fext fbits (SUC t)).MEM.MEM_enable = (agp32_next_state (fext t) s s).MEM.MEM_enable) /\
+    ((agp32 fext fbits (SUC t)).WB.WB_enable = (agp32_next_state (fext t) s s).WB.WB_enable)
 Proof
   rw [agp32_def,mk_module_def,mk_circuit_def] >>
   qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>

@@ -2678,6 +2678,8 @@ Theorem agp32_same_items_before_ID_pipeline:
     s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;REG_write] (fext t) s s ==>
     (s'.ID.ID_ID_write_enable <=> s.ID.ID_ID_write_enable) /\
     (s'.ID.ID_flush_flag <=> s.ID.ID_flush_flag) /\
+    (s'.ID.ID_PC = s.ID.ID_PC) /\
+    (s'.ID.ID_instr = s.ID.ID_instr) /\
     (s'.IF.IF_instr = s.IF.IF_instr)
 Proof
   rpt STRIP_TAC >> fs [procs_def] >>

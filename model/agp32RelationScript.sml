@@ -145,12 +145,16 @@ Definition ID_Rel_def:
    (s.ID.ID_imm = imm (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_opc = opc (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_func = func (FUNPOW Next (i - 1) a)) /\
-   (s.ID.ID_ForwardA <=> (s.ID.ID_addrA = s.WB.WB_addrW) /\ s.WB.WB_write_reg) /\
-   (s.ID.ID_ForwardB <=> (s.ID.ID_addrB = s.WB.WB_addrW) /\ s.WB.WB_write_reg) /\
-   (s.ID.ID_ForwardW <=> (s.ID.ID_addrW = s.WB.WB_addrW) /\ s.WB.WB_write_reg) /\
    (s.ID.ID_addrA_disable ==> s.ID.ID_dataA = dataA (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_addrB_disable ==> s.ID.ID_dataB = dataB (FUNPOW Next (i - 1) a)) /\
    (s.ID.ID_addrW_disable ==> s.ID.ID_dataW = dataW (FUNPOW Next (i - 1) a)))
+End
+
+Definition ID_Forward_Rel_def:
+  ID_Forward_Rel (s:state_circuit) (si:state_circuit) <=>
+  ((s.ID.ID_ForwardA <=> (s.ID.ID_addrA = s.WB.WB_addrW) /\ s.WB.WB_write_reg /\ si.WB.WB_state_flag) /\
+   (s.ID.ID_ForwardB <=> (s.ID.ID_addrB = s.WB.WB_addrW) /\ s.WB.WB_write_reg /\ si.WB.WB_state_flag) /\
+   (s.ID.ID_ForwardW <=> (s.ID.ID_addrW = s.WB.WB_addrW) /\ s.WB.WB_write_reg /\ si.WB.WB_state_flag))
 End
 
 Definition ID_reg_data_Rel_def:
@@ -317,7 +321,8 @@ Definition Rel_def:
    (s.R = (FUNPOW Next (THE (I (2,t)) - 1) a).R)) /\
   (I (1,t) <> NONE ==> IF_PC_Rel s a (THE (I (1,t)))) /\
   (I (1,t) <> NONE ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
-  (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_Rel s a (THE (I (2,t)))) /\
+  (I (2,t) <> NONE ==> ID_Rel s a (THE (I (2,t)))) /\
+  (I (2,t) <> NONE ==> ID_Forward_Rel s si) /\
   (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (3,t) <> NONE ==> enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (reg_data_vaild 3 s ==> EX_Rel_spec s a (I (3,t))) /\

@@ -496,8 +496,62 @@ Proof
     (FUNPOW Next (THE (I' (5,SUC t))) a).R ((22 >< 17) i)`
       by METIS_TAC [reg_adr_update_isa_not_change_data] >> fs [] >>
     `THE (I' (2,SUC t)) = THE (I' (5,SUC t)) + 1`
-      by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >> fs []) >>
-  `s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
+      by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >> fs []) >-
+   (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
+      by cheat >> fs [] >>
+    `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
+      by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
+          METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
+    `(FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R ((22 >< 17) i) =
+    (FUNPOW Next (THE (I' (5,SUC t))) a).R ((22 >< 17) i)`
+      by METIS_TAC [reg_adr_update_isa_not_change_data] >> fs [] >>
+    `THE (I' (3,SUC t)) = THE (I' (5,SUC t)) + 1 \/ THE (I' (3,SUC t)) = THE (I' (5,SUC t))`
+      by METIS_TAC [EX_instr_index_with_WB_instr_plus_1_MEM_NONE] >>
+    `THE (I' (2,SUC t)) = THE (I' (3,SUC t)) + 1`
+      by METIS_TAC [ID_instr_index_with_EX_instr_plus_1] >> fs [] >>
+    `THE (I' (5,SUC t)) = THE (I' (3,SUC t)) - 1` by fs [] >> fs [] >>
+    METIS_TAC [reg_adr_update_isa_not_change_data]) >-
+   (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
+      by cheat >> fs [] >>
+    `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
+      by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
+          METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
+    `(FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R ((22 >< 17) i) =
+    (FUNPOW Next (THE (I' (5,SUC t))) a).R ((22 >< 17) i)`
+      by METIS_TAC [reg_adr_update_isa_not_change_data] >> fs [] >>
+    `THE (I' (4,SUC t)) = THE (I' (5,SUC t)) + 1 \/ THE (I' (4,SUC t)) = THE (I' (5,SUC t))`
+      by METIS_TAC [MEM_instr_index_with_WB_instr_plus_1] >>
+    `THE (I' (2,SUC t)) = THE (I' (4,SUC t)) + 1`
+      by METIS_TAC [EX_NONE_ID_instr_index_with_MEM_instr_plus_1] >> fs [] >>
+    `THE (I' (5,SUC t)) = THE (I' (4,SUC t)) - 1` by fs [] >> fs [] >-
+    METIS_TAC [reg_adr_update_isa_not_change_data]) >-
+   (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
+      by cheat >> fs [] >>
+    `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
+      by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
+          METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
+    `(FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R ((22 >< 17) i) =
+    (FUNPOW Next (THE (I' (5,SUC t))) a).R ((22 >< 17) i)`
+      by METIS_TAC [reg_adr_update_isa_not_change_data] >> fs [] >>
+    `THE (I' (4,SUC t)) = THE (I' (5,SUC t)) + 1 \/ THE (I' (4,SUC t)) = THE (I' (5,SUC t))`
+      by METIS_TAC [MEM_instr_index_with_WB_instr_plus_1] >-
+     (`THE (I' (5,SUC t)) = THE (I' (4,SUC t)) - 1` by fs [] >> fs [] >>
+      `(FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R ((22 >< 17) i) =
+      (FUNPOW Next (THE (I' (4,SUC t))) a).R ((22 >< 17) i)`
+        by METIS_TAC [reg_adr_update_isa_not_change_data] >> fs [] >>
+      `THE (I' (3,SUC t)) = THE (I' (4,SUC t)) \/ THE (I' (3,SUC t)) = THE (I' (4,SUC t)) + 1`
+        by METIS_TAC [EX_instr_index_with_MEM_instr_plus_1] >>
+      `THE (I' (2,SUC t)) = THE (I' (3,SUC t)) + 1`
+        by METIS_TAC [ID_instr_index_with_EX_instr_plus_1] >> fs [] >>
+      `THE (I' (4,SUC t)) = THE (I' (3,SUC t)) - 1` by FULL_SIMP_TAC std_ss [] >>
+      METIS_TAC [reg_adr_update_isa_not_change_data]) >>
+    `THE (I' (3,SUC t)) = THE (I' (4,SUC t)) \/ THE (I' (3,SUC t)) = THE (I' (4,SUC t)) + 1`
+      by METIS_TAC [EX_instr_index_with_MEM_instr_plus_1] >>
+    `THE (I' (2,SUC t)) = THE (I' (3,SUC t)) + 1`
+      by METIS_TAC [ID_instr_index_with_EX_instr_plus_1] >> fs [] >>
+    `THE (I' (4,SUC t)) = THE (I' (3,SUC t)) - 1` by FULL_SIMP_TAC std_ss [] >>
+    METIS_TAC [reg_adr_update_isa_not_change_data]) >>
+   `s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
   `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
   `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
   cheat

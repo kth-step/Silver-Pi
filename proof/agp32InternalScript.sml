@@ -367,6 +367,7 @@ Proof
   METIS_TAC [agp32_IF_PC_write_enable_and_MEM_flag]
 QED
 
+(** ID_EX_write_enable and WB_state_flag **)
 Theorem agp32_ID_EX_write_enable_WB_state_flag:
   !fext fbits t.
     (agp32 fext fbits t).ID.ID_EX_write_enable ==>
@@ -376,6 +377,71 @@ Proof
   METIS_TAC [agp32_IF_PC_write_enable_and_WB_flag]
 QED
 
+(** ID_EX_write_enable and MEM_opc **)
+Theorem agp32_ID_EX_write_enable_no_MEM_stg_op:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_EX_write_enable ==>
+    ((agp32 fext fbits t).MEM.MEM_opc <> 2w) /\
+    ((agp32 fext fbits t).MEM.MEM_opc <> 3w) /\
+    ((agp32 fext fbits t).MEM.MEM_opc <> 4w) /\
+    ((agp32 fext fbits t).MEM.MEM_opc <> 5w) /\
+    ((agp32 fext fbits t).MEM.MEM_opc <> 8w) /\
+    ((agp32 fext fbits t).MEM.MEM_opc <> 12w)
+Proof
+  rpt gen_tac >> rpt disch_tac >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (clist_update_state_tac >>
+    fs [Abbr `s20`,Hazard_ctrl_def] >>
+    Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 3w \/
+              s19.state = 4w \/ s19.state = 5w \/ s19.state = 6w` >> fs [] >>
+    Cases_on `(fext 0).ready` >> fs [] >>
+    Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
+              (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
+              (agp32_init fbits).MEM.MEM_opc = 8w \/ (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
+    Cases_on `s19.EX.EX_jump_sel` >> fs [] >>
+    fs [Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+        Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+        Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+        WB_update_unchanged_MEM_pipeline_items,
+        MEM_imm_update_unchanged_MEM_pipeline_items,MEM_ctrl_update_unchanged_MEM_pipeline_items,
+        EX_data_rec_update_unchanged_MEM_pipeline_items,
+        EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+        EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+        EX_compute_enable_update_unchanged_MEM_pipeline_items,
+        EX_ALU_input_update_unchanged_MEM_pipeline_items,
+        EX_forward_data_unchanged_MEM_pipeline_items,EX_ctrl_update_unchanged_MEM_pipeline_items,
+        ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+        ID_opc_func_update_unchanged_MEM_pipeline_items,
+        IF_PC_input_update_unchanged_MEM_pipeline_items,IF_instr_update_def,
+        ForwardW_unchanged_MEM_pipeline_items,ForwardB_unchanged_MEM_pipeline_items,
+        ForwardA_unchanged_MEM_pipeline_items]) >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s20`,Hazard_ctrl_def] >>
+  Cases_on `s19.state = 1w \/ s19.state = 2w \/ s19.state = 3w \/
+            s19.state = 4w \/ s19.state = 5w \/ s19.state = 6w` >> fs [] >> fs [] >>
+  Cases_on `(fext (SUC n)).ready` >> fs [] >>
+  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
+            s''.MEM.MEM_opc = 8w \/ s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >> fs [] >>
+  Cases_on `s19.EX.EX_jump_sel` >> fs [] >>
+  fs [Abbr `s19`,Abbr `s18`,Abbr `s17`,Abbr `s16`,Abbr `s15`,Abbr `s14`,
+      Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      WB_update_unchanged_MEM_pipeline_items,
+      MEM_imm_update_unchanged_MEM_pipeline_items,MEM_ctrl_update_unchanged_MEM_pipeline_items,
+      EX_data_rec_update_unchanged_MEM_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+      EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+      EX_compute_enable_update_unchanged_MEM_pipeline_items,
+      EX_ALU_input_update_unchanged_MEM_pipeline_items,
+      EX_forward_data_unchanged_MEM_pipeline_items,EX_ctrl_update_unchanged_MEM_pipeline_items,
+      ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+      ID_opc_func_update_unchanged_MEM_pipeline_items,
+      IF_PC_input_update_unchanged_MEM_pipeline_items,IF_instr_update_def,
+      ForwardW_unchanged_MEM_pipeline_items,ForwardB_unchanged_MEM_pipeline_items,
+      ForwardA_unchanged_MEM_pipeline_items]
+QED
 
 (* MEM_state_flag *)
 (** MEM_state_flag and WB_state_flag **)
@@ -951,6 +1017,19 @@ Proof
     by METIS_TAC [EX_instr_index_with_MEM_instr] >> fs []
 QED
 
+(** I (4,t) = I (5,t) \/ (I (5,t) + 1) **)
+Theorem MEM_instr_index_with_WB_instr_plus_1:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (4,t) <> NONE ==>
+    I (5,t) <> NONE ==>
+    (THE (I (4,t)) = THE (I (5,t)) + 1) \/ (THE (I (4,t)) = THE (I (5,t)))
+Proof
+  rw [] >>
+  `(THE (I' (4,t)) >= THE (I' (5,t))) /\ (THE (I' (4,t)) < THE (I' (5,t)) + 2)`
+    by METIS_TAC [MEM_instr_index_with_WB_instr] >> fs []
+QED
+
 
 (** instr index relation when IF and EX stages are not NONE then ID is NOT NONE **)
 Theorem IF_EX_instr_NOT_NONE_ID_NOT_NONE:
@@ -1060,6 +1139,64 @@ Proof
   rw [] >>
   `(THE (I' (2,t)) > THE (I' (4,t))) /\ (THE (I' (2,t)) < THE (I' (4,t)) + 2)`
     by METIS_TAC [ID_instr_index_with_MEM_instr_EX_NONE] >> fs []
+QED
+
+(** instr index relation between ID and MEM stages when EX is NONE **)
+Theorem EX_instr_index_with_WB_instr_MEM_NONE:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (3,t) <> NONE ==>
+    I (4,t) = NONE ==>
+    I (5,t) <> NONE ==>
+    (THE (I (3,t)) >= THE (I (5,t))) /\ (THE (I (3,t)) < THE (I (5,t)) + 2)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def] >>
+  rpt disch_tac >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_isa_op (I' (3,t)) a` >-
+     (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
+    `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >>
+    `enable_stg 5 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_EX_write_enable_WB_state_flag] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >> fs [] >>
+    `enable_stg 4 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_EX_write_enable_MEM_state_flag] >>
+    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
+     (`(agp32 fext fbits t).MEM.MEM_opc = opc (FUNPOW Next (THE (I' (4,t)) - 1) a)` by cheat >>
+      `(agp32 fext fbits t).ID.ID_EX_write_enable` by fs [enable_stg_def] >>
+      fs [isMemOp_isa_op_def,isMEM_stg_op_isa_def] >>
+      METIS_TAC [agp32_ID_EX_write_enable_no_MEM_stg_op]) >>
+    `I' (4,SUC t) = I' (3,t)` by METIS_TAC [is_sch_def,is_sch_memory_def] >> fs [] >>
+    `(THE (I' (2,t)) > THE (I' (4,t))) /\ (THE (I' (2,t)) < THE (I' (4,t)) + 2)`
+      by METIS_TAC [ID_instr_index_with_MEM_instr_EX_NONE] >> fs []) >>
+  Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (`I' (3,SUC t) = I' (3,t)`
+      by fs [is_sch_def,is_sch_disable_def] >> fs [] >>
+    `enable_stg 4 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_MEM_state_flag_eq_WB_state_flag,agp32_MEM_enable_eq_WB_enable] >>
+    Cases_on `isMemOp_isa_op (I' (4,t)) a` >-
+     (`I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >> fs [] >>
+      METIS_TAC [EX_instr_index_with_MEM_instr]) >>
+    fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
+  `~enable_stg 4 (agp32 fext fbits t)`
+    by fs [enable_stg_def,agp32_MEM_state_flag_eq_WB_state_flag,agp32_MEM_enable_eq_WB_enable] >>
+  fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
+QED
+
+(** I (3,t) = I (5,t) \/ (I (5,t) + 1) **)
+Theorem EX_instr_index_with_WB_instr_plus_1_MEM_NONE:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (3,t) <> NONE ==>
+    I (4,t) = NONE ==>
+    I (5,t) <> NONE ==>
+    (THE (I (3,t)) = THE (I (5,t)) + 1) \/ (THE (I (3,t)) = THE (I (5,t)))
+Proof
+  rw [] >>
+  `(THE (I' (3,t)) >= THE (I' (5,t))) /\ (THE (I' (3,t)) < THE (I' (5,t)) + 2)`
+    by METIS_TAC [EX_instr_index_with_WB_instr_MEM_NONE] >> fs []
 QED
 
 (** instr index relation between IF and MEM stages when ID and MEM EX NONE **)

@@ -114,7 +114,6 @@ logic MEM_isAcc = 'x;
 logic MEM_isInterrupt = 'x;
 logic MEM_state_flag = 'x;
 logic MEM_NOP_flag = 'x;
-logic MEM_enable = 0;
 logic[5:0] MEM_addrW = 'x;
 logic[5:0] MEM_opc = 6'd15;
 logic[31:0] WB_PC = 'x;
@@ -128,7 +127,6 @@ logic[31:0] WB_write_data = 'x;
 logic WB_write_reg = 0;
 logic WB_isOut = 'x;
 logic WB_state_flag = 'x;
-logic WB_enable = 0;
 logic[2:0] WB_data_sel = 'x;
 logic[5:0] WB_addrW = 'x;
 logic[5:0] WB_opc = 'x;
@@ -136,7 +134,7 @@ logic[5:0] WB_opc = 'x;
 always_comb begin
 WB_read_data = data_rdata;
 WB_read_data_byte = (WB_dataA[1:0] == 2'd0) ? 32'({WB_read_data[7:0]}) : ((WB_dataA[1:0] == 2'd1) ? 32'({WB_read_data[15:8]}) : ((WB_dataA[1:0] == 2'd2) ? 32'({WB_read_data[23:16]}) : 32'({WB_read_data[31:24]})));
-if (WB_state_flag || WB_enable) begin
+if (WB_state_flag) begin
 WB_isOut = WB_opc == 6'd6;
 WB_data_sel = ((WB_opc == 6'd0) || (WB_opc == 6'd6)) ? 3'd0 : ((WB_opc == 6'd1) ? 3'd1 : ((WB_opc == 6'd7) ? 3'd2 : ((WB_opc == 6'd9) ? 3'd3 : (((WB_opc == 6'd13) || (WB_opc == 6'd14)) ? 3'd4 : ((WB_opc == 6'd4) ? 3'd5 : ((WB_opc == 6'd5) ? 3'd6 : ((WB_opc == 6'd8) ? 3'd7 : 3'd0)))))));
 end
@@ -148,7 +146,7 @@ MEM_imm_updated = (MEM_opc == 6'd14) ? {MEM_imm[8:0], MEM_dataW[22:0]} : MEM_imm
 end
 
 always_comb begin
-if (MEM_state_flag || MEM_enable) begin
+if (MEM_state_flag) begin
 MEM_read_mem = (MEM_opc == 6'd4) || (MEM_opc == 6'd5);
 MEM_write_mem = MEM_opc == 6'd2;
 MEM_write_mem_byte = MEM_opc == 6'd3;
@@ -456,7 +454,7 @@ end
 end
 
 always_ff @ (posedge clk) begin
-if (MEM_state_flag || MEM_enable) begin
+if (MEM_state_flag) begin
 MEM_PC <= EX_PC;
 MEM_dataA <= EX_dataA_rec;
 MEM_dataB <= EX_dataB_rec;
@@ -471,7 +469,7 @@ end
 end
 
 always_ff @ (posedge clk) begin
-if (WB_state_flag || WB_enable) begin
+if (WB_state_flag) begin
 WB_PC = MEM_PC;
 WB_dataA = MEM_dataA;
 WB_imm = MEM_imm_updated;
@@ -488,8 +486,6 @@ if (error == 2'd0) begin
 case (state)
 3'd0 : begin
 data_out <= WB_isOut ? WB_ALU_res[9:0] : data_out;
-MEM_enable <= 0;
-WB_enable <= 0;
 if (!ready) begin
 state = 3'd1;
 end else begin
@@ -566,8 +562,6 @@ end
 3'd6 : begin
 state = 3'd0;
 command <= 3'd1;
-MEM_enable <= 1;
-WB_enable <= 1;
 end
 endcase
 end else begin

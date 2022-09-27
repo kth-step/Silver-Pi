@@ -276,7 +276,7 @@ End
 (** Set up flags of MEM stage **)
 Definition MEM_ctrl_update_def:
   MEM_ctrl_update (fext:ext) s s' =
-  if s'.MEM.MEM_state_flag \/ s.MEM.MEM_enable then
+  if s'.MEM.MEM_state_flag then
     let s' = s' with MEM := s'.MEM with MEM_read_mem := (s.MEM.MEM_opc = 4w \/ s.MEM.MEM_opc = 5w);
         s' = s' with MEM := s'.MEM with MEM_write_mem := (s.MEM.MEM_opc = 2w);
         s' = s' with MEM := s'.MEM with MEM_write_mem_byte := (s.MEM.MEM_opc = 3w);
@@ -303,7 +303,7 @@ Definition WB_update_def:
                                                                 (w2w ((15 >< 8) s'.WB.WB_read_data))
                                                                 (w2w ((23 >< 16) s'.WB.WB_read_data))
                                                                 (w2w ((31 >< 24) s'.WB.WB_read_data));
-      s' = (if s'.WB.WB_state_flag \/ s.WB.WB_enable then
+      s' = (if s'.WB.WB_state_flag then
               let s' = s' with WB := s'.WB with WB_isOut := (s'.WB.WB_opc = 6w) in
                 s' with WB := s'.WB with WB_data_sel :=
                 if s'.WB.WB_opc = 0w \/ s'.WB.WB_opc = 6w then 0w
@@ -477,7 +477,7 @@ End
 (** memory: EX -> MEM **)
 Definition MEM_pipeline_def:
   MEM_pipeline (fext:ext) s s' =
-  if s'.MEM.MEM_state_flag \/ s.MEM.MEM_enable then
+  if s'.MEM.MEM_state_flag then
     let s' = s' with MEM := s'.MEM with MEM_PC := s.EX.EX_PC;
         s' = s' with MEM := s'.MEM with MEM_dataA := s'.EX.EX_dataA_rec;
         s' = s' with MEM := s'.MEM with MEM_dataB := s'.EX.EX_dataB_rec;
@@ -497,7 +497,7 @@ End
 (** write back: MEM -> WB **)
 Definition WB_pipeline_def:
   WB_pipeline (fext:ext) s s' =
-  if s'.WB.WB_state_flag \/ s.WB.WB_enable then
+  if s'.WB.WB_state_flag then
     let s' = s' with WB := s'.WB with WB_PC := s.MEM.MEM_PC;
         s' = s' with WB := s'.WB with WB_dataA := s.MEM.MEM_dataA;
         s' = s' with WB := s'.WB with WB_imm := s'.MEM.MEM_imm_updated;
@@ -519,9 +519,7 @@ Definition agp32_next_state_def:
   if fext.error = 0w then
     case s'.state of
       0w => (let s' = s' with data_out := if s'.WB.WB_isOut then (9 >< 0) s'.WB.WB_ALU_res
-                                          else s.data_out;
-                 s' = s' with MEM := s'.MEM with MEM_enable := F;
-                 s' = s' with WB := s'.WB with WB_enable := F in
+                                          else s.data_out in
               if ~fext.ready then s' with state := 1w
               else if s'.MEM.MEM_isInterrupt then
                 let s' = s' with state := 1w;
@@ -575,10 +573,8 @@ Definition agp32_next_state_def:
                let s' = s' with state := 6w in
                  s' with interrupt_req := F
             else s'
-    | 6w => let s' = s' with state := 0w;
-                s' = s' with command := 1w;
-                s' = s' with MEM := s'.MEM with MEM_enable := T in
-              s' with WB := s'.WB with WB_enable := T
+    | 6w => let s' = s' with state := 0w in
+              s' with command := 1w
     | _ => s'                      
   else
     s' with state := 5w
@@ -612,8 +608,8 @@ val init_tm = add_x_inits ``<| R := K 0w;
                                IF := <| IF_PC_write_enable := F |>;           
                                ID := <| ID_instr := 0x0000003Fw |>;
                                EX := <| EX_PC_sel := 0w; EX_opc := 15w |>;
-                               MEM := <| MEM_enable := F; MEM_write_reg := F; MEM_opc := 15w |>;
-                               WB := <| WB_enable := F; WB_write_reg := F |> |>``;
+                               MEM := <| MEM_write_reg := F; MEM_opc := 15w |>;
+                               WB := <| WB_write_reg := F |> |>``;
 
 Definition agp32_init_def:
   agp32_init fbits = ^init_tm

@@ -99,8 +99,7 @@ Datatype:
                   MEM_isAcc: bool;
                   MEM_isInterrupt: bool;          
                   MEM_state_flag: bool;
-                  MEM_NOP_flag: bool;             
-                  MEM_enable: bool;           
+                  MEM_NOP_flag: bool;           
                   MEM_addrW: word6;            
                   MEM_opc: word6               
                |>
@@ -119,7 +118,6 @@ Datatype:
                  WB_write_reg: bool;
                  WB_isOut: bool;
                  WB_state_flag: bool;
-                 WB_enable: bool;
                  WB_data_sel: word3;
                  WB_addrW: word6;
                  WB_opc: word6

@@ -44,8 +44,8 @@ Definition enable_stg_def:
   if k = 1 then s.IF.IF_PC_write_enable
   else if k = 2 then s.ID.ID_ID_write_enable
   else if k = 3 then s.ID.ID_EX_write_enable
-  else if k = 4 then s.MEM.MEM_state_flag \/ s.MEM.MEM_enable
-  else if k = 5 then s.WB.WB_state_flag \/ s.WB.WB_enable
+  else if k = 4 then s.MEM.MEM_state_flag
+  else if k = 5 then s.WB.WB_state_flag
   else F
 End
 
@@ -112,9 +112,7 @@ Definition Init_def:
   (s.EX.EX_opc = 15w) /\
   (s.MEM.MEM_opc = 15w) /\
   ~s.MEM.MEM_state_flag /\
-  ~s.MEM.MEM_enable /\
   ~s.MEM.MEM_write_reg /\
-  ~s.WB.WB_enable /\
   ~s.WB.WB_write_reg
 End
 

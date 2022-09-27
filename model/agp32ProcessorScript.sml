@@ -563,8 +563,9 @@ Definition agp32_next_state_def:
                       else s' in
                s' with command := 0w)
     | 2w => (let s' = if s.acc_res_ready /\ ~s.acc_arg_ready then s' with state := 6w
-                      else s' in
-               s' with acc_arg_ready := F)
+                      else s';
+                 s' = s' with acc_arg_ready := F in
+               s' with command := 0w)
     | 3w => if fext.mem_start_ready then
               let s' = s' with state := 1w in
                 s' with command := 1w

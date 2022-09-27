@@ -550,6 +550,7 @@ if (acc_res_ready && (!acc_arg_ready)) begin
 state = 3'd6;
 end
 acc_arg_ready <= 0;
+command <= 3'd0;
 end
 3'd3 : if (mem_start_ready) begin
 state = 3'd1;

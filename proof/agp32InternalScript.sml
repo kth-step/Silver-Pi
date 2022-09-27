@@ -1110,6 +1110,28 @@ Proof
     by METIS_TAC [ID_instr_index_with_MEM_instr_EX_NONE] >> fs []
 QED
 
+(*
+Theorem test1[local]:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (4,t) <> NONE ==>
+    (agp32 fext fbits t).MEM.MEM_opc = opc (FUNPOW Next (THE (I (4,t)) - 1) a)
+Proof
+  rw [is_sch_def] >>
+  Induct_on `t` >-
+   fs [is_sch_init_def] >>
+  rw [] >> Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
+   (fs [is_sch_memory_def] >>
+    Cases_on `isMemOp_isa_op (I' (4,t)) a` >- METIS_TAC [] >>
+    `I' (4,SUC t) = I' (3,t)` by fs [] >>
+    `(agp32 fext fbits (SUC t)).MEM.MEM_opc = (agp32 fext fbits t).EX.EX_opc` by cheat >>
+    fs [] >> cheat)
+   fs [is_sch_disable_def] >>
+  `I' (4,SUC t) = I' (4,t)` by fs [] >>
+  `(agp32 fext fbits (SUC t)).MEM.MEM_opc = (agp32 fext fbits t).MEM.MEM_opc` by cheat >> fs []
+QED
+*)
+
 (** instr index relation between ID and MEM stages when EX is NONE **)
 Theorem EX_instr_index_with_WB_instr_MEM_NONE:
   !I t fext fbits a.

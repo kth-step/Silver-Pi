@@ -31,3 +31,5 @@ Example: RISV-V RV32I (instr:JALR). ARMv8-A (B.<cond> <label>).
 
 4. Move the Acc from EX to the MEM stage.
 EX stage only handles ALU and shift computations, and MEM can handle the instructions that require the response from the external components, like memory and accelerator.
+
+5. Design choice for the circuit: for example, (1) why using forwarding from WB -> ID/EX, MEM -> EX; (2) delays in the memory stage.

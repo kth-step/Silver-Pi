@@ -31,6 +31,12 @@ Definition isMemOp_isa_op_def:
   else isMEM_stg_op_isa (FUNPOW Next (THE nop - 1) a)
 End
 
+Definition isMemOp_hw_op_def:
+  isMemOp_hw_op s <=> 
+  (s.MEM.MEM_opc = 2w) \/ (s.MEM.MEM_opc = 3w) \/ (s.MEM.MEM_opc = 4w) \/
+  (s.MEM.MEM_opc = 5w) \/ (s.MEM.MEM_opc = 8w) \/ (s.MEM.MEM_opc = 12w)
+End
+
 Definition reg_adr_update_isa_def:
   reg_adr_update_isa nop a adr =
   if nop = NONE then F
@@ -309,6 +315,7 @@ Definition Rel_def:
    fext.mem = (FUNPOW Next (THE (I (1,t)) - 1) a).MEM) /\
   (~fext.ready ==> ~enable_stg 1 s) /\
   (~fext.ready ==> ~enable_stg 2 s) /\
+  (isMemOp_hw_op s ==> ~enable_stg 3 s) /\
   (I (5,t-1) <> NONE ==> s.data_out = (FUNPOW Next (THE (I (5,t-1))) a).data_out) /\
   (I (5,t-1) <> NONE ==> reg_data_vaild 5 si ==> (s.R = (FUNPOW Next (THE (I (5,t-1))) a).R)) /\
   (I (5,t-1) = NONE ==> I (5,t) <> NONE ==> (s.R = (FUNPOW Next (THE (I (5,t)) - 1) a).R)) /\
@@ -379,10 +386,10 @@ End
 Definition is_sch_memory_def:
   is_sch_memory (I:num # num -> num option) (sf:num -> state_circuit) (a:ag32_state) <=>
   (!t. enable_stg 4 (sf t) ==>
-       isMemOp_isa_op (I (4,t)) a ==>
+       isMemOp_hw_op (sf t) ==>
        I (4,SUC t) = NONE) /\
   (!t. enable_stg 4 (sf t) ==>
-       ~isMemOp_isa_op (I (4,t)) a ==>
+       ~isMemOp_hw_op (sf t) ==>
        I (4,SUC t) = I (3,t))
 End
 

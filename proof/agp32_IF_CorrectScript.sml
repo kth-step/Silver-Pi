@@ -869,9 +869,10 @@ Proof
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline;IF_PC_update;Acc_compute]
                            (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
-                             ID_imm_update; ID_data_update; EX_ctrl_update; EX_forward_data;
-                             EX_ALU_input_update; EX_compute_enable_update; EX_ALU_update;
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; WB_update;
+                             ID_opc_func_update;ID_imm_update; ID_data_update; MEM_imm_update;
+                             EX_ctrl_update; EX_forward_data; EX_ALU_input_update;
+                             EX_compute_enable_update; EX_ALU_update;
                              EX_SHIFT_update; EX_jump_sel_addr_update; EX_data_rec_update]
                             (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).IF.IF_PC_input =
@@ -899,9 +900,10 @@ Proof
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline;IF_PC_update;Acc_compute]
                            (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; ID_opc_func_update;
-                             ID_imm_update; ID_data_update; EX_ctrl_update; EX_forward_data;
-                             EX_ALU_input_update; EX_compute_enable_update; EX_ALU_update;
+  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; WB_update;
+                             ID_opc_func_update;ID_imm_update; ID_data_update; MEM_imm_update;
+                             EX_ctrl_update; EX_forward_data; EX_ALU_input_update;
+                             EX_compute_enable_update; EX_ALU_update;
                              EX_SHIFT_update; EX_jump_sel_addr_update; EX_data_rec_update]
                             (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).IF.IF_PC_input =

@@ -563,9 +563,8 @@ Definition agp32_next_state_def:
                       else s' in
                s' with command := 0w)
     | 2w => (let s' = if s.acc_res_ready /\ ~s.acc_arg_ready then s' with state := 6w
-                      else s';
-                 s' = s' with acc_arg_ready := F in
-               s' with command := 0w)
+                      else s' in
+               s' with acc_arg_ready := F)
     | 3w => if fext.mem_start_ready then
               let s' = s' with state := 1w in
                 s' with command := 1w
@@ -621,11 +620,12 @@ Definition agp32_def:
   agp32 = mk_module (procs [agp32_next_state; WB_pipeline; MEM_pipeline;
                             EX_pipeline; REG_write; ID_pipeline; IF_PC_update; Acc_compute])
                     (procs [ForwardA; ForwardB; ForwardW;
-                            IF_instr_update;ID_opc_func_update; ID_imm_update; ID_data_update;
+                            IF_instr_update; WB_update; 
+                            ID_opc_func_update; ID_imm_update; ID_data_update; MEM_imm_update;
                             EX_ctrl_update; EX_forward_data; EX_ALU_input_update;
                             EX_compute_enable_update; EX_ALU_update; EX_SHIFT_update; 
                             EX_jump_sel_addr_update; EX_data_rec_update; IF_PC_input_update;
-                            MEM_ctrl_update; MEM_imm_update; WB_update; Hazard_ctrl])
+                            MEM_ctrl_update; Hazard_ctrl])
                     agp32_init
 End
 

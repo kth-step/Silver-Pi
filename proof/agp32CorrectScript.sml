@@ -72,6 +72,8 @@ Proof
    fs [enable_stg_def,not_fext_ready_and_agp32_IF_PC_write_disable] >-
    (** fext not ready, decode disabled **)
    (rw [enable_stg_def] >> METIS_TAC [agp32_ID_ID_write_enable_and_fext_ready]) >-
+   (** memory stage op and ex stage **)
+   fs [enable_stg_def,MEM_stg_op_agp32_ID_EX_write_disable] >-
    (** data_out **)
    cheat >-
    (** registers **)

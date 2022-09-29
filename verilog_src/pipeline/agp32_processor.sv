@@ -132,20 +132,6 @@ logic[5:0] WB_addrW = 'x;
 logic[5:0] WB_opc = 'x;
 
 always_comb begin
-WB_read_data = data_rdata;
-WB_read_data_byte = (WB_dataA[1:0] == 2'd0) ? 32'({WB_read_data[7:0]}) : ((WB_dataA[1:0] == 2'd1) ? 32'({WB_read_data[15:8]}) : ((WB_dataA[1:0] == 2'd2) ? 32'({WB_read_data[23:16]}) : 32'({WB_read_data[31:24]})));
-if (WB_state_flag) begin
-WB_isOut = WB_opc == 6'd6;
-WB_data_sel = ((WB_opc == 6'd0) || (WB_opc == 6'd6)) ? 3'd0 : ((WB_opc == 6'd1) ? 3'd1 : ((WB_opc == 6'd7) ? 3'd2 : ((WB_opc == 6'd9) ? 3'd3 : (((WB_opc == 6'd13) || (WB_opc == 6'd14)) ? 3'd4 : ((WB_opc == 6'd4) ? 3'd5 : ((WB_opc == 6'd5) ? 3'd6 : ((WB_opc == 6'd8) ? 3'd7 : 3'd0)))))));
-end
-WB_write_data = (WB_data_sel == 3'd0) ? WB_ALU_res : ((WB_data_sel == 3'd1) ? WB_SHIFT_res : ((WB_data_sel == 3'd2) ? 32'({data_in}) : ((WB_data_sel == 3'd3) ? (WB_PC + 32'd4) : ((WB_data_sel == 3'd4) ? WB_imm : ((WB_data_sel == 3'd5) ? WB_read_data : ((WB_data_sel == 3'd6) ? WB_read_data_byte : acc_res))))));
-end
-
-always_comb begin
-MEM_imm_updated = (MEM_opc == 6'd14) ? {MEM_imm[8:0], MEM_dataW[22:0]} : MEM_imm;
-end
-
-always_comb begin
 if (MEM_state_flag) begin
 MEM_read_mem = (MEM_opc == 6'd4) || (MEM_opc == 6'd5);
 MEM_write_mem = MEM_opc == 6'd2;
@@ -266,6 +252,10 @@ end
 end
 
 always_comb begin
+MEM_imm_updated = (MEM_opc == 6'd14) ? {MEM_imm[8:0], MEM_dataW[22:0]} : MEM_imm;
+end
+
+always_comb begin
 ID_addrA = ID_instr[22:17];
 ID_addrB = ID_instr[15:10];
 ID_addrW = ID_instr[30:25];
@@ -340,6 +330,16 @@ end else begin
 ID_func = 4'd9;
 end
 end
+end
+
+always_comb begin
+WB_read_data = data_rdata;
+WB_read_data_byte = (WB_dataA[1:0] == 2'd0) ? 32'({WB_read_data[7:0]}) : ((WB_dataA[1:0] == 2'd1) ? 32'({WB_read_data[15:8]}) : ((WB_dataA[1:0] == 2'd2) ? 32'({WB_read_data[23:16]}) : 32'({WB_read_data[31:24]})));
+if (WB_state_flag) begin
+WB_isOut = WB_opc == 6'd6;
+WB_data_sel = ((WB_opc == 6'd0) || (WB_opc == 6'd6)) ? 3'd0 : ((WB_opc == 6'd1) ? 3'd1 : ((WB_opc == 6'd7) ? 3'd2 : ((WB_opc == 6'd9) ? 3'd3 : (((WB_opc == 6'd13) || (WB_opc == 6'd14)) ? 3'd4 : ((WB_opc == 6'd4) ? 3'd5 : ((WB_opc == 6'd5) ? 3'd6 : ((WB_opc == 6'd8) ? 3'd7 : 3'd0)))))));
+end
+WB_write_data = (WB_data_sel == 3'd0) ? WB_ALU_res : ((WB_data_sel == 3'd1) ? WB_SHIFT_res : ((WB_data_sel == 3'd2) ? 32'({data_in}) : ((WB_data_sel == 3'd3) ? (WB_PC + 32'd4) : ((WB_data_sel == 3'd4) ? WB_imm : ((WB_data_sel == 3'd5) ? WB_read_data : ((WB_data_sel == 3'd6) ? WB_read_data_byte : acc_res))))));
 end
 
 always_comb begin
@@ -550,7 +550,6 @@ if (acc_res_ready && (!acc_arg_ready)) begin
 state = 3'd6;
 end
 acc_arg_ready <= 0;
-command <= 3'd0;
 end
 3'd3 : if (mem_start_ready) begin
 state = 3'd1;

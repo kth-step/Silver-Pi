@@ -1,6 +1,9 @@
 Here is the TODO list.
 
 ### Current
+- Benchmark
+  - [ ] design a circuit without forwarding by stalling instructions, and compare the result with the current design.
+
 - Proof
   - [ ] refine the Rel for the circuit and ISA states to add conditions because of multi-cycles interleaving.
  

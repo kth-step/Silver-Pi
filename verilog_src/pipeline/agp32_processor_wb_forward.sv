@@ -54,6 +54,9 @@ logic[31:0] ID_imm = 'x;
 logic[31:0] ID_dataA = 'x;
 logic[31:0] ID_dataB = 'x;
 logic[31:0] ID_dataW = 'x;
+logic[31:0] ID_read_dataA_updated = 'x;
+logic[31:0] ID_read_dataB_updated = 'x;
+logic[31:0] ID_read_dataW_updated = 'x;
 logic ID_ID_write_enable = 'x;
 logic ID_EX_write_enable = 'x;
 logic ID_flush_flag = 'x;
@@ -117,23 +120,11 @@ logic[5:0] WB_addrW = 'x;
 logic[5:0] WB_opc = 'x;
 
 always_comb begin
-WB_read_data = data_rdata;
-WB_read_data_byte = (WB_dataA[1:0] == 2'd0) ? 32'({WB_read_data[7:0]}) : ((WB_dataA[1:0] == 2'd1) ? 32'({WB_read_data[15:8]}) : ((WB_dataA[1:0] == 2'd2) ? 32'({WB_read_data[23:16]}) : 32'({WB_read_data[31:24]})));
-if (WB_state_flag) begin
-WB_isOut = WB_opc == 6'd6;
-WB_data_sel = ((WB_opc == 6'd0) || (WB_opc == 6'd6)) ? 3'd0 : ((WB_opc == 6'd1) ? 3'd1 : ((WB_opc == 6'd7) ? 3'd2 : ((WB_opc == 6'd9) ? 3'd3 : (((WB_opc == 6'd13) || (WB_opc == 6'd14)) ? 3'd4 : ((WB_opc == 6'd4) ? 3'd5 : ((WB_opc == 6'd5) ? 3'd6 : ((WB_opc == 6'd8) ? 3'd7 : 3'd0)))))));
-end
-WB_write_data = (WB_data_sel == 3'd0) ? WB_ALU_res : ((WB_data_sel == 3'd1) ? WB_SHIFT_res : ((WB_data_sel == 3'd2) ? 32'({data_in}) : ((WB_data_sel == 3'd3) ? (WB_PC + 32'd4) : ((WB_data_sel == 3'd4) ? WB_imm : ((WB_data_sel == 3'd5) ? WB_read_data : ((WB_data_sel == 3'd6) ? WB_read_data_byte : acc_res))))));
-end
-
-always_comb begin
-if (MEM_state_flag) begin
 MEM_read_mem = (MEM_opc == 6'd4) || (MEM_opc == 6'd5);
 MEM_write_mem = MEM_opc == 6'd2;
 MEM_write_mem_byte = MEM_opc == 6'd3;
 MEM_isAcc = MEM_opc == 6'd8;
 MEM_isInterrupt = MEM_opc == 6'd12;
-end
 end
 
 always_comb begin
@@ -215,18 +206,6 @@ EX_imm_updated = (EX_opc == 6'd14) ? {EX_imm[8:0], EX_dataW[22:0]} : EX_imm;
 end
 
 always_comb begin
-EX_checkA = EX_write_reg && (EX_addrW == ID_addrA) && (!ID_addrA_disable);
-MEM_checkA = MEM_write_reg && (MEM_addrW == ID_addrA) && (!ID_addrA_disable);
-WB_checkA = WB_write_reg && (WB_addrW == ID_addrA) && (!ID_addrA_disable);
-EX_checkB = EX_write_reg && (EX_addrW == ID_addrB) && (!ID_addrB_disable);
-MEM_checkB = MEM_write_reg && (MEM_addrW == ID_addrB) && (!ID_addrB_disable);
-WB_checkB = WB_write_reg && (WB_addrW == ID_addrB) && (!ID_addrB_disable);
-EX_checkW = EX_write_reg && (EX_addrW == ID_addrW) && (!ID_addrW_disable);
-MEM_checkW = MEM_write_reg && (MEM_addrW == ID_addrW) && (!ID_addrW_disable);
-WB_checkW = WB_write_reg && (WB_addrW == ID_addrW) && (!ID_addrW_disable);
-end
-
-always_comb begin
 ID_addrA = ID_instr[22:17];
 ID_addrB = ID_instr[15:10];
 ID_addrW = ID_instr[30:25];
@@ -236,12 +215,24 @@ ID_addrW_disable = ID_instr[31];
 ID_read_dataA = R[ID_addrA];
 ID_read_dataB = R[ID_addrB];
 ID_read_dataW = R[ID_addrW];
+EX_checkA = EX_write_reg && (EX_addrW == ID_addrA) && (!ID_addrA_disable);
+MEM_checkA = MEM_write_reg && (MEM_addrW == ID_addrA) && (!ID_addrA_disable);
+WB_checkA = WB_write_reg && (WB_addrW == ID_addrA) && (!ID_addrA_disable);
+EX_checkB = EX_write_reg && (EX_addrW == ID_addrB) && (!ID_addrB_disable);
+MEM_checkB = MEM_write_reg && (MEM_addrW == ID_addrB) && (!ID_addrB_disable);
+WB_checkB = WB_write_reg && (WB_addrW == ID_addrB) && (!ID_addrB_disable);
+EX_checkW = EX_write_reg && (EX_addrW == ID_addrW) && (!ID_addrW_disable);
+MEM_checkW = MEM_write_reg && (MEM_addrW == ID_addrW) && (!ID_addrW_disable);
+WB_checkW = WB_write_reg && (WB_addrW == ID_addrW) && (!ID_addrW_disable);
+ID_read_dataA_updated = WB_checkA ? WB_write_data : ID_read_dataA;
+ID_read_dataB_updated = WB_checkB ? WB_write_data : ID_read_dataB;
+ID_read_dataW_updated = WB_checkW ? WB_write_data : ID_read_dataW;
 ID_immA = {32'($signed(ID_instr[22:17]))};
 ID_immB = {32'($signed(ID_instr[15:10]))};
 ID_immW = {32'($signed(ID_instr[30:25]))};
-ID_dataA = ID_instr[23] ? ID_immA : ID_read_dataA;
-ID_dataB = ID_instr[16] ? ID_immB : ID_read_dataB;
-ID_dataW = ID_instr[31] ? ID_immW : ID_read_dataW;
+ID_dataA = ID_instr[23] ? ID_immA : ID_read_dataA_updated;
+ID_dataB = ID_instr[16] ? ID_immB : ID_read_dataB_updated;
+ID_dataW = ID_instr[31] ? ID_immW : ID_read_dataW_updated;
 end
 
 always_comb begin
@@ -298,6 +289,16 @@ end
 end
 
 always_comb begin
+WB_read_data = data_rdata;
+WB_read_data_byte = (WB_dataA[1:0] == 2'd0) ? 32'({WB_read_data[7:0]}) : ((WB_dataA[1:0] == 2'd1) ? 32'({WB_read_data[15:8]}) : ((WB_dataA[1:0] == 2'd2) ? 32'({WB_read_data[23:16]}) : 32'({WB_read_data[31:24]})));
+if (WB_state_flag) begin
+WB_isOut = WB_opc == 6'd6;
+WB_data_sel = ((WB_opc == 6'd0) || (WB_opc == 6'd6)) ? 3'd0 : ((WB_opc == 6'd1) ? 3'd1 : ((WB_opc == 6'd7) ? 3'd2 : ((WB_opc == 6'd9) ? 3'd3 : (((WB_opc == 6'd13) || (WB_opc == 6'd14)) ? 3'd4 : ((WB_opc == 6'd4) ? 3'd5 : ((WB_opc == 6'd5) ? 3'd6 : ((WB_opc == 6'd8) ? 3'd7 : 3'd0)))))));
+end
+WB_write_data = (WB_data_sel == 3'd0) ? WB_ALU_res : ((WB_data_sel == 3'd1) ? WB_SHIFT_res : ((WB_data_sel == 3'd2) ? 32'({data_in}) : ((WB_data_sel == 3'd3) ? (WB_PC + 32'd4) : ((WB_data_sel == 3'd4) ? WB_imm : ((WB_data_sel == 3'd5) ? WB_read_data : ((WB_data_sel == 3'd6) ? WB_read_data_byte : acc_res))))));
+end
+
+always_comb begin
 IF_instr = ready ? inst_rdata : 32'd63;
 end
 
@@ -342,7 +343,7 @@ MEM_state_flag = 1;
 MEM_NOP_flag = 0;
 WB_state_flag = 1;
 end else begin
-if (EX_checkA || EX_checkB || EX_checkW || MEM_checkA || MEM_checkB || MEM_checkW || WB_checkA || WB_checkB || WB_checkW) begin
+if (EX_checkA || EX_checkB || EX_checkW || MEM_checkA || MEM_checkB || MEM_checkW) begin
 IF_PC_write_enable = 0;
 ID_ID_write_enable = 0;
 ID_flush_flag = 0;

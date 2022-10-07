@@ -127,13 +127,11 @@ WB_write_data = (WB_data_sel == 3'd0) ? WB_ALU_res : ((WB_data_sel == 3'd1) ? WB
 end
 
 always_comb begin
-if (MEM_state_flag) begin
 MEM_read_mem = (MEM_opc == 6'd4) || (MEM_opc == 6'd5);
 MEM_write_mem = MEM_opc == 6'd2;
 MEM_write_mem_byte = MEM_opc == 6'd3;
 MEM_isAcc = MEM_opc == 6'd8;
 MEM_isInterrupt = MEM_opc == 6'd12;
-end
 end
 
 always_comb begin
@@ -302,7 +300,7 @@ IF_instr = ready ? inst_rdata : 32'd63;
 end
 
 always_comb begin
-if ((state == 3'd1) || ((state == 3'd2) || ((state == 3'd3) || ((state == 3'd5) || ((state == 3'd4) || (state == 3'd6)))))) begin
+if ((state == 3'd1) || ((state == 3'd2) || ((state == 3'd3) || ((state == 3'd4) || ((state == 3'd5)))))) begin
 IF_PC_write_enable = 0;
 ID_ID_write_enable = 0;
 ID_flush_flag = 0;
@@ -486,14 +484,14 @@ state = 3'd4;
 do_interrupt = 0;
 interrupt_req <= 1;
 end else begin
-state = 3'd6;
+state = 3'd0;
 end
 end
 command <= 3'd0;
 end
 3'd2 : begin
 if (acc_res_ready && (!acc_arg_ready)) begin
-state = 3'd6;
+state = 3'd0;
 end
 acc_arg_ready <= 0;
 command <= 3'd0;
@@ -503,12 +501,8 @@ state = 3'd1;
 command <= 3'd1;
 end
 3'd4 : if (interrupt_ack) begin
-state = 3'd6;
-interrupt_req <= 0;
-end
-3'd6 : begin
 state = 3'd0;
-command <= 3'd1;
+interrupt_req <= 0;
 end
 endcase
 end else begin
@@ -524,7 +518,7 @@ end else begin
 case (acc_state)
 2'd0 : acc_state = 2'd1;
 2'd1 : begin
-acc_res <= 32'({acc_arg[31:16] + acc_arg[15:0]});
+acc_res = 32'({acc_arg[31:16] + acc_arg[15:0]});
 acc_res_ready <= 1;
 end
 endcase

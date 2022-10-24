@@ -25,7 +25,7 @@ Proof
     by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >>
   Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
    (fs [is_sch_decode_def] >>
-    Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >-
+    Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_hw_op (agp32 fext fbits t)` >-
      METIS_TAC [] >>
     `I' (2,SUC t) = I' (1,t)` by fs [] >> fs [] >>
     `s'.ID.ID_ID_write_enable` by fs [enable_stg_def,Abbr `s`] >>
@@ -57,7 +57,7 @@ Proof
     by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >>
   Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
    (fs [is_sch_decode_def] >>
-    Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >-
+    Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_hw_op (agp32 fext fbits t)` >-
      METIS_TAC [] >>
     `I' (2,SUC t) = I' (1,t)` by fs [] >> fs [] >>
     `s'.ID.ID_ID_write_enable` by fs [enable_stg_def,Abbr `s`] >>
@@ -66,9 +66,7 @@ Proof
         by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >>
       `s.EX.EX_jump_sel`
         by fs [agp32_ID_ID_write_enable_flush_flag_then_EX_jump_sel,Abbr `s`,enable_stg_def] >>
-      `reg_data_vaild 3 s`
-        by fs [agp32_ID_ID_write_enable_MEM_state_flag,Abbr `s`,reg_data_vaild_def,enable_stg_def] >>
-      fs [Rel_def,EX_Rel_spec_def]) >>
+      fs [Abbr `s`,isJump_hw_op_def]) >>
     `(fext t).ready` by METIS_TAC [enable_stg_def,agp32_ID_ID_write_enable_and_fext_ready] >>
     fs [Rel_def,IF_instr_Rel_def]) >>
   `I' (2,SUC t) = I' (2,t)` by fs [is_sch_disable_def] >>
@@ -96,8 +94,7 @@ Proof
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
-                             WB_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
   `?s0. (agp32 fext fbits (SUC t)).ID.ID_addrA = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrA /\
   (agp32 fext fbits (SUC t)).ID.ID_addrB = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrB /\
   (agp32 fext fbits (SUC t)).ID.ID_addrW = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrW`
@@ -126,8 +123,7 @@ Proof
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
-                             WB_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
   `((agp32 fext fbits (SUC t)).ID.ID_addrA_disable <=>
     (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrA_disable) /\
   ((agp32 fext fbits (SUC t)).ID.ID_addrB_disable <=>
@@ -159,8 +155,7 @@ Proof
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
-                             WB_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).ID.ID_immA = (ID_data_update (fext (SUC t)) s' s'').ID.ID_immA /\
   (agp32 fext fbits (SUC t)).ID.ID_immB = (ID_data_update (fext (SUC t)) s' s'').ID.ID_immB /\
   (agp32 fext fbits (SUC t)).ID.ID_immW = (ID_data_update (fext (SUC t)) s' s'').ID.ID_immW`
@@ -186,8 +181,7 @@ Proof
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
-                             WB_update; ID_opc_func_update] (fext (SUC t)) s' s'` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update] (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).ID.ID_imm = (ID_imm_update (fext (SUC t)) s' s'').ID.ID_imm`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_imm_updated_by_ID_imm_update] >>
   `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
@@ -211,8 +205,7 @@ Proof
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW;
-                             IF_instr_update; WB_update] (fext (SUC t)) s' s'` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update] (fext (SUC t)) s' s'` >>
   `?s0.(agp32 fext fbits (SUC t)).ID.ID_opc = (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_opc_func_updated_by_ID_opc_func_update] >>
   `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
@@ -285,8 +278,7 @@ Proof
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW;
-                             IF_instr_update; WB_update] (fext (SUC t)) s' s'` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update] (fext (SUC t)) s' s'` >>
   `?s0.
     (agp32 fext fbits (SUC t)).ID.ID_opc = (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc /\
   (agp32 fext fbits (SUC t)).ID.ID_func = (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_func`
@@ -374,100 +366,6 @@ Proof
 QED
 
 
-(** data forwarding from WB to ID stage **)
-Theorem agp32_Rel_ag32_ID_Forward_flags_correct:
-  !fext fbits t.
-    ((agp32 fext fbits (SUC t)).ID.ID_ForwardA <=>
-     (agp32 fext fbits (SUC t)).ID.ID_addrA = (agp32 fext fbits (SUC t)).WB.WB_addrW /\
-     (agp32 fext fbits (SUC t)).WB.WB_write_reg /\
-     (agp32 fext fbits t).WB.WB_state_flag) /\
-    ((agp32 fext fbits (SUC t)).ID.ID_ForwardB <=>
-     (agp32 fext fbits (SUC t)).ID.ID_addrB = (agp32 fext fbits (SUC t)).WB.WB_addrW /\
-     (agp32 fext fbits (SUC t)).WB.WB_write_reg /\
-     (agp32 fext fbits t).WB.WB_state_flag) /\
-    ((agp32 fext fbits (SUC t)).ID.ID_ForwardW <=>
-     (agp32 fext fbits (SUC t)).ID.ID_addrW = (agp32 fext fbits (SUC t)).WB.WB_addrW /\
-     (agp32 fext fbits (SUC t)).WB.WB_write_reg /\
-     (agp32 fext fbits t).WB.WB_state_flag)
-Proof
-  rpt gen_tac >> rpt disch_tac >>
-  fs [enable_stg_def] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
-  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
-                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
-                             WB_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
-  `((agp32 fext fbits (SUC t)).ID.ID_ForwardA = (ID_data_update (fext (SUC t)) s' s'').ID.ID_ForwardA) /\
-  ((agp32 fext fbits (SUC t)).ID.ID_ForwardB = (ID_data_update (fext (SUC t)) s' s'').ID.ID_ForwardB) /\
-  ((agp32 fext fbits (SUC t)).ID.ID_ForwardW = (ID_data_update (fext (SUC t)) s' s'').ID.ID_ForwardW)`
-    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_Forward_flags_updated_by_ID_data_update] >>
-  `?s0. (agp32 fext fbits (SUC t)).ID.ID_addrA = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrA /\
-  (agp32 fext fbits (SUC t)).ID.ID_addrB = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrB /\
-  (agp32 fext fbits (SUC t)).ID.ID_addrW = (ID_data_update (fext (SUC t)) s0 s'').ID.ID_addrW`
-    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_addr_updated_by_ID_data_update] >>
-  fs [ID_data_update_def] >>
-  `s.WB.WB_state_flag = s''.WB.WB_state_flag`
-    by METIS_TAC [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_WB_state_flag_as_before] >>
-  `(s'.WB.WB_addrW = (agp32 fext fbits (SUC t)).WB.WB_addrW) /\
-  (s'.WB.WB_write_reg <=> (agp32 fext fbits (SUC t)).WB.WB_write_reg)`
-    by fs [Abbr `s`,Abbr `s'`,agp32_same_WB_pipeline_items_after_WB_pipeline] >> rw []
-QED
-
-
-(* ID_Forward_Rel: forwarding singal from WB to ID stage *)
-Theorem agp32_Rel_ag32_ID_Forward_Rel_correct:
-  !fext fbits a t I.
-    ID_Forward_Rel (agp32 fext fbits (SUC t)) (agp32 fext fbits t)
-Proof
-  rw [ID_Forward_Rel_def] >>
-  METIS_TAC [agp32_Rel_ag32_ID_Forward_flags_correct]
-QED
-
-
-
-(** lemmas about ID_Forward flags and reg_adr_update_isa **)
-Theorem agp32_ID_ForwardA_flag_reg_adr_update_isa:
-  !I fext fbits t a.
-    enable_stg 2 (agp32 fext fbits t) ==>
-    reg_adr_update_isa (I (5,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA =
-    (agp32 fext fbits (SUC t)).ID.ID_ForwardA
-Proof
-  rw [agp32_Rel_ag32_ID_Forward_flags_correct,enable_stg_def] >>
-  fs [agp32_ID_ID_write_enable_WB_state_flag] >>
-  rw [reg_adr_update_isa_def] >>
-  Cases_on `I' (5,SUC t) = NONE` >-
-   (rw [] >> cheat) >>
-  rw [] >> cheat
-QED
-
-Theorem agp32_ID_ForwardB_flag_reg_adr_update_isa:
-  !I fext fbits t a.
-    enable_stg 2 (agp32 fext fbits t) ==>
-    reg_adr_update_isa (I (5,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrB =
-    (agp32 fext fbits (SUC t)).ID.ID_ForwardB
-Proof
-  rw [agp32_Rel_ag32_ID_Forward_flags_correct,enable_stg_def] >>
-  fs [agp32_ID_ID_write_enable_WB_state_flag] >>
-  rw [reg_adr_update_isa_def] >>
-  Cases_on `I' (5,SUC t) = NONE` >-
-   (rw [] >> cheat) >>
-  rw [] >> cheat
-QED
-
-Theorem agp32_ID_ForwardW_flag_reg_adr_update_isa:
-  !I fext fbits t a.
-    enable_stg 2 (agp32 fext fbits t) ==>
-    reg_adr_update_isa (I (5,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrW =
-    (agp32 fext fbits (SUC t)).ID.ID_ForwardW
-Proof
-  rw [agp32_Rel_ag32_ID_Forward_flags_correct,enable_stg_def] >>
-  fs [agp32_ID_ID_write_enable_WB_state_flag] >>
-  rw [reg_adr_update_isa_def] >>
-  Cases_on `I' (5,SUC t) = NONE` >-
-   (rw [] >> cheat) >>
-  rw [] >> cheat
-QED
-
-
 (** ID_read_dataA: when instrs in EX, MEM and WB do not change registers **)
 Theorem agp32_Rel_ag32_ID_read_dataA_no_write_before:
   !fext fbits a t I.
@@ -486,8 +384,7 @@ Proof
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
-                             WB_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).ID.ID_read_dataA =
   (ID_data_update (fext (SUC t)) s' s'').ID.ID_read_dataA`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_read_data_updated_by_ID_data_update] >>
@@ -603,11 +500,10 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,t) is not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     subgoal `I' (2,SUC t) = I' (1,t)` >-
      (fs [is_sch_def,is_sch_decode_def,Abbr `s`] >>
-      Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >>
       METIS_TAC []) >> fs [] >>
     subgoal `I' (5,SUC t) = I' (4,t)` >-
      (fs [is_sch_def,is_sch_writeback_def,is_sch_disable_def,Abbr `s`] >>
@@ -620,25 +516,27 @@ Proof
       Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
       fs [enable_stg_def] >>
       METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                 agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                 agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
     subgoal `I' (3,SUC t) = I' (2,t)` >-
      (fs [is_sch_def,is_sch_execute_def,Abbr `s`] >>
       `enable_stg 3 (agp32 fext fbits t)`
-        by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
-      Cases_on `isJump_isa_op (I' (3,t)) a` >>
-      METIS_TAC [isJump_isa_op_not_none]) >> fs [] >>
+        by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
+      Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+       cheat >>
+      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >-
+       METIS_TAC [] >> fs [isJump_hw_op_def,enable_stg_def] >>
+      METIS_TAC [agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard]) >> fs [] >>
     `THE (I' (1,t)) = THE (I' (5,t)) + 1`
       by METIS_TAC [ID_EX_MEM_NONE_IF_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
     subgoal `I' (2,SUC t) = I' (1,t)` >-
      (fs [is_sch_def,is_sch_decode_def,Abbr `s`] >>
-      Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_isa_op (I' (3,t)) a` >>
       METIS_TAC []) >> fs [] >>
     subgoal `I' (5,SUC t) = I' (4,t)` >-
      (fs [is_sch_def,is_sch_writeback_def,is_sch_disable_def,Abbr `s`] >>
@@ -651,13 +549,15 @@ Proof
       Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
       fs [enable_stg_def] >>
       METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                 agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                 agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
     subgoal `I' (3,SUC t) = I' (2,t)` >-
      (fs [is_sch_def,is_sch_execute_def,Abbr `s`] >>
       `enable_stg 3 (agp32 fext fbits t)`
-        by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
-      Cases_on `isJump_isa_op (I' (3,t)) a` >>
-      METIS_TAC [isJump_isa_op_not_none]) >> fs [] >>
+        by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
+      Cases_on `isJump_isa_op (I' (3,t)) a` >-
+       METIS_TAC [isJump_isa_op_not_none] >>
+      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >>
+      METIS_TAC []) >> fs [] >>
     `THE (I' (2,t)) = THE (I' (5,t)) + 1`
       by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >>
     `THE (I' (5,t)) = THE (I' (2,t)) - 1` by fs [] >>
@@ -666,7 +566,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -683,7 +583,7 @@ Proof
               Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
               fs [enable_stg_def] >>
               METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                         agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                         agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
       METIS_TAC [EX_instr_index_with_WB_instr_plus_1_MEM_NONE]) >>
     `THE (I' (5,t)) = THE (I' (4,SUC t)) - 1` by fs [] >> fs [] >>
     `(FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R ((22 >< 17) i) =
@@ -693,7 +593,7 @@ Proof
       by METIS_TAC [EX_NONE_ID_instr_index_with_MEM_instr_plus_1] >> fs []) >-
    (** I (3,SUC t), I (4,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -710,7 +610,7 @@ Proof
               Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
               fs [enable_stg_def] >>
               METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                         agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                         agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
       METIS_TAC [EX_instr_index_with_WB_instr_plus_1_MEM_NONE]) >>
     `THE (I' (5,t)) = THE (I' (4,SUC t)) - 1` by fs [] >> fs [] >>
     `(FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R ((22 >< 17) i) =
@@ -724,7 +624,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -740,7 +640,7 @@ Proof
       by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -760,7 +660,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -780,7 +680,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >>
   (** all are not NONE **)
   `s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-  `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+  `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
   `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
   `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
     by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -826,8 +726,7 @@ Proof
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
-                             WB_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).ID.ID_read_dataB =
   (ID_data_update (fext (SUC t)) s' s'').ID.ID_read_dataB`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_read_data_updated_by_ID_data_update] >>
@@ -942,7 +841,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,t) is not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     subgoal `I' (2,SUC t) = I' (1,t)` >-
      (fs [is_sch_def,is_sch_decode_def,Abbr `s`] >>
@@ -959,18 +858,21 @@ Proof
       Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
       fs [enable_stg_def] >>
       METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                 agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                 agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
     subgoal `I' (3,SUC t) = I' (2,t)` >-
      (fs [is_sch_def,is_sch_execute_def,Abbr `s`] >>
       `enable_stg 3 (agp32 fext fbits t)`
-        by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
-      Cases_on `isJump_isa_op (I' (3,t)) a` >>
-      METIS_TAC [isJump_isa_op_not_none]) >> fs [] >>
+        by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
+      Cases_on `isJump_isa_op (I' (3,t)) a` >-
+       METIS_TAC [isJump_isa_op_not_none] >>
+      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >-
+       METIS_TAC [] >> fs [] >>
+      cheat) >> fs [] >>
     `THE (I' (1,t)) = THE (I' (5,t)) + 1`
       by METIS_TAC [ID_EX_MEM_NONE_IF_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -990,13 +892,15 @@ Proof
       Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
       fs [enable_stg_def] >>
       METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                 agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
-    subgoal `I' (3,SUC t) = I' (2,t)` >-
+                 agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
+     subgoal `I' (3,SUC t) = I' (2,t)` >-
      (fs [is_sch_def,is_sch_execute_def,Abbr `s`] >>
       `enable_stg 3 (agp32 fext fbits t)`
-        by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
-      Cases_on `isJump_isa_op (I' (3,t)) a` >>
-      METIS_TAC [isJump_isa_op_not_none]) >> fs [] >>
+        by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
+      Cases_on `isJump_isa_op (I' (3,t)) a` >-
+       METIS_TAC [isJump_isa_op_not_none] >>
+      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >>
+      METIS_TAC []) >> fs [] >>
     `THE (I' (2,t)) = THE (I' (5,t)) + 1`
       by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >>
     `THE (I' (5,t)) = THE (I' (2,t)) - 1` by fs [] >>
@@ -1005,7 +909,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1022,7 +926,7 @@ Proof
               Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
               fs [enable_stg_def] >>
               METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                         agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                         agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
       METIS_TAC [EX_instr_index_with_WB_instr_plus_1_MEM_NONE]) >>
     `THE (I' (5,t)) = THE (I' (4,SUC t)) - 1` by fs [] >> fs [] >>
     `(FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R ((15 >< 10) i) =
@@ -1032,7 +936,7 @@ Proof
       by METIS_TAC [EX_NONE_ID_instr_index_with_MEM_instr_plus_1] >> fs []) >-
    (** I (3,SUC t), I (4,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1049,7 +953,7 @@ Proof
               Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
               fs [enable_stg_def] >>
               METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                         agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                         agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
       METIS_TAC [EX_instr_index_with_WB_instr_plus_1_MEM_NONE]) >>
     `THE (I' (5,t)) = THE (I' (4,SUC t)) - 1` by fs [] >> fs [] >>
     `(FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R ((15 >< 10) i) =
@@ -1063,7 +967,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1079,7 +983,7 @@ Proof
       by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1099,7 +1003,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1119,7 +1023,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >>
   (** all are not NONE **)
   `s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-  `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+  `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
   `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
   `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
     by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1165,8 +1069,7 @@ Proof
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update;
-                             WB_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).ID.ID_read_dataW =
   (ID_data_update (fext (SUC t)) s' s'').ID.ID_read_dataW`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_read_data_updated_by_ID_data_update] >>
@@ -1281,7 +1184,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,t) is not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     subgoal `I' (2,SUC t) = I' (1,t)` >-
      (fs [is_sch_def,is_sch_decode_def,Abbr `s`] >>
@@ -1298,18 +1201,21 @@ Proof
       Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
       fs [enable_stg_def] >>
       METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                 agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                 agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
     subgoal `I' (3,SUC t) = I' (2,t)` >-
      (fs [is_sch_def,is_sch_execute_def,Abbr `s`] >>
       `enable_stg 3 (agp32 fext fbits t)`
-        by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
-      Cases_on `isJump_isa_op (I' (3,t)) a` >>
-      METIS_TAC [isJump_isa_op_not_none]) >> fs [] >>
+        by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
+      Cases_on `isJump_isa_op (I' (3,t)) a` >-
+       METIS_TAC [isJump_isa_op_not_none] >>
+      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >-
+       METIS_TAC [] >> fs [] >>
+      cheat) >> fs [] >>
     `THE (I' (1,t)) = THE (I' (5,t)) + 1`
       by METIS_TAC [ID_EX_MEM_NONE_IF_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1329,13 +1235,15 @@ Proof
       Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
       fs [enable_stg_def] >>
       METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                 agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                 agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
     subgoal `I' (3,SUC t) = I' (2,t)` >-
      (fs [is_sch_def,is_sch_execute_def,Abbr `s`] >>
       `enable_stg 3 (agp32 fext fbits t)`
-        by fs [enable_stg_def,agp32_ID_ID_write_enable_eq_ID_EX_write_enable] >>
-      Cases_on `isJump_isa_op (I' (3,t)) a` >>
-      METIS_TAC [isJump_isa_op_not_none]) >> fs [] >>
+        by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
+      Cases_on `isJump_isa_op (I' (3,t)) a` >-
+       METIS_TAC [isJump_isa_op_not_none] >>
+      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >>
+      METIS_TAC []) >> fs [] >>
     `THE (I' (2,t)) = THE (I' (5,t)) + 1`
       by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >>
     `THE (I' (5,t)) = THE (I' (2,t)) - 1` by fs [] >>
@@ -1344,7 +1252,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1361,7 +1269,7 @@ Proof
               Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
               fs [enable_stg_def] >>
               METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                         agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                         agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
       METIS_TAC [EX_instr_index_with_WB_instr_plus_1_MEM_NONE]) >>
     `THE (I' (5,t)) = THE (I' (4,SUC t)) - 1` by fs [] >> fs [] >>
     `(FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R ((30 >< 25) i) =
@@ -1371,7 +1279,7 @@ Proof
       by METIS_TAC [EX_NONE_ID_instr_index_with_MEM_instr_plus_1] >> fs []) >-
    (** I (3,SUC t), I (4,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1388,7 +1296,7 @@ Proof
               Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >>
               fs [enable_stg_def] >>
               METIS_TAC [MEM_stg_op_agp32_ID_EX_write_disable,
-                         agp32_ID_ID_write_enable_eq_ID_EX_write_enable]) >> fs [] >>
+                         agp32_ID_ID_write_enable_and_ID_EX_write_enable]) >> fs [] >>
       METIS_TAC [EX_instr_index_with_WB_instr_plus_1_MEM_NONE]) >>
     `THE (I' (5,t)) = THE (I' (4,SUC t)) - 1` by fs [] >> fs [] >>
     `(FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R ((30 >< 25) i) =
@@ -1402,7 +1310,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1418,7 +1326,7 @@ Proof
       by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1438,7 +1346,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (`s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-    `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+    `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1458,7 +1366,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >>
   (** all are not NONE **)
   `s.WB.WB_state_flag` by fs [Abbr `s`,enable_stg_def,agp32_ID_ID_write_enable_WB_state_flag] >>
-  `reg_data_vaild 5 s` by fs [Abbr `s`,reg_data_vaild_def] >>
+  `wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
   `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
   `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
     by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
@@ -1486,64 +1394,6 @@ Proof
 QED
 
 
-(** ID_read_dataA_updated: when instrs in EX, MEM and WB do not change registers **)
-Theorem agp32_Rel_ag32_ID_read_dataA_updated_no_write_before:
-  !fext fbits a t I.
-    is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
-    enable_stg 2 (agp32 fext fbits t) ==>
-    I (2,SUC t) <> NONE ==>
-    ~reg_adr_update_isa (I (3,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA ==>
-    ~reg_adr_update_isa (I (4,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA ==>
-    ~reg_adr_update_isa (I (5,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA ==>
-    (agp32 fext fbits (SUC t)).ID.ID_read_dataA_updated =
-    reg_dataA (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
-Proof
-  rw [] >>
-  `~(agp32 fext fbits (SUC t)).ID.ID_ForwardA`
-    by METIS_TAC [agp32_ID_ForwardA_flag_reg_adr_update_isa] >>
-  fs [agp32_ID_not_ForwardA_read_dataA_read_dataA_updated,agp32_Rel_ag32_ID_read_dataA_no_write_before]
-QED
-
-(** ID_read_dataB_updated: when instrs in EX, MEM and WB do not change registers **)
-Theorem agp32_Rel_ag32_ID_read_dataB_updated_no_write_before:
-  !fext fbits a t I.
-    is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
-    enable_stg 2 (agp32 fext fbits t) ==>
-    I (2,SUC t) <> NONE ==>
-    ~reg_adr_update_isa (I (3,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrB ==>
-    ~reg_adr_update_isa (I (4,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrB ==>
-    ~reg_adr_update_isa (I (5,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrB ==>
-    (agp32 fext fbits (SUC t)).ID.ID_read_dataB_updated =
-    reg_dataB (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
-Proof
-  rw [] >>
-  `~(agp32 fext fbits (SUC t)).ID.ID_ForwardB`
-    by METIS_TAC [agp32_ID_ForwardB_flag_reg_adr_update_isa] >>
-  fs [agp32_ID_not_ForwardB_read_dataB_read_dataB_updated,agp32_Rel_ag32_ID_read_dataB_no_write_before]
-QED
-
-(** ID_read_dataW_updated: when instrs in EX, MEM and WB do not change registers **)
-Theorem agp32_Rel_ag32_ID_read_dataW_updated_no_write_before:
-  !fext fbits a t I.
-    is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
-    enable_stg 2 (agp32 fext fbits t) ==>
-    I (2,SUC t) <> NONE ==>
-    ~reg_adr_update_isa (I (3,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrW ==>
-    ~reg_adr_update_isa (I (4,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrW ==>
-    ~reg_adr_update_isa (I (5,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrW ==>
-    (agp32 fext fbits (SUC t)).ID.ID_read_dataW_updated =
-    reg_dataW (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
-Proof
-  rw [] >>
-  `~(agp32 fext fbits (SUC t)).ID.ID_ForwardW`
-    by METIS_TAC [agp32_ID_ForwardW_flag_reg_adr_update_isa] >>
-  fs [agp32_ID_not_ForwardW_read_dataW_read_dataW_updated,agp32_Rel_ag32_ID_read_dataW_no_write_before]
-QED
-
-
 (** ID_dataA: when instrs in EX, MEM and WB do not change registers **)
 Theorem agp32_Rel_ag32_ID_dataA_no_write_before:
   !fext fbits a t I.
@@ -1561,8 +1411,7 @@ Proof
   `~flagA (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)`
     by METIS_TAC [is_sch_def,agp32_Rel_ag32_ID_flag_correct] >>
   rw [dataA_correct_rewrite_flag_imm_reg_data,v2w_single_0w] >>
-  fs [agp32_ID_addrA_enable_dataA_read_dataA_updated,
-      agp32_Rel_ag32_ID_read_dataA_updated_no_write_before]
+  fs [agp32_ID_addrA_enable_dataA_read_dataA,agp32_Rel_ag32_ID_read_dataA_no_write_before]
 QED
 
 (** ID_dataB: when instrs in EX, MEM and WB do not change registers **)
@@ -1582,8 +1431,8 @@ Proof
   `~flagB (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)`
     by METIS_TAC [is_sch_def,agp32_Rel_ag32_ID_flag_correct] >>
   rw [dataB_correct_rewrite_flag_imm_reg_data,v2w_single_0w] >>
-  fs [agp32_ID_addrB_enable_dataB_read_dataB_updated,
-      agp32_Rel_ag32_ID_read_dataB_updated_no_write_before]
+  fs [agp32_ID_addrB_enable_dataB_read_dataB,
+      agp32_Rel_ag32_ID_read_dataB_no_write_before]
 QED
 
 (** ID_dataW: when instrs in EX, MEM and WB do not change registers **)
@@ -1603,29 +1452,9 @@ Proof
   `~flagW (FUNPOW Next (THE (I' (2,SUC t)) − 1) a)`
     by METIS_TAC [is_sch_def,agp32_Rel_ag32_ID_flag_correct] >>
   rw [dataW_correct_rewrite_flag_imm_reg_data,v2w_single_0w] >>
-  fs [agp32_ID_addrW_enable_dataW_read_dataW_updated,
-      agp32_Rel_ag32_ID_read_dataW_updated_no_write_before]
+  fs [agp32_ID_addrW_enable_dataW_read_dataW,
+      agp32_Rel_ag32_ID_read_dataW_no_write_before]
 QED
-
-(** ID_read_dataA_updated: WB updates the reading data port **)
-Theorem agp32_Rel_ag32_ID_read_dataA_updated_only_WB_write_before:
-  !fext fbits a t I.
-    is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
-    enable_stg 2 (agp32 fext fbits t) ==>
-    I (2,SUC t) <> NONE ==>
-    ~reg_adr_update_isa (I (3,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA ==>
-    ~reg_adr_update_isa (I (4,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA ==>
-    reg_adr_update_isa (I (5,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA ==>
-    (agp32 fext fbits (SUC t)).ID.ID_read_dataA_updated =
-    reg_dataA (FUNPOW Next (THE (I (2,SUC t)) − 1) a)
-Proof
-  rw [] >>
-  `(agp32 fext fbits (SUC t)).ID.ID_ForwardA`
-    by METIS_TAC [agp32_ID_ForwardA_flag_reg_adr_update_isa] >>
-  cheat
-QED
-
 
 (* ID register data *)
 Theorem agp32_Rel_ag32_ID_reg_data_Rel_correct:
@@ -1640,12 +1469,8 @@ Proof
   rw [ID_reg_data_Rel_def] >>
   fs [agp32_Rel_ag32_ID_read_dataA_no_write_before,agp32_Rel_ag32_ID_read_dataB_no_write_before,
       agp32_Rel_ag32_ID_read_dataW_no_write_before,
-      agp32_Rel_ag32_ID_read_dataA_updated_no_write_before,
-      agp32_Rel_ag32_ID_read_dataB_updated_no_write_before,
-      agp32_Rel_ag32_ID_read_dataW_updated_no_write_before,
       agp32_Rel_ag32_ID_dataA_no_write_before,agp32_Rel_ag32_ID_dataB_no_write_before,
-      agp32_Rel_ag32_ID_dataW_no_write_before] >>
-  cheat
+      agp32_Rel_ag32_ID_dataW_no_write_before]
 QED
 
 val _ = export_theory ();

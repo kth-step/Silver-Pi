@@ -17,9 +17,6 @@ Datatype:
                  ID_read_dataA: word32;
                  ID_read_dataB: word32;
                  ID_read_dataW: word32;
-                 ID_read_dataA_updated: word32;
-                 ID_read_dataB_updated: word32;
-                 ID_read_dataW_updated: word32;
                  ID_immA: word32;
                  ID_immB: word32;
                  ID_immW: word32;
@@ -33,9 +30,6 @@ Datatype:
                  ID_addrA_disable: bool;
                  ID_addrB_disable: bool;
                  ID_addrW_disable: bool;
-                 ID_ForwardA: bool;
-                 ID_ForwardB: bool;
-                 ID_ForwardW: bool;
                  ID_addrA: word6;
                  ID_addrB: word6;
                  ID_addrW: word6;
@@ -50,32 +44,22 @@ Datatype:
                  EX_dataA: word32;
                  EX_dataB: word32;
                  EX_dataW: word32;
-                 EX_dataA_updated: word32;
-                 EX_dataB_updated: word32;
-                 EX_dataW_updated: word32;
-                 EX_dataA_rec: word32;
-                 EX_dataB_rec: word32;
-                 EX_dataW_rec: word32;
                  EX_imm: word32;
+                 EX_imm_updated: word32;
                  EX_ALU_input1: word32;
                  EX_ALU_input2: word32;
                  EX_carry_flag : bool;
                  EX_overflow_flag : bool;
                  EX_ALU_res: word32;
                  EX_SHIFT_res: word32;
-                 EX_addrA_disable: bool;
-                 EX_addrB_disable: bool;
-                 EX_addrW_disable: bool;
                  EX_NOP_flag: bool;
-                 EX_compute_enable: bool;
+                 EX_write_reg: bool;
+                 EX_checkA: bool;
+                 EX_checkB: bool;
+                 EX_checkW: bool;
                  EX_PC_sel: word2;
                  EX_jump_sel: bool;
                  EX_jump_addr: word32;
-                 EX_ForwardA: word3;
-                 EX_ForwardB: word3;
-                 EX_ForwardW: word3;
-                 EX_addrA: word6;
-                 EX_addrB: word6;
                  EX_addrW: word6;
                  EX_opc: word6;
                  EX_func: word4
@@ -87,9 +71,7 @@ Datatype:
    MEM_state = <| MEM_PC: word32;
                   MEM_dataA: word32;
                   MEM_dataB: word32;
-                  MEM_dataW: word32;
-                  MEM_imm: word32;
-                  MEM_imm_updated: word32;               
+                  MEM_imm: word32;               
                   MEM_ALU_res: word32;           
                   MEM_SHIFT_res: word32;                 
                   MEM_read_mem: bool;            
@@ -99,7 +81,10 @@ Datatype:
                   MEM_isAcc: bool;
                   MEM_isInterrupt: bool;          
                   MEM_state_flag: bool;
-                  MEM_NOP_flag: bool;           
+                  MEM_NOP_flag: bool;
+                  MEM_checkA: bool;
+                  MEM_checkB: bool;
+                  MEM_checkW: bool;           
                   MEM_addrW: word6;            
                   MEM_opc: word6               
                |>
@@ -118,6 +103,9 @@ Datatype:
                  WB_write_reg: bool;
                  WB_isOut: bool;
                  WB_state_flag: bool;
+                 WB_checkA: bool;
+                 WB_checkB: bool;
+                 WB_checkW: bool;
                  WB_data_sel: word3;
                  WB_addrW: word6;
                  WB_opc: word6
@@ -153,9 +141,6 @@ Datatype:
     ALU_prod: word64;
     ALU_sub: word32;
     shift_sh: word32;
-    checkA: bool;
-    checkB: bool;
-    checkW: bool;
 
     (** pipeline **)
     IF: IF_state;
@@ -165,11 +150,5 @@ Datatype:
     WB: WB_state
   |>
 End
-
-(* pipeline stages 
-Datatype:
-  pi_stg = IF | ID | EX | MEM | WB
-End
-*)
 
 val _ = export_theory ();

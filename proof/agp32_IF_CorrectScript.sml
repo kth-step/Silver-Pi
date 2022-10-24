@@ -18,10 +18,7 @@ Theorem agp32_Rel_ag32_IF_enable_PC_correct:
     I (1,SUC t) <> NONE ==>
     (agp32 fext fbits (SUC t)).PC = (FUNPOW Next (THE (I (1,SUC t)) - 1) a).PC
 Proof
-  rw [] >>
-  `reg_data_vaild 3 (agp32 fext fbits t)`
-    by fs [enable_stg_def,reg_data_vaild_def,agp32_IF_PC_write_enable_and_MEM_flag] >>
-  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline] (fext t) s s` >>
   `(agp32 fext fbits (SUC t)).PC = (IF_PC_update (fext t) s s').PC`
@@ -860,20 +857,16 @@ Theorem agp32_Rel_ag32_IF_PC_input_jump_correct:
     is_sch_disable I (agp32 fext fbits) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (3,SUC t) <> NONE ==>
-    reg_data_vaild 3 (agp32 fext fbits (SUC t)) ==>
     (agp32 fext fbits (SUC t)).EX.EX_jump_sel ==>
     (agp32 fext fbits (SUC t)).IF.IF_PC_input = (FUNPOW Next (THE (I (3,SUC t))) a).PC
 Proof
   rw [is_sch_execute_def,is_sch_disable_def] >>
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
-                            REG_write;ID_pipeline;IF_PC_update;Acc_compute]
-                           (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; WB_update;
-                             ID_opc_func_update;ID_imm_update; ID_data_update; MEM_imm_update;
-                             EX_ctrl_update; EX_forward_data; EX_ALU_input_update;
-                             EX_compute_enable_update; EX_ALU_update;
-                             EX_SHIFT_update; EX_jump_sel_addr_update; EX_data_rec_update]
+                            REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update;ID_imm_update; ID_data_update;
+                             ID_data_check_update; EX_ctrl_update; EX_ALU_input_imm_update;
+                             EX_ALU_update; EX_SHIFT_update; EX_jump_sel_addr_update]
                             (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).IF.IF_PC_input =
   (IF_PC_input_update (fext (SUC t)) s' s'').IF.IF_PC_input`
@@ -900,11 +893,9 @@ Proof
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline;IF_PC_update;Acc_compute]
                            (fext t) s s` >>
-  Q.ABBREV_TAC `s'' = procs [ForwardA; ForwardB; ForwardW; IF_instr_update; WB_update;
-                             ID_opc_func_update;ID_imm_update; ID_data_update; MEM_imm_update;
-                             EX_ctrl_update; EX_forward_data; EX_ALU_input_update;
-                             EX_compute_enable_update; EX_ALU_update;
-                             EX_SHIFT_update; EX_jump_sel_addr_update; EX_data_rec_update]
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update;ID_imm_update; ID_data_update;
+                             ID_data_check_update; EX_ctrl_update; EX_ALU_input_imm_update;
+                             EX_ALU_update; EX_SHIFT_update; EX_jump_sel_addr_update]
                             (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).IF.IF_PC_input =
   (IF_PC_input_update (fext (SUC t)) s' s'').IF.IF_PC_input`

@@ -12,8 +12,8 @@ local
                 "data_addr", "data_wdata", "data_wstrb"]
  val comms = ["data_out", "command", "data_addr", "data_wdata", "data_wstrb",
               "acc_arg", "acc_arg_ready", "acc_res", "acc_res_ready", "interrupt_req",
-              "PC", "ID_PC", "EX_PC", "EX_imm", "EX_addrW", "EX_opc",
-              "MEM_PC", "MEM_dataA", "MEM_dataB", "MEM_ALU_res", "MEM_SHIFT_res", 
+              "PC", "ID_PC", "EX_PC", "EX_dataA", "EX_dataB", "EX_addrW", "EX_opc",
+              "MEM_PC", "MEM_dataA", "MEM_dataB", "MEM_imm", "MEM_ALU_res", "MEM_SHIFT_res", 
               "MEM_addrW", "MEM_opc", "WB_write_reg", "WB_addrW"]
 in
  val tstate = init_translator module_def

@@ -101,11 +101,13 @@ Definition Init_def:
   (fext.io_events = a.io_events) /\
   (fext.interrupt_state = InterruptReady) /\
   ~fext.interrupt_ack /\
-  (** CPU own items **)
+  (** others **)
   (s.state = 3w) /\
   ~s.acc_arg_ready /\
   ~s.interrupt_req /\
   ~s.do_interrupt /\
+  ~s.EX.EX_jump_sel /\
+  (s.IF.IF_instr = instr a) /\
   ~s.IF.IF_PC_write_enable /\
   ~s.ID.ID_ID_write_enable /\
   ~s.ID.ID_EX_write_enable /\
@@ -272,7 +274,7 @@ Definition Rel_def:
    fext.mem = (FUNPOW Next (THE (I (1,t)) - 1) a).MEM) /\
   (~fext.ready ==> ~enable_stg 1 s) /\
   (~fext.ready ==> ~enable_stg 2 s) /\
-  (reg_data_hazard s ==> ~enable_stg 2 s) /\
+  (~s.EX.EX_jump_sel ==> reg_data_hazard s ==> ~enable_stg 2 s) /\
   (isMemOp_hw_op s ==> ~enable_stg 3 s) /\
   (I (5,t-1) <> NONE ==> s.data_out = (FUNPOW Next (THE (I (5,t-1))) a).data_out) /\
   (I (5,t-1) <> NONE ==> wb_data_vaild si ==> (s.R = (FUNPOW Next (THE (I (5,t-1))) a).R)) /\

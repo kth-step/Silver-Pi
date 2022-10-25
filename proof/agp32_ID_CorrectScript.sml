@@ -522,9 +522,10 @@ Proof
       `enable_stg 3 (agp32 fext fbits t)`
         by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
       Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
-       cheat >>
-      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >-
-       METIS_TAC [] >> fs [isJump_hw_op_def,enable_stg_def] >>
+       (`isJump_isa_op (I' (3,t)) a` by fs [isJump_hw_op_def,Rel_def,EX_Rel_spec_def] >>
+         METIS_TAC [isJump_isa_op_not_none]) >>
+      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >- METIS_TAC [] >>
+      fs [isJump_hw_op_def,enable_stg_def] >>
       METIS_TAC [agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard]) >> fs [] >>
     `THE (I' (1,t)) = THE (I' (5,t)) + 1`
       by METIS_TAC [ID_EX_MEM_NONE_IF_instr_index_with_WB_instr_plus_1] >> fs []) >-
@@ -863,11 +864,12 @@ Proof
      (fs [is_sch_def,is_sch_execute_def,Abbr `s`] >>
       `enable_stg 3 (agp32 fext fbits t)`
         by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
-      Cases_on `isJump_isa_op (I' (3,t)) a` >-
-       METIS_TAC [isJump_isa_op_not_none] >>
-      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >-
-       METIS_TAC [] >> fs [] >>
-      cheat) >> fs [] >>
+      Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+       (`isJump_isa_op (I' (3,t)) a` by fs [isJump_hw_op_def,Rel_def,EX_Rel_spec_def] >>
+         METIS_TAC [isJump_isa_op_not_none]) >>
+      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >- METIS_TAC [] >>
+      fs [isJump_hw_op_def,enable_stg_def] >>
+      METIS_TAC [agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard]) >> fs [] >>
     `THE (I' (1,t)) = THE (I' (5,t)) + 1`
       by METIS_TAC [ID_EX_MEM_NONE_IF_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (5,t) are not NONE **)
@@ -1206,11 +1208,12 @@ Proof
      (fs [is_sch_def,is_sch_execute_def,Abbr `s`] >>
       `enable_stg 3 (agp32 fext fbits t)`
         by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
-      Cases_on `isJump_isa_op (I' (3,t)) a` >-
-       METIS_TAC [isJump_isa_op_not_none] >>
-      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >-
-       METIS_TAC [] >> fs [] >>
-      cheat) >> fs [] >>
+      Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+       (`isJump_isa_op (I' (3,t)) a` by fs [isJump_hw_op_def,Rel_def,EX_Rel_spec_def] >>
+         METIS_TAC [isJump_isa_op_not_none]) >>
+      Cases_on `~reg_data_hazard (agp32 fext fbits t)` >- METIS_TAC [] >>
+      fs [isJump_hw_op_def,enable_stg_def] >>
+      METIS_TAC [agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard]) >> fs [] >>
     `THE (I' (1,t)) = THE (I' (5,t)) + 1`
       by METIS_TAC [ID_EX_MEM_NONE_IF_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (5,t) are not NONE **)

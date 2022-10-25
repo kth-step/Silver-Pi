@@ -483,6 +483,16 @@ Proof
                       agp32_IF_PC_write_enable_EX_jump_sel_then_no_reg_data_hazard]
 QED
 
+(** reg_data_hazard and not a jump, then ID_ID_write_enable is disabled  **)
+Theorem agp32_not_EX_jump_sel_reg_data_hazard_then_ID_ID_write_disable:
+  !fext fbits t.
+    ~(agp32 fext fbits t).EX.EX_jump_sel ==>
+    reg_data_hazard (agp32 fext fbits t) ==>
+    ~(agp32 fext fbits t).ID.ID_ID_write_enable
+Proof
+  rw [] >> METIS_TAC [agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard]
+QED
+
 
 (** ID_EX_write_enable **)
 (** ID_EX_write_enable and MEM_state_flag **)
@@ -1591,7 +1601,8 @@ Proof
   Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
    (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
      (`I' (1,SUC t) = SOME (THE (I' (3,t)) + 1)` by fs [is_sch_def,is_sch_fetch_def] >>
-      `I' (3,t) <> NONE` by cheat >>
+      `isJump_isa_op (I' (3,t)) a` by cheat >>
+      `I' (3,t) <> NONE` by METIS_TAC [isJump_isa_op_not_none] >>
       `enable_stg 4 (agp32 fext fbits t)`
         by fs [enable_stg_def,agp32_IF_PC_write_enable_and_MEM_flag] >>
       `enable_stg 3 (agp32 fext fbits t)`

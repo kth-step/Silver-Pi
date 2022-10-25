@@ -28,7 +28,7 @@ Theorem agp32_Init_implies_Rel:
 Proof
   rw [Init_def,Rel_def,is_sch_init_def] >>
   fs [agp32_init_IF_PC_input,IF_PC_Rel_def,IF_instr_Rel_def,
-      enable_stg_def,reg_data_vaild_def] >> fs []
+      enable_stg_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs []
 QED
 
 
@@ -72,6 +72,8 @@ Proof
    fs [enable_stg_def,not_fext_ready_and_agp32_IF_PC_write_disable] >-
    (** fext not ready, decode disabled **)
    (rw [enable_stg_def] >> METIS_TAC [agp32_ID_ID_write_enable_and_fext_ready]) >-
+   (** register data hazard and decode **)
+   fs [enable_stg_def,agp32_not_EX_jump_sel_reg_data_hazard_then_ID_ID_write_disable] >-
    (** memory stage op and ex stage **)
    fs [enable_stg_def,MEM_stg_op_agp32_ID_EX_write_disable] >-
    (** data_out **)
@@ -88,12 +90,10 @@ Proof
    fs [agp32_Rel_ag32_IF_instr_Rel_correct] >-
    (** ID **)
    fs [is_sch_def,agp32_Rel_ag32_ID_Rel_correct] >-
-   fs [agp32_Rel_ag32_ID_Forward_Rel_correct] >-
-   (** ID_reg_data **)
    cheat >-
-   (** EX_Rel **)
+   fs [agp32_Rel_ag32_ID_reg_data_Rel_correct] >-
+   (** EX **)
    fs [is_sch_def,agp32_Rel_ag32_EX_Rel_correct] >-
-   (** EX_Rel_spec **)
    cheat >-
    (** MEM **)
    cheat >>

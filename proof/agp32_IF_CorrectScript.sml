@@ -30,17 +30,18 @@ Proof
   rw [IF_PC_update_def] >>
   `s.EX.EX_jump_sel <=> isJump_isa_op (I' (3,t)) a` by fs [Rel_def,EX_Rel_spec_def] >>
   Cases_on `s.EX.EX_jump_sel` >> fs [Rel_def,is_sch_fetch_def,IF_PC_Rel_def] >-
-   METIS_TAC [isJump_isa_op_not_none] >>
+   (fs [Abbr `s`,isJump_hw_op_def] >> METIS_TAC [isJump_isa_op_not_none]) >>
   Cases_on `I' (1,t) <> NONE` >> fs [] >-
    (Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a \/ THE (I' (1,t)) = 0` >-
-     METIS_TAC [Abbr `s`,enable_stg_def] >>
-    `I' (1,SUC t) = SOME (THE (I' (1,t)) + 1)` by METIS_TAC [Abbr `s`,enable_stg_def] >> fs [] >>
+     METIS_TAC [Abbr `s`,enable_stg_def,isJump_hw_op_def] >>
+    `I' (1,SUC t) = SOME (THE (I' (1,t)) + 1)`
+      by METIS_TAC [Abbr `s`,enable_stg_def,isJump_hw_op_def] >> fs [] >>
     Q.ABBREV_TAC `i = THE (I' (1,t))` >>
     Cases_on `i` >> fs [] >>
     rw [FUNPOW_SUC] >>
     `~isJump_isa (FUNPOW Next (SUC n -1) a)` by METIS_TAC [isJump_isa_op_def] >> fs [] >>
     METIS_TAC [ag32_not_isJump_isa_Next_PC]) >>
-  fs [Abbr `s`,enable_stg_def] >> METIS_TAC []
+  fs [Abbr `s`,enable_stg_def,isJump_hw_op_def] >> METIS_TAC []
 QED
 
 (** PC when IF is disabled **)

@@ -366,6 +366,46 @@ Proof
 QED
 
 
+(** EX_checkA: ID_addrA is affected by the instruction in the EX stage or not **)
+Theorem agp32_Rel_ag32_EX_checkA_correct:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (2,SUC t) <> NONE ==>
+    ((agp32 fext fbits (SUC t)).EX.EX_checkA <=>
+     reg_adr_update_isa (I (3,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update;
+                             ID_imm_update; ID_data_update] (fext (SUC t)) s' s'` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_checkA = (ID_data_check_update (fext (SUC t)) s' s'').EX.EX_checkA`
+    by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_checks_updated_by_ID_data_check_update] >>
+  fs [ID_data_check_update_def] >>
+  `(s''.ID.ID_addrA = (agp32 fext fbits (SUC t)).ID.ID_addrA) /\
+  (s''.EX.EX_write_reg = (agp32 fext fbits (SUC t)).EX.EX_write_reg) /\
+  (s'.EX.EX_addrW = (agp32 fext fbits (SUC t)).EX.EX_addrW)` by cheat >>
+  rw [reg_adr_update_isa_def] >> cheat
+QED
+        
+
+(* ID_data_dep_Rel: singals check the register data dependency *)
+Theorem agp32_Rel_ag32_ID_data_dep_Rel_correct:
+  !fext fbits a t I.
+    is_sch_decode I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (2,SUC t) <> NONE ==>
+    ID_data_dep_Rel (agp32 fext fbits (SUC t)) a (I (3,SUC t)) (I (4,SUC t)) (I (5,SUC t))
+Proof
+  rw [ID_data_dep_Rel_def] >>
+  fs [agp32_Rel_ag32_EX_checkA_correct] >>
+  cheat
+QED
+
+
 (** ID_read_dataA: when instrs in EX, MEM and WB do not change registers **)
 Theorem agp32_Rel_ag32_ID_read_dataA_no_write_before:
   !fext fbits a t I.

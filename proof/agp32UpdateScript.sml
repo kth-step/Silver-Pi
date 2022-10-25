@@ -135,6 +135,21 @@ Proof
   rw [IF_PC_input_update_def]
 QED
 
+Theorem IF_PC_input_update_unchanged_ID_data_check_items:
+  !fext s s'.
+    ((IF_PC_input_update fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
+    ((IF_PC_input_update fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
+    ((IF_PC_input_update fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
+    ((IF_PC_input_update fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
+    ((IF_PC_input_update fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
+    ((IF_PC_input_update fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
+    ((IF_PC_input_update fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
+    ((IF_PC_input_update fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
+    ((IF_PC_input_update fext s s').WB.WB_checkW = s'.WB.WB_checkW)
+Proof
+  rw [IF_PC_input_update_def]
+QED
+
 Theorem IF_PC_input_update_unchanged_EX_pipeline_items:
   !fext s s'.
     ((IF_PC_input_update fext s s').EX.EX_PC = s'.EX.EX_PC) /\
@@ -617,6 +632,21 @@ Proof
   rw [EX_ctrl_update_def]
 QED
 
+Theorem EX_ctrl_update_unchanged_ID_data_check_items:
+  !fext s s'.
+    ((EX_ctrl_update fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
+    ((EX_ctrl_update fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
+    ((EX_ctrl_update fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
+    ((EX_ctrl_update fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
+    ((EX_ctrl_update fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
+    ((EX_ctrl_update fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
+    ((EX_ctrl_update fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
+    ((EX_ctrl_update fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
+    ((EX_ctrl_update fext s s').WB.WB_checkW = s'.WB.WB_checkW)
+Proof
+  rw [EX_ctrl_update_def]
+QED
+
 Theorem EX_ctrl_update_unchanged_EX_pipeline_items:
   !fext s s'.
     ((EX_ctrl_update fext s s').EX.EX_PC = s'.EX.EX_PC) /\
@@ -710,6 +740,21 @@ Theorem EX_ALU_input_imm_update_unchanged_ID_data_items:
     ((EX_ALU_input_imm_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
     ((EX_ALU_input_imm_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
     ((EX_ALU_input_imm_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [EX_ALU_input_imm_update_def]
+QED
+
+Theorem EX_ALU_input_imm_update_unchanged_ID_data_check_items:
+  !fext s s'.
+    ((EX_ALU_input_imm_update fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
+    ((EX_ALU_input_imm_update fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
+    ((EX_ALU_input_imm_update fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
+    ((EX_ALU_input_imm_update fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
+    ((EX_ALU_input_imm_update fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
+    ((EX_ALU_input_imm_update fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
+    ((EX_ALU_input_imm_update fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
+    ((EX_ALU_input_imm_update fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
+    ((EX_ALU_input_imm_update fext s s').WB.WB_checkW = s'.WB.WB_checkW)
 Proof
   rw [EX_ALU_input_imm_update_def]
 QED
@@ -822,6 +867,22 @@ Proof
   Cases_on_word_value `s'.EX.EX_func` >> fs []
 QED
 
+Theorem EX_ALU_update_unchanged_ID_data_check_items:
+  !fext s s'.
+    ((EX_ALU_update fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
+    ((EX_ALU_update fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
+    ((EX_ALU_update fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
+    ((EX_ALU_update fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
+    ((EX_ALU_update fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
+    ((EX_ALU_update fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
+    ((EX_ALU_update fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
+    ((EX_ALU_update fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
+    ((EX_ALU_update fext s s').WB.WB_checkW = s'.WB.WB_checkW)
+Proof
+  rw [EX_ALU_update_def] >>
+  Cases_on_word_value `s'.EX.EX_func` >> fs []
+QED
+
 Theorem EX_ALU_update_unchanged_EX_pipeline_items:
   !fext s s'.
     ((EX_ALU_update fext s s').EX.EX_PC = s'.EX.EX_PC) /\
@@ -921,6 +982,22 @@ Theorem EX_SHIFT_update_unchanged_ID_data_items:
     ((EX_SHIFT_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
     ((EX_SHIFT_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
     ((EX_SHIFT_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [EX_SHIFT_update_def] >>
+  Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
+QED
+
+Theorem EX_SHIFT_update_unchanged_ID_data_check_items:
+  !fext s s'.
+    ((EX_SHIFT_update fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
+    ((EX_SHIFT_update fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
+    ((EX_SHIFT_update fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
+    ((EX_SHIFT_update fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
+    ((EX_SHIFT_update fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
+    ((EX_SHIFT_update fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
+    ((EX_SHIFT_update fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
+    ((EX_SHIFT_update fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
+    ((EX_SHIFT_update fext s s').WB.WB_checkW = s'.WB.WB_checkW)
 Proof
   rw [EX_SHIFT_update_def] >>
   Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
@@ -1036,6 +1113,21 @@ Proof
   rw [EX_jump_sel_addr_update_def]
 QED
 
+Theorem EX_jump_sel_addr_update_unchanged_ID_data_check_items:
+  !fext s s'.
+    ((EX_jump_sel_addr_update fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
+    ((EX_jump_sel_addr_update fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
+    ((EX_jump_sel_addr_update fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
+    ((EX_jump_sel_addr_update fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
+    ((EX_jump_sel_addr_update fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
+    ((EX_jump_sel_addr_update fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_checkW = s'.WB.WB_checkW)
+Proof
+  rw [EX_jump_sel_addr_update_def]
+QED
+
 Theorem EX_jump_sel_addr_update_unchanged_EX_pipeline_items:
   !fext s s'.
     ((EX_jump_sel_addr_update fext s s').EX.EX_PC = s'.EX.EX_PC) /\
@@ -1136,6 +1228,21 @@ Theorem MEM_ctrl_update_unchanged_ID_data_items:
     ((MEM_ctrl_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
     ((MEM_ctrl_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
     ((MEM_ctrl_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [MEM_ctrl_update_def]
+QED
+
+Theorem MEM_ctrl_update_unchanged_ID_data_check_items:
+  !fext s s'.
+    ((MEM_ctrl_update fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
+    ((MEM_ctrl_update fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
+    ((MEM_ctrl_update fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
+    ((MEM_ctrl_update fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
+    ((MEM_ctrl_update fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
+    ((MEM_ctrl_update fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
+    ((MEM_ctrl_update fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
+    ((MEM_ctrl_update fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
+    ((MEM_ctrl_update fext s s').WB.WB_checkW = s'.WB.WB_checkW)
 Proof
   rw [MEM_ctrl_update_def]
 QED
@@ -1248,6 +1355,21 @@ Theorem WB_update_unchanged_ID_data_items:
     ((WB_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
     ((WB_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
     ((WB_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [WB_update_def]
+QED
+
+Theorem WB_update_unchanged_ID_data_check_items:
+  !fext s s'.
+    ((WB_update fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
+    ((WB_update fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
+    ((WB_update fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
+    ((WB_update fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
+    ((WB_update fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
+    ((WB_update fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
+    ((WB_update fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
+    ((WB_update fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
+    ((WB_update fext s s').WB.WB_checkW = s'.WB.WB_checkW)
 Proof
   rw [WB_update_def]
 QED
@@ -1366,6 +1488,21 @@ Theorem Hazard_ctrl_unchanged_ID_data_items:
     ((Hazard_ctrl fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
     ((Hazard_ctrl fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
     ((Hazard_ctrl fext s s').ID.ID_dataW = s'.ID.ID_dataW)
+Proof
+  rw [Hazard_ctrl_def]
+QED
+
+Theorem Hazard_ctrl_unchanged_ID_data_check_items:
+  !fext s s'.
+    ((Hazard_ctrl fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
+    ((Hazard_ctrl fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
+    ((Hazard_ctrl fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
+    ((Hazard_ctrl fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
+    ((Hazard_ctrl fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
+    ((Hazard_ctrl fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
+    ((Hazard_ctrl fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
+    ((Hazard_ctrl fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
+    ((Hazard_ctrl fext s s').WB.WB_checkW = s'.WB.WB_checkW)
 Proof
   rw [Hazard_ctrl_def]
 QED
@@ -2096,7 +2233,7 @@ Proof
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
-      IF_PC_input_update_unchanged_ID_data_items,EX_jump_sel_addr_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
       EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
       ID_data_check_update_unchanged_ID_data_items] >>
@@ -2126,7 +2263,7 @@ Proof
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
-      IF_PC_input_update_unchanged_ID_data_items,EX_jump_sel_addr_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
       EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
       ID_data_check_update_unchanged_ID_data_items] >>
@@ -2156,7 +2293,7 @@ Proof
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
-      IF_PC_input_update_unchanged_ID_data_items,EX_jump_sel_addr_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
       EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
       ID_data_check_update_unchanged_ID_data_items] >>
@@ -2183,7 +2320,7 @@ Proof
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
-      IF_PC_input_update_unchanged_ID_data_items,EX_jump_sel_addr_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
       EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
       ID_data_check_update_unchanged_ID_data_items] >>
@@ -2210,7 +2347,7 @@ Proof
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
-      IF_PC_input_update_unchanged_ID_data_items,EX_jump_sel_addr_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
       EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
       ID_data_check_update_unchanged_ID_data_items] >>
@@ -2240,6 +2377,37 @@ Proof
       ID_data_update_unchanged_ID_data_items]
 QED
 
+(** data hazard checks are only updated the ID_data_check_update function **)
+Theorem agp32_ID_checks_updated_by_ID_data_check_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
+    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update; ID_data_update] (fext (SUC t)) s' s' ==>
+    ((agp32 fext fbits (SUC t)).EX.EX_checkA = (ID_data_check_update (fext (SUC t)) s' s'').EX.EX_checkA) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_checkB = (ID_data_check_update (fext (SUC t)) s' s'').EX.EX_checkB) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_checkW = (ID_data_check_update (fext (SUC t)) s' s'').EX.EX_checkW) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_checkA = (ID_data_check_update (fext (SUC t)) s' s'').MEM.MEM_checkA) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_checkB = (ID_data_check_update (fext (SUC t)) s' s'').MEM.MEM_checkB) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_checkW = (ID_data_check_update (fext (SUC t)) s' s'').MEM.MEM_checkW) /\
+    ((agp32 fext fbits (SUC t)).WB.WB_checkA = (ID_data_check_update (fext (SUC t)) s' s'').WB.WB_checkA) /\
+    ((agp32 fext fbits (SUC t)).WB.WB_checkB = (ID_data_check_update (fext (SUC t)) s' s'').WB.WB_checkB) /\
+    ((agp32 fext fbits (SUC t)).WB.WB_checkW = (ID_data_check_update (fext (SUC t)) s' s'').WB.WB_checkW)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+      Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
+      Hazard_ctrl_unchanged_ID_data_check_items,WB_update_unchanged_ID_data_check_items,
+      MEM_ctrl_update_unchanged_ID_data_check_items,IF_PC_input_update_unchanged_ID_data_check_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_check_items,
+      EX_SHIFT_update_unchanged_ID_data_check_items,EX_ALU_update_unchanged_ID_data_check_items,
+      EX_ALU_input_imm_update_unchanged_ID_data_check_items,
+      EX_ctrl_update_unchanged_ID_data_check_items]
+QED
 
 (** EX_carry_flag, EX_ALU_res are only changed by the EX_ALU_update function **)
 Theorem agp32_EX_ALU_items_updated_by_EX_ALU_update:

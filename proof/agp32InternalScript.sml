@@ -189,18 +189,45 @@ Theorem agp32_EX_opc_implies_EX_func:
     (agp32 fext fbits (SUC t)).EX.EX_func = 15w
 Proof
   rw [enable_stg_def] >>
-  Q.ABBREV_TAC `s' = agp32 fext fbits t` >>
-  Q.ABBREV_TAC `s'' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s' s'` >>
-  `?s.(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext (SUC t)) s s'').EX.EX_opc /\
-  (agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext (SUC t)) s s'').EX.EX_func`
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext t) s s').EX.EX_opc /\
+  (agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext t) s s').EX.EX_func`
     by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >>
-  `s''.ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable`
-    by METIS_TAC [Abbr `s'`,Abbr `s''`,agp32_same_items_until_MEM_pipeline] >>
+  `s'.ID.ID_EX_write_enable <=> s.ID.ID_EX_write_enable`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
   fs [EX_pipeline_def] >>
-  Cases_on `s'.ID.ID_EX_write_enable` >> fs [] >>
-  `s''.ID.ID_func = s'.ID.ID_func /\ s''.ID.ID_opc = s'.ID.ID_opc`
-    by METIS_TAC [Abbr `s'`,Abbr `s''`,agp32_same_items_until_MEM_pipeline] >>
+  Cases_on `s.ID.ID_EX_write_enable` >> fs [] >>
+  `s'.ID.ID_func = s.ID.ID_func /\ s'.ID.ID_opc = s.ID.ID_opc`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
   METIS_TAC [agp32_ID_opc_implies_ID_func]
+QED
+
+Theorem agp32_EX_opc_unchanged_when_EX_disabled:
+  !fext fbits t.
+    ~enable_stg 3 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).EX.EX_opc = (agp32 fext fbits t).EX.EX_opc
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext t) s s').EX.EX_opc`
+    by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >>
+  `s'.ID.ID_EX_write_enable <=> s.ID.ID_EX_write_enable`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
+  fs [EX_pipeline_def] >>
+  qpat_x_assum `(agp32 fext fbits (SUC t)).EX.EX_opc = _` (fn thm => all_tac) >>
+  fs [Abbr `s'`] >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss2 = WB_pipeline _ _ _` >>
+  rw [procs_def] >>
+  qpat_abbrev_tac `ss3 = MEM_pipeline _ _ _` >>
+  fs [Abbr `ss3`,Abbr `ss2`,Abbr `ss1`,
+      MEM_pipeline_unchanged_EX_pipeline_items,
+      WB_pipeline_unchanged_EX_pipeline_items,
+      agp32_next_state_unchanged_EX_pipeline_items]
 QED
 
 
@@ -893,6 +920,30 @@ QED
 
 
 (* lemmas about the scheduling function I *)
+(** NONE happened **)
+Theorem EX_instr_index_NONE_opc_flush:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (3,t) = NONE ==>
+    (agp32 fext fbits t).EX.EX_opc = 16w
+Proof
+  rw [is_sch_def] >>
+  Induct_on `t` >-
+   cheat >>
+  rw [] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     (`(agp32 fext fbits t).EX.EX_NOP_flag` by cheat >>
+      cheat) >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     (`(agp32 fext fbits t).EX.EX_NOP_flag` by cheat >>
+      cheat) >>
+    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_execute_def] >> fs [] >>
+    cheat) >>
+  `I' (3,SUC t) = I' (3,t)` by METIS_TAC [is_sch_disable_def] >>
+  fs [agp32_EX_opc_unchanged_when_EX_disabled]
+QED
+
 (** instr index relation between IF and EX stages **)
 Theorem IF_instr_index_with_ID_instr:
   !I t fext fbits a.

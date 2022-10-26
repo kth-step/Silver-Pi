@@ -33,6 +33,7 @@ Theorem IF_instr_update_unchanged_EX_pipeline_items:
     ((IF_instr_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((IF_instr_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((IF_instr_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((IF_instr_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((IF_instr_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((IF_instr_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -158,6 +159,7 @@ Theorem IF_PC_input_update_unchanged_EX_pipeline_items:
     ((IF_PC_input_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((IF_PC_input_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((IF_PC_input_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((IF_PC_input_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((IF_PC_input_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((IF_PC_input_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -247,6 +249,7 @@ Theorem ID_opc_func_update_unchanged_EX_pipeline_items:
     ((ID_opc_func_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((ID_opc_func_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((ID_opc_func_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((ID_opc_func_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((ID_opc_func_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((ID_opc_func_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -336,6 +339,7 @@ Theorem ID_imm_update_unchanged_EX_pipeline_items:
     ((ID_imm_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((ID_imm_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((ID_imm_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((ID_imm_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((ID_imm_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((ID_imm_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -432,6 +436,7 @@ Theorem ID_data_update_unchanged_EX_pipeline_items:
     ((ID_data_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((ID_data_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((ID_data_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((ID_data_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((ID_data_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((ID_data_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -536,6 +541,7 @@ Theorem ID_data_check_update_unchanged_EX_pipeline_items:
     ((ID_data_check_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((ID_data_check_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((ID_data_check_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((ID_data_check_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((ID_data_check_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((ID_data_check_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -655,6 +661,7 @@ Theorem EX_ctrl_update_unchanged_EX_pipeline_items:
     ((EX_ctrl_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_ctrl_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((EX_ctrl_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((EX_ctrl_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((EX_ctrl_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((EX_ctrl_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -767,6 +774,7 @@ Theorem EX_ALU_input_imm_update_unchanged_EX_pipeline_items:
     ((EX_ALU_input_imm_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_ALU_input_imm_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((EX_ALU_input_imm_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((EX_ALU_input_imm_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((EX_ALU_input_imm_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((EX_ALU_input_imm_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -891,6 +899,7 @@ Theorem EX_ALU_update_unchanged_EX_pipeline_items:
     ((EX_ALU_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_ALU_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((EX_ALU_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((EX_ALU_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((EX_ALU_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((EX_ALU_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -1011,6 +1020,7 @@ Theorem EX_SHIFT_update_unchanged_EX_pipeline_items:
     ((EX_SHIFT_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_SHIFT_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((EX_SHIFT_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((EX_SHIFT_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((EX_SHIFT_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((EX_SHIFT_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -1136,6 +1146,7 @@ Theorem EX_jump_sel_addr_update_unchanged_EX_pipeline_items:
     ((EX_jump_sel_addr_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((EX_jump_sel_addr_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -1255,6 +1266,7 @@ Theorem MEM_ctrl_update_unchanged_EX_pipeline_items:
     ((MEM_ctrl_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((MEM_ctrl_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((MEM_ctrl_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((MEM_ctrl_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((MEM_ctrl_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((MEM_ctrl_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -1382,6 +1394,7 @@ Theorem WB_update_unchanged_EX_pipeline_items:
     ((WB_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((WB_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((WB_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((WB_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((WB_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((WB_update fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -1515,6 +1528,7 @@ Theorem Hazard_ctrl_unchanged_EX_pipeline_items:
     ((Hazard_ctrl fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
     ((Hazard_ctrl fext s s').EX.EX_imm = s'.EX.EX_imm) /\
     ((Hazard_ctrl fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
+    ((Hazard_ctrl fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
     ((Hazard_ctrl fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((Hazard_ctrl fext s s').EX.EX_func = s'.EX.EX_func)
 Proof
@@ -2744,6 +2758,32 @@ Proof
   fs [Abbr `ss8`,Abbr `ss7`,Acc_compute_unchanged_IF]
 QED
 
+(** EX_write_reg and EX_addrW are unchanged after the EX_pipeline function **)
+Theorem agp32_same_EX_pipeline_items_after_EX_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
+    (s'.EX.EX_addrW = (agp32 fext fbits (SUC t)).EX.EX_addrW) /\
+    (s'.EX.EX_write_reg <=> (agp32 fext fbits (SUC t)).EX.EX_write_reg)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
+      MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
+      EX_SHIFT_update_unchanged_EX_pipeline_items,EX_ALU_update_unchanged_EX_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
+      EX_ctrl_update_unchanged_EX_pipeline_items,ID_data_check_update_unchanged_EX_pipeline_items,
+      ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
+      ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items]
+QED
+
 (** WB_write_reg and WB_addrW are unchanged after the WB_pipeline function **)
 Theorem agp32_same_WB_pipeline_items_after_WB_pipeline:
   !fext fbits t s s'.
@@ -2882,6 +2922,45 @@ Proof
       EX_ALU_input_imm_update_unchanged_state_items,EX_ctrl_update_unchanged_state_items,
       ID_data_check_update_unchanged_state_items,ID_data_update_unchanged_state_items,
       ID_imm_update_unchanged_state_items]
+QED
+
+
+(** some items are unchanged after the ID_data_update function **)
+Theorem agp32_same_ID_EX_items_after_ID_data_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute]
+               (fext t) s s ==>
+    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update; ID_data_update] (fext (SUC t)) s' s' ==>
+    ((agp32 fext fbits (SUC t)).ID.ID_addrA = s''.ID.ID_addrA) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_addrB = s''.ID.ID_addrB) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_addrW = s''.ID.ID_addrW) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_addrA_disable = s''.ID.ID_addrA_disable) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_write_reg = s''.EX.EX_write_reg)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s0 = procs _ (fext t) s''' s'''` >>
+  Q.ABBREV_TAC `s1 = procs [IF_instr_update; ID_opc_func_update;
+                            ID_imm_update; ID_data_update] (fext (SUC t)) s0 s0` >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+      Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,
+      Hazard_ctrl_unchanged_ID_data_items,Hazard_ctrl_unchanged_EX_pipeline_items,
+      WB_update_unchanged_ID_data_items,WB_update_unchanged_EX_pipeline_items,
+      MEM_ctrl_update_unchanged_ID_data_items,MEM_ctrl_update_unchanged_EX_pipeline_items,
+      IF_PC_input_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_EX_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
+      EX_SHIFT_update_unchanged_ID_data_items,EX_SHIFT_update_unchanged_EX_pipeline_items,
+      EX_ALU_update_unchanged_ID_data_items,EX_ALU_update_unchanged_EX_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_ID_data_items,
+      EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
+      EX_ctrl_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_EX_pipeline_items,
+      ID_data_check_update_unchanged_ID_data_items,
+      ID_data_check_update_unchanged_EX_pipeline_items]
 QED
 
 val _ = export_theory ();

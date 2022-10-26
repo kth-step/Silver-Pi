@@ -174,15 +174,18 @@ End
 
 Definition ID_data_dep_Rel_def:
   ID_data_dep_Rel s a eop mop wop <=>
-  (s.EX.EX_checkA <=> reg_adr_update_isa eop a s.ID.ID_addrA) /\
-  (s.EX.EX_checkB <=> reg_adr_update_isa eop a s.ID.ID_addrB) /\
-  (s.EX.EX_checkW <=> reg_adr_update_isa eop a s.ID.ID_addrW) /\
-  (s.MEM.MEM_checkA <=> reg_adr_update_isa mop a s.ID.ID_addrA) /\
-  (s.MEM.MEM_checkB <=> reg_adr_update_isa mop a s.ID.ID_addrB) /\
-  (s.MEM.MEM_checkW <=> reg_adr_update_isa mop a s.ID.ID_addrW) /\
-  (s.WB.WB_checkA <=> reg_adr_update_isa wop a s.ID.ID_addrA) /\
-  (s.WB.WB_checkB <=> reg_adr_update_isa wop a s.ID.ID_addrB) /\
-  (s.WB.WB_checkW <=> reg_adr_update_isa wop a s.ID.ID_addrW)
+  (~s.ID.ID_addrA_disable ==> 
+   (s.EX.EX_checkA <=> reg_adr_update_isa eop a s.ID.ID_addrA) /\
+   (s.MEM.MEM_checkA <=> reg_adr_update_isa mop a s.ID.ID_addrA) /\
+   (s.WB.WB_checkA <=> reg_adr_update_isa wop a s.ID.ID_addrA)) /\
+  (~s.ID.ID_addrB_disable ==>
+   (s.EX.EX_checkB <=> reg_adr_update_isa eop a s.ID.ID_addrB) /\
+   (s.MEM.MEM_checkB <=> reg_adr_update_isa mop a s.ID.ID_addrB) /\
+   (s.WB.WB_checkB <=> reg_adr_update_isa wop a s.ID.ID_addrB)) /\
+  (~s.ID.ID_addrW_disable ==> 
+   (s.EX.EX_checkW <=> reg_adr_update_isa eop a s.ID.ID_addrW) /\
+   (s.MEM.MEM_checkW <=> reg_adr_update_isa mop a s.ID.ID_addrW) /\
+   (s.WB.WB_checkW <=> reg_adr_update_isa wop a s.ID.ID_addrW))
 End
 
 (** execute stage **)

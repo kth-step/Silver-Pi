@@ -369,10 +369,10 @@ QED
 (** EX_checkA: ID_addrA is affected by the instruction in the EX stage or not **)
 Theorem agp32_Rel_ag32_EX_checkA_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) a ==>
-    is_sch_disable I (agp32 fext fbits) ==>
+    is_sch I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (2,SUC t) <> NONE ==>
+    ~(agp32 fext fbits (SUC t)).ID.ID_addrA_disable ==>
     ((agp32 fext fbits (SUC t)).EX.EX_checkA <=>
      reg_adr_update_isa (I (3,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA)
 Proof
@@ -385,17 +385,58 @@ Proof
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_ID_checks_updated_by_ID_data_check_update] >>
   fs [ID_data_check_update_def] >>
   `(s''.ID.ID_addrA = (agp32 fext fbits (SUC t)).ID.ID_addrA) /\
-  (s''.EX.EX_write_reg = (agp32 fext fbits (SUC t)).EX.EX_write_reg) /\
-  (s'.EX.EX_addrW = (agp32 fext fbits (SUC t)).EX.EX_addrW)` by cheat >>
-  rw [reg_adr_update_isa_def] >> cheat
+  (s''.ID.ID_addrA_disable = (agp32 fext fbits (SUC t)).ID.ID_addrA_disable) /\
+  (s''.EX.EX_write_reg = (agp32 fext fbits (SUC t)).EX.EX_write_reg)`
+    by fs [agp32_same_ID_EX_items_after_ID_data_update] >>
+  `(s'.EX.EX_addrW = (agp32 fext fbits (SUC t)).EX.EX_addrW)`
+    by fs [agp32_same_EX_pipeline_items_after_EX_pipeline] >>
+  rw [reg_adr_update_isa_def] >>
+  Cases_on `I' (3,SUC t) = NONE` >> rw [] >-
+   (cheat) >>
+  `(agp32 fext fbits (SUC t)).EX.EX_write_reg = reg_iswrite (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
+    by cheat >>
+  `(agp32 fext fbits (SUC t)).EX.EX_addrW = addrW (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
+    by cheat >> rw []
 QED
-        
+
+(** MEM_checkA: ID_addrA is affected by the instruction in the MEM stage or not **)
+Theorem agp32_Rel_ag32_MEM_checkA_correct:
+  !fext fbits a t I.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (2,SUC t) <> NONE ==>
+    ~(agp32 fext fbits (SUC t)).ID.ID_addrA_disable ==>
+    ((agp32 fext fbits (SUC t)).MEM.MEM_checkA <=>
+     reg_adr_update_isa (I (4,SUC t)) a (agp32 fext fbits (SUC t)).ID.ID_addrA)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update;
+                             ID_imm_update; ID_data_update] (fext (SUC t)) s' s'` >>
+  `(agp32 fext fbits (SUC t)).MEM.MEM_checkA = (ID_data_check_update (fext (SUC t)) s' s'').MEM.MEM_checkA`
+    by fs [agp32_ID_checks_updated_by_ID_data_check_update] >>
+  fs [ID_data_check_update_def] >>
+  `(s''.ID.ID_addrA = (agp32 fext fbits (SUC t)).ID.ID_addrA) /\
+  (s''.ID.ID_addrA_disable = (agp32 fext fbits (SUC t)).ID.ID_addrA_disable) /\
+  (s''.MEM.MEM_write_reg = (agp32 fext fbits (SUC t)).MEM.MEM_write_reg)`
+    by cheat >>
+  `(s'.MEM.MEM_addrW = (agp32 fext fbits (SUC t)).MEM.MEM_addrW)`
+    by cheat >>
+  rw [reg_adr_update_isa_def] >>
+  Cases_on `I' (4,SUC t) = NONE` >> rw [] >-
+   (cheat) >>
+  `(agp32 fext fbits (SUC t)).MEM.MEM_write_reg = reg_iswrite (FUNPOW Next (THE (I' (4,SUC t)) − 1) a)`
+    by cheat >>
+  `(agp32 fext fbits (SUC t)).MEM.MEM_addrW = addrW (FUNPOW Next (THE (I' (4,SUC t)) − 1) a)`
+    by cheat >> rw []
+QED
+
 
 (* ID_data_dep_Rel: singals check the register data dependency *)
 Theorem agp32_Rel_ag32_ID_data_dep_Rel_correct:
   !fext fbits a t I.
-    is_sch_decode I (agp32 fext fbits) a ==>
-    is_sch_disable I (agp32 fext fbits) ==>
+    is_sch I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (2,SUC t) <> NONE ==>
     ID_data_dep_Rel (agp32 fext fbits (SUC t)) a (I (3,SUC t)) (I (4,SUC t)) (I (5,SUC t))

@@ -290,6 +290,52 @@ Proof
   fs [EX_pipeline_def]
 QED
 
+(** if the EX stage is disabled, then EX_write_reg is unchanged at the next cycle **)
+Theorem agp32_EX_write_reg_unchanged_when_EX_disabled:
+  !fext fbits t.
+    ~enable_stg 3 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).EX.EX_write_reg = (agp32 fext fbits t).EX.EX_write_reg
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_write_reg = (EX_pipeline (fext t) s s').EX.EX_write_reg`
+    by fs [agp32_EX_write_reg_updated_by_EX_pipeline] >>
+  `s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
+  fs [EX_pipeline_def] >>
+  qpat_x_assum `(agp32 fext fbits (SUC t)).EX.EX_write_reg = _` (fn thm => all_tac) >>
+  fs [Abbr `s'`] >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  rw [Once procs_def] >>
+  qpat_abbrev_tac `ss2 = WB_pipeline _ _ _` >>
+  rw [procs_def] >>
+  qpat_abbrev_tac `ss3 = MEM_pipeline _ _ _` >>
+  fs [Abbr `ss3`,Abbr `ss2`,Abbr `ss1`,
+      MEM_pipeline_unchanged_EX_pipeline_items,
+      WB_pipeline_unchanged_EX_pipeline_items,
+      agp32_next_state_unchanged_EX_pipeline_items]
+QED
+
+(** when EX is enabled and EX_NOP_flag is true, EX_write_reg is F **)
+Theorem agp32_EX_write_reg_F_when_EX_NOP_flag:
+  !fext fbits t.
+    enable_stg 3 (agp32 fext fbits t) ==>
+    (agp32 fext fbits t).EX.EX_NOP_flag ==>
+    ~(agp32 fext fbits (SUC t)).EX.EX_write_reg
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_write_reg = (EX_pipeline (fext t) s s').EX.EX_write_reg`
+    by fs [agp32_EX_write_reg_updated_by_EX_pipeline] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
+  (s'.EX.EX_NOP_flag = s.EX.EX_NOP_flag)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
+  fs [EX_pipeline_def]
+QED
+
 
 (** pipeline control flags **)
 (** IF_PC_write_enable **)
@@ -755,10 +801,29 @@ Proof
   rw [EX_jump_sel_addr_update_def]
 QED
 
-(** initial EX_opc is 16w **)
+(** initial EX_opc **)
 Theorem agp32_init_EX_opc:
   !fext fbits.
     (agp32 fext fbits 0).EX.EX_opc = 16w
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
+      MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_EX_pipeline_items,EX_SHIFT_update_unchanged_EX_pipeline_items,
+      EX_ALU_update_unchanged_EX_pipeline_items,EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
+      EX_ctrl_update_unchanged_EX_pipeline_items,ID_data_check_update_unchanged_EX_pipeline_items,
+      ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
+      ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items] >>
+  rw [agp32_init_def]
+QED
+
+(** initial EX_write_reg is F **)
+Theorem agp32_init_EX_write_reg:
+  !fext fbits.
+    ~(agp32 fext fbits 0).EX.EX_write_reg
 Proof
   rw [agp32_def,mk_module_def,mk_circuit_def] >>
   clist_update_state_tac >>
@@ -904,6 +969,30 @@ Proof
     cheat) >>
   `I' (3,SUC t) = I' (3,t)` by METIS_TAC [is_sch_disable_def] >>
   fs [agp32_EX_opc_unchanged_when_EX_disabled]
+QED
+
+Theorem EX_instr_index_NONE_EX_not_write_reg:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (3,t) = NONE ==>
+    ~(agp32 fext fbits t).EX.EX_write_reg
+Proof
+  rw [is_sch_def] >>
+  Induct_on `t` >-
+  rw [agp32_init_EX_write_reg] >> rw [] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     (`(agp32 fext fbits t).EX.EX_NOP_flag`
+        by fs [enable_stg_def,agp32_ID_EX_write_enable_isJump_hw_op_EX_NOP_flag] >>
+      fs [agp32_EX_write_reg_F_when_EX_NOP_flag]) >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     (`(agp32 fext fbits t).EX.EX_NOP_flag`
+        by fs [enable_stg_def,agp32_ID_EX_write_enable_reg_data_hazard_EX_NOP_flag] >>
+      fs [agp32_EX_write_reg_F_when_EX_NOP_flag]) >>
+    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_execute_def] >> fs [] >>
+    cheat) >>
+  `I' (3,SUC t) = I' (3,t)` by METIS_TAC [is_sch_disable_def] >>
+  fs [agp32_EX_write_reg_unchanged_when_EX_disabled]
 QED
 
 (** instr index relation between IF and EX stages **)

@@ -392,7 +392,7 @@ Proof
     by fs [agp32_same_EX_pipeline_items_after_EX_pipeline] >>
   rw [reg_adr_update_isa_def] >>
   Cases_on `I' (3,SUC t) = NONE` >> rw [] >-
-   (cheat) >>
+   METIS_TAC [EX_instr_index_NONE_EX_not_write_reg] >>
   `(agp32 fext fbits (SUC t)).EX.EX_write_reg = reg_iswrite (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
     by cheat >>
   `(agp32 fext fbits (SUC t)).EX.EX_addrW = addrW (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
@@ -491,7 +491,7 @@ Proof
     by fs [agp32_same_EX_pipeline_items_after_EX_pipeline] >>
   rw [reg_adr_update_isa_def] >>
   Cases_on `I' (3,SUC t) = NONE` >> rw [] >-
-   (cheat) >>
+   METIS_TAC [EX_instr_index_NONE_EX_not_write_reg] >>
   `(agp32 fext fbits (SUC t)).EX.EX_write_reg = reg_iswrite (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
     by cheat >>
   `(agp32 fext fbits (SUC t)).EX.EX_addrW = addrW (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
@@ -590,7 +590,7 @@ Proof
     by fs [agp32_same_EX_pipeline_items_after_EX_pipeline] >>
   rw [reg_adr_update_isa_def] >>
   Cases_on `I' (3,SUC t) = NONE` >> rw [] >-
-   (cheat) >>
+   METIS_TAC [EX_instr_index_NONE_EX_not_write_reg] >>
   `(agp32 fext fbits (SUC t)).EX.EX_write_reg = reg_iswrite (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
     by cheat >>
   `(agp32 fext fbits (SUC t)).EX.EX_addrW = addrW (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`

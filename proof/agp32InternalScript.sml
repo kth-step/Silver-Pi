@@ -5,6 +5,47 @@ val _ = new_theory "agp32Internal";
 val _ = prefer_num ();
 val _ = guess_lengths ();
 
+(** self-defined tactics **)
+val check_hazard_ctrl =
+ (fs [Hazard_ctrl_def] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w` >> fs [] >>
+  Cases_on `(fext t).ready` >> fs [] >>
+  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
+            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s'.EX.EX_jump_sel` >> fs [] >>
+  Cases_on `s'.EX.EX_checkA \/ s'.EX.EX_checkB \/ s'.EX.EX_checkW \/
+            s'.MEM.MEM_checkA \/ s'.MEM.MEM_checkB \/ s'.MEM.MEM_checkW \/
+            s'.WB.WB_checkA \/ s'.WB.WB_checkB \/ s'.WB.WB_checkW` >> fs []);
+                                                                                
+val rw_hazard_ctrl_checks_init =
+  (clist_update_state_tac >>
+   fs [Abbr `s14`,Hazard_ctrl_def] >>
+   Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
+             s13.state = 4w \/ s13.state = 5w` >> fs [] >>
+   Cases_on `(fext 0).ready` >> fs [] >>
+   Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
+             (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
+             (agp32_init fbits).MEM.MEM_opc = 8w \/ (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
+   Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
+   Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
+             s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
+             s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []);
+                                                             
+val rw_hazard_ctrl_checks_regular =
+ (qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Hazard_ctrl_def] >>
+  Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
+            s13.state = 4w \/ s13.state = 5w` >> fs [] >>
+  Cases_on `(fext (SUC n)).ready` >> fs [] >>       
+  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
+            s''.MEM.MEM_opc = 8w \/ s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
+  Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
+            s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
+            s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []);
 
 (** option from the ISA functions  **)
 Theorem isJump_isa_op_not_none:
@@ -194,7 +235,7 @@ Proof
   `(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext t) s s').EX.EX_opc /\
   (agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext t) s s').EX.EX_func`
     by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >>
-  `s'.ID.ID_EX_write_enable <=> s.ID.ID_EX_write_enable`
+  `s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable`
     by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
   fs [EX_pipeline_def] >>
   Cases_on `s.ID.ID_EX_write_enable` >> fs [] >>
@@ -203,6 +244,7 @@ Proof
   METIS_TAC [agp32_ID_opc_implies_ID_func]
 QED
 
+(** if the EX stage is disabled, then EX_opc is unchanged at the next cycle **)
 Theorem agp32_EX_opc_unchanged_when_EX_disabled:
   !fext fbits t.
     ~enable_stg 3 (agp32 fext fbits t) ==>
@@ -213,7 +255,7 @@ Proof
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
   `(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext t) s s').EX.EX_opc`
     by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >>
-  `s'.ID.ID_EX_write_enable <=> s.ID.ID_EX_write_enable`
+  `s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable`
     by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
   fs [EX_pipeline_def] >>
   qpat_x_assum `(agp32 fext fbits (SUC t)).EX.EX_opc = _` (fn thm => all_tac) >>
@@ -230,6 +272,24 @@ Proof
       agp32_next_state_unchanged_EX_pipeline_items]
 QED
 
+(** when EX is enabled and EX_NOP_flag is true, EX_opc is flushed **)
+Theorem agp32_EX_opc_flush_when_EX_NOP_flag:
+  !fext fbits t.
+    enable_stg 3 (agp32 fext fbits t) ==>
+    (agp32 fext fbits t).EX.EX_NOP_flag ==>
+    (agp32 fext fbits (SUC t)).EX.EX_opc = 16w
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext t) s s').EX.EX_opc`
+    by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
+  (s'.EX.EX_NOP_flag = s.EX.EX_NOP_flag)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
+  fs [EX_pipeline_def]
+QED
+
 
 (** pipeline control flags **)
 (** IF_PC_write_enable **)
@@ -244,16 +304,7 @@ Proof
   ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable) /\
   ((agp32 fext fbits t).ID.ID_ID_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_ID_write_enable)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
-            s'.state = 4w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s'.EX.EX_checkA \/ s'.EX.EX_checkB \/ s'.EX.EX_checkW \/
-            s'.MEM.MEM_checkA \/ s'.MEM.MEM_checkB \/ s'.MEM.MEM_checkW \/
-            s'.WB.WB_checkA \/ s'.WB.WB_checkB \/ s'.WB.WB_checkW` >> fs []
+  check_hazard_ctrl
 QED
 
 (* IF_PC_write_enable and ID_EX_write_enable *)
@@ -267,16 +318,7 @@ Proof
   ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable) /\
   ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
-            s'.state = 4w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s'.EX.EX_checkA \/ s'.EX.EX_checkB \/ s'.EX.EX_checkW \/
-            s'.MEM.MEM_checkA \/ s'.MEM.MEM_checkB \/ s'.MEM.MEM_checkW \/
-            s'.WB.WB_checkA \/ s'.WB.WB_checkB \/ s'.WB.WB_checkW` >> fs []
+  check_hazard_ctrl
 QED
 
 (* IF_PC_write_enable and MEM_state_flag *)
@@ -290,16 +332,7 @@ Proof
   ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable) /\
   ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
-            s'.state = 4w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s'.EX.EX_checkA \/ s'.EX.EX_checkB \/ s'.EX.EX_checkW \/
-            s'.MEM.MEM_checkA \/ s'.MEM.MEM_checkB \/ s'.MEM.MEM_checkW \/
-            s'.WB.WB_checkA \/ s'.WB.WB_checkB \/ s'.WB.WB_checkW` >> fs []
+  check_hazard_ctrl
 QED
 
 (* IF_PC_write_enable and WB_state_flag *)
@@ -313,16 +346,7 @@ Proof
   ((agp32 fext fbits t).IF.IF_PC_write_enable <=> (Hazard_ctrl (fext t) s s').IF.IF_PC_write_enable) /\
   ((agp32 fext fbits t).WB.WB_state_flag <=> (Hazard_ctrl (fext t) s s').WB.WB_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
-            s'.state = 4w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s'.EX.EX_checkA \/ s'.EX.EX_checkB \/ s'.EX.EX_checkW \/
-            s'.MEM.MEM_checkA \/ s'.MEM.MEM_checkB \/ s'.MEM.MEM_checkW \/
-            s'.WB.WB_checkA \/ s'.WB.WB_checkB \/ s'.WB.WB_checkW` >> fs []
+  check_hazard_ctrl
 QED
 
 (** IF_PC_write_enable and fext t.ready **)
@@ -357,33 +381,10 @@ Theorem agp32_IF_PC_write_enable_and_state:
     ((agp32 fext fbits t).state <> 4w) /\
     ((agp32 fext fbits t).state <> 5w)
 Proof
-  rpt GEN_TAC >> STRIP_TAC >> Cases_on `t` >>
+  rpt gen_tac >> strip_tac >> Cases_on `t` >>
   fs [agp32_def,mk_module_def,mk_circuit_def] >-
-   (clist_update_state_tac >>
-    fs [Abbr `s14`,Hazard_ctrl_def] >>
-    Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
-              s13.state = 4w \/ s13.state = 5w` >> fs [] >>
-    Cases_on `(fext 0).ready` >> fs [] >>
-    Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
-              (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
-              (agp32_init fbits).MEM.MEM_opc = 8w \/ (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
-    Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
-    Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
-              s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
-              s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []) >>
-  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
-  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
-  clist_update_state_tac >>
-  fs [Abbr `s14`,Hazard_ctrl_def] >>
-  Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
-            s13.state = 4w \/ s13.state = 5w` >> fs [] >>
-  Cases_on `(fext (SUC n)).ready` >> fs [] >>       
-  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
-            s''.MEM.MEM_opc = 8w \/ s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
-            s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
-            s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []
+   rw_hazard_ctrl_checks_init >>
+  rw_hazard_ctrl_checks_regular
 QED
 
 (** IF_PC_write_enable and not a jump, then there is no reg_data_hazard **)
@@ -395,31 +396,8 @@ Theorem agp32_IF_PC_write_enable_EX_jump_sel_then_no_reg_data_hazard:
 Proof
   rw [] >> Cases_on `t` >>
   fs [agp32_def,mk_module_def,mk_circuit_def,reg_data_hazard_def] >-
-   (clist_update_state_tac >>
-    fs [Abbr `s14`,Hazard_ctrl_def] >>
-    Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
-              s13.state = 4w \/ s13.state = 5w` >> fs [] >>
-    Cases_on `(fext 0).ready` >> fs [] >>
-    Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
-              (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
-              (agp32_init fbits).MEM.MEM_opc = 8w \/ (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
-    Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
-    Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
-              s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
-              s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []) >>
-  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
-  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
-  clist_update_state_tac >>
-  fs [Abbr `s14`,Hazard_ctrl_def] >>
-  Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
-            s13.state = 4w \/ s13.state = 5w` >> fs [] >>
-  Cases_on `(fext (SUC n)).ready` >> fs [] >>       
-  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
-            s''.MEM.MEM_opc = 8w \/ s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
-            s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
-            s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []
+   rw_hazard_ctrl_checks_init >>
+  rw_hazard_ctrl_checks_regular
 QED
 
 (* ID_ID_write_enable *)
@@ -472,31 +450,8 @@ Theorem agp32_ID_ID_write_enable_flush_flag_then_EX_jump_sel:
 Proof
   rpt GEN_TAC >> STRIP_TAC >> Cases_on `t` >>
   fs [agp32_def,mk_module_def,mk_circuit_def] >-
-   (clist_update_state_tac >>
-    fs [Abbr `s14`,Hazard_ctrl_def] >>
-    Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
-              s13.state = 4w \/ s13.state = 5w` >> fs [] >>
-    Cases_on `(fext 0).ready` >> fs [] >>
-    Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
-              (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
-              (agp32_init fbits).MEM.MEM_opc = 8w \/ (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
-    Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
-    Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
-              s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
-              s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []) >>
-  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
-  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
-  clist_update_state_tac >>
-  fs [Abbr `s14`,Hazard_ctrl_def] >>
-  Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
-            s13.state = 4w \/ s13.state = 5w` >> fs [] >>
-  Cases_on `(fext (SUC n)).ready` >> fs [] >>       
-  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
-            s''.MEM.MEM_opc = 8w \/ s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
-            s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
-            s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []
+   rw_hazard_ctrl_checks_init >>
+  rw_hazard_ctrl_checks_regular
 QED
 
 (** ID_ID_write_enable and not a jump, then there is no reg_data_hazard **)
@@ -533,16 +488,7 @@ Proof
   ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable) /\
   ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
-            s'.state = 4w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s'.EX.EX_checkA \/ s'.EX.EX_checkB \/ s'.EX.EX_checkW \/
-            s'.MEM.MEM_checkA \/ s'.MEM.MEM_checkB \/ s'.MEM.MEM_checkW \/
-            s'.WB.WB_checkA \/ s'.WB.WB_checkB \/ s'.WB.WB_checkW` >> fs []
+  check_hazard_ctrl
 QED
 
 Theorem agp32_MEM_state_flag_F_and_ID_EX_write_disable:
@@ -564,16 +510,7 @@ Proof
   ((agp32 fext fbits t).ID.ID_EX_write_enable <=> (Hazard_ctrl (fext t) s s').ID.ID_EX_write_enable) /\
   ((agp32 fext fbits t).WB.WB_state_flag <=> (Hazard_ctrl (fext t) s s').WB.WB_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
-            s'.state = 4w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s'.EX.EX_checkA \/ s'.EX.EX_checkB \/ s'.EX.EX_checkW \/
-            s'.MEM.MEM_checkA \/ s'.MEM.MEM_checkB \/ s'.MEM.MEM_checkW \/
-            s'.WB.WB_checkA \/ s'.WB.WB_checkB \/ s'.WB.WB_checkW` >> fs []
+  check_hazard_ctrl
 QED
 
 (** ID_EX_write_enable and MEM_opc **)
@@ -645,6 +582,32 @@ Proof
   rw [] >> METIS_TAC [agp32_ID_EX_write_enable_no_MEM_stg_op]
 QED
 
+(** ID_EX_write_enable, jump singal and EX_NOP_flag **)
+Theorem agp32_ID_EX_write_enable_isJump_hw_op_EX_NOP_flag:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_EX_write_enable ==>
+    isJump_hw_op (agp32 fext fbits t) ==>
+    (agp32 fext fbits t).EX.EX_NOP_flag
+Proof
+  rw [isJump_hw_op_def] >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   rw_hazard_ctrl_checks_init >>
+  rw_hazard_ctrl_checks_regular
+QED
+
+(** ID_EX_write_enable, jump singal and EX_NOP_flag **)
+Theorem agp32_ID_EX_write_enable_reg_data_hazard_EX_NOP_flag:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_EX_write_enable ==>
+    reg_data_hazard (agp32 fext fbits t) ==>
+    (agp32 fext fbits t).EX.EX_NOP_flag
+Proof
+  rw [] >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (rw_hazard_ctrl_checks_init >> fs [reg_data_hazard_def]) >>
+  rw_hazard_ctrl_checks_regular >> fs [reg_data_hazard_def]
+QED
+
 (** IF_PC_write_enable, ID_EX_write_enable and reg_data_hazard **)
 Theorem agp32_IF_PC_write_disable_ID_EX_write_enable_reg_data_hazard:
   !fext fbits t.
@@ -654,31 +617,8 @@ Theorem agp32_IF_PC_write_disable_ID_EX_write_enable_reg_data_hazard:
 Proof
   rw [] >> Cases_on `t` >>
   fs [agp32_def,mk_module_def,mk_circuit_def,reg_data_hazard_def] >-
-   (clist_update_state_tac >>
-    fs [Abbr `s14`,Hazard_ctrl_def] >>
-    Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
-              s13.state = 4w \/ s13.state = 5w` >> fs [] >>
-    Cases_on `(fext 0).ready` >> fs [] >>
-    Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
-              (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
-              (agp32_init fbits).MEM.MEM_opc = 8w \/ (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
-    Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
-    Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
-              s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
-              s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []) >>
-  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
-  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
-  clist_update_state_tac >>
-  fs [Abbr `s14`,Hazard_ctrl_def] >>
-  Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
-            s13.state = 4w \/ s13.state = 5w` >> fs [] >>
-  Cases_on `(fext (SUC n)).ready` >> fs [] >>
-  Cases_on `s''.MEM.MEM_opc = 2w \/ s''.MEM.MEM_opc = 3w \/ s''.MEM.MEM_opc = 4w \/
-            s''.MEM.MEM_opc = 8w \/ s''.MEM.MEM_opc = 5w \/ s''.MEM.MEM_opc = 12w` >> fs [] >> fs [] >>
-  Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
-              s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
-              s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []
+   rw_hazard_ctrl_checks_init >>
+  rw_hazard_ctrl_checks_regular
 QED
 
 Theorem agp32_ID_ID_write_disable_ID_EX_write_enable_reg_data_hazard:
@@ -703,16 +643,7 @@ Proof
   ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag) /\
   ((agp32 fext fbits t).WB.WB_state_flag <=> (Hazard_ctrl (fext t) s s').WB.WB_state_flag)`
     by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >>
-  fs [Hazard_ctrl_def] >>
-  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
-            s'.state = 4w \/ s'.state = 5w` >> fs [] >>
-  Cases_on `(fext t).ready` >> fs [] >>
-  Cases_on `s.MEM.MEM_opc = 2w \/ s.MEM.MEM_opc = 3w \/ s.MEM.MEM_opc = 4w \/
-            s.MEM.MEM_opc = 5w \/ s.MEM.MEM_opc = 8w \/ s.MEM.MEM_opc = 12w` >> fs [] >>
-  Cases_on `s'.EX.EX_jump_sel` >> fs [] >>
-  Cases_on `s'.EX.EX_checkA \/ s'.EX.EX_checkB \/ s'.EX.EX_checkW \/
-            s'.MEM.MEM_checkA \/ s'.MEM.MEM_checkB \/ s'.MEM.MEM_checkW \/
-            s'.WB.WB_checkA \/ s'.WB.WB_checkB \/ s'.WB.WB_checkW` >> fs []
+  check_hazard_ctrl
 QED
 
 (** ID_EX_write_enable, MEM_state_flag and MEM_opc **)
@@ -824,6 +755,25 @@ Proof
   rw [EX_jump_sel_addr_update_def]
 QED
 
+(** initial EX_opc is 16w **)
+Theorem agp32_init_EX_opc:
+  !fext fbits.
+    (agp32 fext fbits 0).EX.EX_opc = 16w
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
+      MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_EX_pipeline_items,EX_SHIFT_update_unchanged_EX_pipeline_items,
+      EX_ALU_update_unchanged_EX_pipeline_items,EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
+      EX_ctrl_update_unchanged_EX_pipeline_items,ID_data_check_update_unchanged_EX_pipeline_items,
+      ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
+      ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items] >>
+  rw [agp32_init_def]
+QED
+
 (** initial IF_PC_input = PC + 4w **)
 Theorem agp32_init_IF_PC_input:
   !fext fbits.
@@ -920,6 +870,17 @@ QED
 
 
 (* lemmas about the scheduling function I *)
+(** false ID instr only flushed when jump happened in the EX stage
+Theorem ID_instr_index_NONE_opc_flush:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (2,t) = NONE ==>
+    (agp32 fext fbits t).ID.ID_opc = 15w
+Proof
+  cheat
+QED
+ **)
+
 (** NONE happened **)
 Theorem EX_instr_index_NONE_opc_flush:
   !I t fext fbits a.
@@ -928,16 +889,17 @@ Theorem EX_instr_index_NONE_opc_flush:
     (agp32 fext fbits t).EX.EX_opc = 16w
 Proof
   rw [is_sch_def] >>
-  Induct_on `t` >-
-   cheat >>
-  rw [] >>
+  Induct_on `t` >>
+  rw [agp32_init_EX_opc] >>
   Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
    (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
-     (`(agp32 fext fbits t).EX.EX_NOP_flag` by cheat >>
-      cheat) >>
+     (`(agp32 fext fbits t).EX.EX_NOP_flag`
+        by fs [enable_stg_def,agp32_ID_EX_write_enable_isJump_hw_op_EX_NOP_flag] >>
+      fs [agp32_EX_opc_flush_when_EX_NOP_flag]) >>
     Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
-     (`(agp32 fext fbits t).EX.EX_NOP_flag` by cheat >>
-      cheat) >>
+     (`(agp32 fext fbits t).EX.EX_NOP_flag`
+        by fs [enable_stg_def,agp32_ID_EX_write_enable_reg_data_hazard_EX_NOP_flag] >>
+      fs [agp32_EX_opc_flush_when_EX_NOP_flag]) >>
     `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_execute_def] >> fs [] >>
     cheat) >>
   `I' (3,SUC t) = I' (3,t)` by METIS_TAC [is_sch_disable_def] >>

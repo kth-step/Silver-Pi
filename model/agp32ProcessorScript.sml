@@ -517,8 +517,8 @@ val init_tm = add_x_inits ``<| R := K 0w;
                                interrupt_req := F;           
                                IF := <| IF_PC_write_enable := F |>;           
                                ID := <| ID_instr := 0x0000003Fw |>;
-                               EX := <| EX_PC_sel := 0w; EX_opc := 15w; EX_write_reg := F |>;
-                               MEM := <| MEM_write_reg := F; MEM_opc := 15w |>;
+                               EX := <| EX_PC_sel := 0w; EX_opc := 16w; EX_write_reg := F |>;
+                               MEM := <| MEM_write_reg := F; MEM_opc := 16w |>;
                                WB := <| WB_write_reg := F |> |>``;
 
 Definition agp32_init_def:

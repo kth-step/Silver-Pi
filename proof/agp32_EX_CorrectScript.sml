@@ -305,15 +305,222 @@ QED
 *)
 
 
+(** EX_PC **)
+Theorem agp32_Rel_ag32_EX_PC_correct:
+  !fext fbits a t I.
+    is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_PC = (FUNPOW Next (THE (I (3,SUC t)) − 1) a).PC
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_PC = (EX_pipeline (fext t) s s').EX.EX_PC`
+    by fs [agp32_EX_PC_imm_addrW_updated_by_EX_pipeline] >> rw [] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s'.EX.EX_PC = s.EX.EX_PC)`
+    by METIS_TAC [agp32_same_EX_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (fs [is_sch_execute_def] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [] >> fs [] >>
+    `s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    rw [EX_pipeline_def] >> fs [Rel_def,ID_Rel_def]) >>
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_disable_def] >>
+  `~s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  rw [EX_pipeline_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
+
+(** EX_addrW **)
+Theorem agp32_Rel_ag32_EX_addrW_correct:
+  !fext fbits a t I.
+    is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_addrW = addrW (FUNPOW Next (THE (I (3,SUC t)) − 1) a)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_addrW = (EX_pipeline (fext t) s s').EX.EX_addrW`
+    by fs [agp32_EX_PC_imm_addrW_updated_by_EX_pipeline] >> rw [] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s'.EX.EX_addrW = s.EX.EX_addrW)`
+    by METIS_TAC [agp32_same_EX_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  `s'.ID.ID_addrW = s.ID.ID_addrW`
+    by METIS_TAC [agp32_same_ID_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (fs [is_sch_execute_def] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [] >> fs [] >>
+    `s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    rw [EX_pipeline_def] >> fs [Rel_def,ID_Rel_def]) >>
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_disable_def] >>
+  `~s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  rw [EX_pipeline_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
+
+(** EX_imm **)
+Theorem agp32_Rel_ag32_EX_imm_correct:
+  !fext fbits a t I.
+    is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_imm = imm (FUNPOW Next (THE (I (3,SUC t)) − 1) a)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_imm = (EX_pipeline (fext t) s s').EX.EX_imm`
+    by fs [agp32_EX_PC_imm_addrW_updated_by_EX_pipeline] >> rw [] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s'.EX.EX_imm = s.EX.EX_imm)`
+    by METIS_TAC [agp32_same_EX_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  `s'.ID.ID_imm = s.ID.ID_imm`
+    by METIS_TAC [agp32_same_ID_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (fs [is_sch_execute_def] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [] >> fs [] >>
+    `s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    rw [EX_pipeline_def] >> fs [Rel_def,ID_Rel_def]) >>
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_disable_def] >>
+  `~s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  rw [EX_pipeline_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
+
+(** EX_opc **)
+Theorem agp32_Rel_ag32_EX_opc_correct:
+  !fext fbits a t I.
+    is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_opc = opc (FUNPOW Next (THE (I (3,SUC t)) − 1) a)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext t) s s').EX.EX_opc`
+    by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >> rw [] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s'.EX.EX_opc = s.EX.EX_opc) /\
+  (s'.EX.EX_NOP_flag = s.EX.EX_NOP_flag)`
+    by METIS_TAC [agp32_same_EX_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  `s'.ID.ID_opc = s.ID.ID_opc`
+    by METIS_TAC [agp32_same_ID_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (fs [is_sch_execute_def] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [] >> fs [] >>
+    `s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    `~s.EX.EX_NOP_flag`
+      by fs [enable_stg_def,Abbr `s`,
+             agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_EX_NOP_flag_F] >>
+    rw [EX_pipeline_def] >> fs [Rel_def,ID_Rel_def]) >>
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_disable_def] >>
+  `~s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  rw [EX_pipeline_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
+
+(** EX_func **)
+Theorem agp32_Rel_ag32_EX_func_correct:
+  !fext fbits a t I.
+    is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_func = func (FUNPOW Next (THE (I (3,SUC t)) − 1) a)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext t) s s').EX.EX_func`
+    by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >> rw [] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s'.EX.EX_func = s.EX.EX_func) /\
+  (s'.EX.EX_NOP_flag = s.EX.EX_NOP_flag)`
+    by METIS_TAC [agp32_same_EX_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  `s'.ID.ID_func = s.ID.ID_func`
+    by METIS_TAC [agp32_same_ID_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (fs [is_sch_execute_def] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [] >> fs [] >>
+    `s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    `~s.EX.EX_NOP_flag`
+      by fs [enable_stg_def,Abbr `s`,
+             agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_EX_NOP_flag_F] >>
+    rw [EX_pipeline_def] >> fs [Rel_def,ID_Rel_def]) >>
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_disable_def] >>
+  `~s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  rw [EX_pipeline_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
+
+(** EX_write_reg **)
+Theorem agp32_Rel_ag32_EX_write_reg_correct:
+  !fext fbits a t I.
+    is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_write_reg = reg_iswrite (FUNPOW Next (THE (I (3,SUC t)) − 1) a)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_write_reg = (EX_pipeline (fext t) s s').EX.EX_write_reg`
+    by fs [agp32_EX_write_reg_updated_by_EX_pipeline] >> rw [] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s'.EX.EX_write_reg = s.EX.EX_write_reg) /\
+  (s'.EX.EX_NOP_flag = s.EX.EX_NOP_flag)`
+    by METIS_TAC [agp32_same_EX_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  `s'.ID.ID_opc = s.ID.ID_opc`
+    by METIS_TAC [agp32_same_ID_items_before_EX_pipeline,Abbr `s`,Abbr `s'`] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (fs [is_sch_execute_def] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [] >> fs [] >>
+    `s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    `~s.EX.EX_NOP_flag`
+      by fs [enable_stg_def,Abbr `s`,
+             agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_EX_NOP_flag_F] >>
+    rw [EX_pipeline_def,reg_iswrite_def] >> fs [Rel_def,ID_Rel_def]) >> 
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_disable_def] >>
+  `~s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  rw [EX_pipeline_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
+
+
 (* EX stage *)
 Theorem agp32_Rel_ag32_EX_Rel_correct:
   !fext fbits a t I.
     is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
-    enable_stg 3 (agp32 fext fbits t) ==>
     I (3,SUC t) <> NONE ==>
     EX_Rel (fext (SUC t)) (agp32 fext fbits (SUC t)) a (THE (I (3,SUC t)))
 Proof
+  rw [EX_Rel_def] >>
+  fs [agp32_Rel_ag32_EX_PC_correct,agp32_Rel_ag32_EX_addrW_correct,
+      agp32_Rel_ag32_EX_imm_correct,agp32_Rel_ag32_EX_opc_correct,
+      agp32_Rel_ag32_EX_func_correct,agp32_Rel_ag32_EX_write_reg_correct] >>
   cheat
 QED
 

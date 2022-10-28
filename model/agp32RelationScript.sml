@@ -193,19 +193,19 @@ Definition EX_Rel_def:
   EX_Rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
   ((s.EX.EX_PC = (FUNPOW Next (i-1) a).PC) /\
    (s.EX.EX_addrW = addrW (FUNPOW Next (i-1) a)) /\
-   (s.EX.EX_dataA = dataA (FUNPOW Next (i-1) a)) /\
-   (s.EX.EX_dataB = dataB (FUNPOW Next (i-1) a)) /\
-   (s.EX.EX_dataW = dataW (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_imm = imm (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_opc = opc (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_func = func (FUNPOW Next (i-1) a)) /\
+   (s.EX.EX_write_reg <=> reg_iswrite (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_opc <> 14w ==> s.EX.EX_imm_updated = imm (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_opc = 14w ==> s.EX.EX_imm_updated = ((8 >< 0) (imm (FUNPOW Next (i-1) a))) @@ ((22 >< 0) (dataW (FUNPOW Next (i-1) a)))) /\
+   (s.EX.EX_dataA = dataA (FUNPOW Next (i-1) a)) /\
+   (s.EX.EX_dataB = dataB (FUNPOW Next (i-1) a)) /\
+   (s.EX.EX_dataW = dataW (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_ALU_input1 = ALU_input1 (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_ALU_input2 = ALU_input2 (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_ALU_res = ALU_res (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_SHIFT_res = shift_res (FUNPOW Next (i-1) a)) /\
-   (s.EX.EX_write_reg <=> reg_iswrite (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_opc = 9w ==> s.EX.EX_PC_sel = 1w) /\
    (s.EX.EX_opc = 10w ==> s.EX.EX_PC_sel = 2w) /\
    (s.EX.EX_opc = 11w ==> s.EX.EX_PC_sel = 3w))
@@ -292,7 +292,7 @@ Definition Rel_def:
   (I (2,t) <> NONE ==> ID_Rel s a (THE (I (2,t)))) /\
   (I (2,t) <> NONE ==> ID_data_dep_Rel s a (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
-  (I (3,t) <> NONE ==> enable_stg 3 si ==> EX_Rel fext s a (THE (I (3,t)))) /\
+  (I (3,t) <> NONE ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (EX_Rel_spec s a (I (3,t))) /\
   (I (4,t) <> NONE ==> enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
   (I (5,t) <> NONE ==> enable_stg 5 si ==> WB_Rel fext s a (THE (I (5,t))))

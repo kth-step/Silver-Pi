@@ -654,6 +654,20 @@ Proof
   rw_hazard_ctrl_checks_regular >> fs [reg_data_hazard_def]
 QED
 
+(** ID_EX_write_enable, no jump singal or data hazard, then EX_NOP_flag is F **)
+Theorem agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_EX_NOP_flag_F:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_EX_write_enable ==>
+    ~isJump_hw_op (agp32 fext fbits t) ==>
+    ~reg_data_hazard (agp32 fext fbits t) ==>
+    ~(agp32 fext fbits t).EX.EX_NOP_flag
+Proof
+  rw [] >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (rw_hazard_ctrl_checks_init >> fs [reg_data_hazard_def,isJump_hw_op_def]) >>
+  rw_hazard_ctrl_checks_regular >> fs [reg_data_hazard_def,isJump_hw_op_def]
+QED
+
 (** IF_PC_write_enable, ID_EX_write_enable and reg_data_hazard **)
 Theorem agp32_IF_PC_write_disable_ID_EX_write_enable_reg_data_hazard:
   !fext fbits t.
@@ -940,7 +954,7 @@ Theorem ID_instr_index_NONE_opc_flush:
   !I t fext fbits a.
     is_sch I (agp32 fext fbits) a ==>
     I (2,t) = NONE ==>
-    (agp32 fext fbits t).ID.ID_opc = 15w
+    (agp32 fext fbits t).ID.ID_opc = 16w
 Proof
   cheat
 QED

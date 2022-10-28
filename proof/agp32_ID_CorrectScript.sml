@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory wordsExtraTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory wordsExtraTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32_EX_CorrectTheory;
 
 (* correctness of ID stage items with respect to the ISA *)
 val _ = new_theory "agp32_ID_Correct";
@@ -394,9 +394,9 @@ Proof
   Cases_on `I' (3,SUC t) = NONE` >> rw [] >-
    METIS_TAC [EX_instr_index_NONE_EX_not_write_reg] >>
   `(agp32 fext fbits (SUC t)).EX.EX_write_reg = reg_iswrite (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
-    by cheat >>
+    by fs [is_sch_def,agp32_Rel_ag32_EX_write_reg_correct] >>
   `(agp32 fext fbits (SUC t)).EX.EX_addrW = addrW (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
-    by cheat >> rw []
+    by fs [is_sch_def,agp32_Rel_ag32_EX_addrW_correct] >> rw []
 QED
 
 (** MEM_checkA: ID_addrA is affected by the instruction in the MEM stage or not **)
@@ -493,9 +493,9 @@ Proof
   Cases_on `I' (3,SUC t) = NONE` >> rw [] >-
    METIS_TAC [EX_instr_index_NONE_EX_not_write_reg] >>
   `(agp32 fext fbits (SUC t)).EX.EX_write_reg = reg_iswrite (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
-    by cheat >>
+    by fs [is_sch_def,agp32_Rel_ag32_EX_write_reg_correct] >>
   `(agp32 fext fbits (SUC t)).EX.EX_addrW = addrW (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
-    by cheat >> rw []
+    by fs [is_sch_def,agp32_Rel_ag32_EX_addrW_correct] >> rw []
 QED
 
 (** MEM_checkB: ID_addrB is affected by the instruction in the MEM stage or not **)
@@ -592,9 +592,9 @@ Proof
   Cases_on `I' (3,SUC t) = NONE` >> rw [] >-
    METIS_TAC [EX_instr_index_NONE_EX_not_write_reg] >>
   `(agp32 fext fbits (SUC t)).EX.EX_write_reg = reg_iswrite (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
-    by cheat >>
+    by fs [is_sch_def,agp32_Rel_ag32_EX_write_reg_correct] >>
   `(agp32 fext fbits (SUC t)).EX.EX_addrW = addrW (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
-    by cheat >> rw []
+    by fs [is_sch_def,agp32_Rel_ag32_EX_addrW_correct] >> rw []
 QED
 
 (** MEM_checkW: ID_addrW is affected by the instruction in the MEM stage or not **)

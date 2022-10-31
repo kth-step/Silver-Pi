@@ -337,6 +337,23 @@ Proof
 QED
 
 
+(** WB stage **)
+(** when WB is disabled, the R is unchanged **)
+Theorem agp32_WB_disabled_then_R_unchanged:
+  !fext fbits t.
+    ~enable_stg 5 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).R = (agp32 fext fbits t).R
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).R = (REG_write (fext t) s s').R`
+    by fs [agp32_R_updated_by_REG_write] >>
+  `(s'.WB.WB_state_flag = s.WB.WB_state_flag) /\ (s'.R = s.R)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_before_REG_write] >>
+  fs [REG_write_def]
+QED
+
 (** pipeline control flags **)
 (** IF_PC_write_enable **)
 (** IF_PC_write_enable and ID_ID_write_enable **)

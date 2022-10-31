@@ -291,11 +291,11 @@ Definition Rel_def:
   (I (1,t) <> NONE ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
   (I (2,t) <> NONE ==> ID_Rel s a (THE (I (2,t)))) /\
   (I (2,t) <> NONE ==> ID_data_dep_Rel s a (I (3,t)) (I (4,t)) (I (5,t))) /\
-  (I (2,t) <> NONE ==> enable_stg 2 si ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
+  (I (2,t) <> NONE ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (3,t) <> NONE ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (EX_Rel_spec s a (I (3,t))) /\
-  (I (4,t) <> NONE ==> enable_stg 4 si ==> MEM_Rel fext s a (THE (I (4,t)))) /\
-  (I (5,t) <> NONE ==> enable_stg 5 si ==> WB_Rel fext s a (THE (I (5,t))))
+  (I (4,t) <> NONE ==> MEM_Rel fext s a (THE (I (4,t)))) /\
+  (I (5,t) <> NONE ==> WB_Rel fext s a (THE (I (5,t))))
 End
 
 

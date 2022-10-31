@@ -90,7 +90,7 @@ Proof
    fs [agp32_Rel_ag32_IF_instr_Rel_correct] >-
    (** ID **)
    fs [is_sch_def,agp32_Rel_ag32_ID_Rel_correct] >-
-   cheat >-
+   fs [agp32_Rel_ag32_ID_data_dep_Rel_correct] >-
    fs [agp32_Rel_ag32_ID_reg_data_Rel_correct] >-
    (** EX **)
    fs [is_sch_def,agp32_Rel_ag32_EX_Rel_correct] >-

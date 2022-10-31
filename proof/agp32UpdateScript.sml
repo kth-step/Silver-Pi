@@ -1740,7 +1740,8 @@ QED
 Theorem Acc_compute_unchanged_state_items:
   !fext s s'.
     ((Acc_compute fext s s').command = s'.command) /\
-    ((Acc_compute fext s s').state = s'.state)
+    ((Acc_compute fext s s').state = s'.state) /\
+    ((Acc_compute fext s s').R = s'.R)
 Proof
   rw [Acc_compute_def]
 QED
@@ -1796,7 +1797,8 @@ QED
 Theorem IF_PC_update_unchanged_state_items:
   !fext s s'.
     ((IF_PC_update fext s s').command = s'.command) /\
-    ((IF_PC_update fext s s').state = s'.state)
+    ((IF_PC_update fext s s').state = s'.state) /\
+    ((IF_PC_update fext s s').R = s'.R)
 Proof
   rw [IF_PC_update_def]
 QED
@@ -1853,7 +1855,8 @@ QED
 Theorem ID_pipeline_unchanged_state_items:
   !fext s s'.
     ((ID_pipeline fext s s').command = s'.command) /\
-    ((ID_pipeline fext s s').state = s'.state)
+    ((ID_pipeline fext s s').state = s'.state) /\
+    ((ID_pipeline fext s s').R = s'.R)
 Proof
   rw [ID_pipeline_def]
 QED
@@ -1974,7 +1977,8 @@ QED
 Theorem EX_pipeline_unchanged_state_items:
   !fext s s'.
     ((EX_pipeline fext s s').command = s'.command) /\
-    ((EX_pipeline fext s s').state = s'.state)
+    ((EX_pipeline fext s s').state = s'.state) /\
+    ((EX_pipeline fext s s').R = s'.R)
 Proof
   rw [EX_pipeline_def]
 QED
@@ -2064,7 +2068,8 @@ QED
 Theorem MEM_pipeline_unchanged_state_items:
   !fext s s'.
     ((MEM_pipeline fext s s').command = s'.command) /\
-    ((MEM_pipeline fext s s').state = s'.state)
+    ((MEM_pipeline fext s s').state = s'.state) /\
+    ((MEM_pipeline fext s s').R = s'.R)
 Proof
   rw [MEM_pipeline_def]
 QED
@@ -2154,7 +2159,8 @@ QED
 Theorem WB_pipeline_unchanged_state_items:
   !fext s s'.
     ((WB_pipeline fext s s').command = s'.command) /\
-    ((WB_pipeline fext s s').state = s'.state)
+    ((WB_pipeline fext s s').state = s'.state) /\
+    ((WB_pipeline fext s s').R = s'.R)
 Proof
   rw [WB_pipeline_def]
 QED
@@ -2244,6 +2250,14 @@ QED
 Theorem agp32_next_state_unchanged_WB_ctrl_items:
   !fext s s'.
     ((agp32_next_state fext s s').WB.WB_state_flag <=> s'.WB.WB_state_flag)
+Proof
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
+Theorem agp32_next_state_unchanged_state_items:
+  !fext s s'.
+    ((agp32_next_state fext s s').R = s'.R)
 Proof
   rw [agp32_next_state_def] >>
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
@@ -2762,6 +2776,32 @@ Proof
       WB_pipeline_unchanged_state_items]
 QED
 
+(** R is updated by the REG_write function **)
+Theorem agp32_R_updated_by_REG_write:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).R = (REG_write (fext t) s s').R
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_ctrl_update_unchanged_state_items,IF_PC_input_update_unchanged_state_items,
+      EX_jump_sel_addr_update_unchanged_state_items,EX_SHIFT_update_unchanged_state_items,
+      EX_ALU_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_state_items,
+      EX_ctrl_update_unchanged_state_items,ID_data_check_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_instr_update_unchanged_state_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Abbr `ss7`,Abbr `ss6`,
+      Acc_compute_unchanged_state_items,IF_PC_update_unchanged_state_items,
+      ID_pipeline_unchanged_state_items]
+QED
+
 
 (* additional theorems for the correctness proof *)
 Theorem agp32_same_EX_opc_func_until_ALU_update:
@@ -2913,6 +2953,24 @@ Proof
       Abbr `ss1`,agp32_next_state_unchanged_ID_items,agp32_next_state_unchanged_IF_items]
 QED
 
+Theorem agp32_same_items_before_REG_write:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline] (fext t) s s ==>
+    (s'.WB.WB_state_flag <=> s.WB.WB_state_flag) /\
+    (s'.R = s.R)
+Proof
+  rpt STRIP_TAC >> fs [procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  qpat_abbrev_tac `ss2 = WB_pipeline _ _ _` >>
+  qpat_abbrev_tac `ss3 = MEM_pipeline _ _ _` >>
+  qpat_abbrev_tac `ss4 = EX_pipeline _ _ _` >>
+  fs [Abbr `ss4`,EX_pipeline_unchanged_state_items,EX_pipeline_unchanged_WB_ctrl_items,
+      Abbr `ss3`,MEM_pipeline_unchanged_state_items,MEM_pipeline_unchanged_WB_ctrl_items,
+      Abbr `ss2`,WB_pipeline_unchanged_state_items,WB_pipeline_unchanged_WB_ctrl_items,
+      Abbr `ss1`,agp32_next_state_unchanged_state_items,agp32_next_state_unchanged_WB_ctrl_items]
+QED
+
 Theorem agp32_same_ID_items_before_EX_pipeline:
   !fext fbits t s s'.
     s = agp32 fext fbits t ==>
@@ -3044,6 +3102,47 @@ Proof
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>  METIS_TAC []
+QED
+
+(** rewrite the ID_read_data with R and ID_addr**)
+Theorem agp32_ID_read_data_rewrite_R_and_ID_addr:
+  !fext fbits t.
+    ((agp32 fext fbits t).ID.ID_read_dataA = (agp32 fext fbits t).R (agp32 fext fbits t).ID.ID_addrA) /\
+    ((agp32 fext fbits t).ID.ID_read_dataB = (agp32 fext fbits t).R (agp32 fext fbits t).ID.ID_addrB) /\
+    ((agp32 fext fbits t).ID.ID_read_dataW = (agp32 fext fbits t).R (agp32 fext fbits t).ID.ID_addrW)
+Proof
+  rpt gen_tac >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (clist_update_state_tac >>
+    fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+        Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
+        Hazard_ctrl_unchanged_state_items,Hazard_ctrl_unchanged_ID_data_items,
+        WB_update_unchanged_state_items,WB_update_unchanged_ID_data_items,
+        MEM_ctrl_update_unchanged_state_items,MEM_ctrl_update_unchanged_ID_data_items,
+        IF_PC_input_update_unchanged_state_items,IF_PC_input_update_unchanged_ID_data_items,
+        EX_jump_sel_addr_update_unchanged_state_items,EX_jump_sel_addr_update_unchanged_ID_data_items,
+        EX_SHIFT_update_unchanged_state_items,EX_SHIFT_update_unchanged_ID_data_items,
+        EX_ALU_update_unchanged_state_items,EX_ALU_update_unchanged_ID_data_items,
+        EX_ALU_input_imm_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_ID_data_items,
+        EX_ctrl_update_unchanged_state_items,EX_ctrl_update_unchanged_ID_data_items,
+        ID_data_check_update_unchanged_state_items,ID_data_check_update_unchanged_ID_data_items] >>
+    rw [ID_data_update_def]) >>
+  qpat_abbrev_tac `s = mk_circuit (procs _) (procs _) (agp32_init fbits) fext _` >>
+  qpat_abbrev_tac `s' = procs _ (fext t) s s` >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+      Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
+      Hazard_ctrl_unchanged_state_items,Hazard_ctrl_unchanged_ID_data_items,
+      WB_update_unchanged_state_items,WB_update_unchanged_ID_data_items,
+      MEM_ctrl_update_unchanged_state_items,MEM_ctrl_update_unchanged_ID_data_items,
+      IF_PC_input_update_unchanged_state_items,IF_PC_input_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_state_items,EX_jump_sel_addr_update_unchanged_ID_data_items,
+      EX_SHIFT_update_unchanged_state_items,EX_SHIFT_update_unchanged_ID_data_items,
+      EX_ALU_update_unchanged_state_items,EX_ALU_update_unchanged_ID_data_items,
+      EX_ALU_input_imm_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_ID_data_items,
+      EX_ctrl_update_unchanged_state_items,EX_ctrl_update_unchanged_ID_data_items,
+      ID_data_check_update_unchanged_state_items,ID_data_check_update_unchanged_ID_data_items] >>
+  rw [ID_data_update_def]
 QED
 
 

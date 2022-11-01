@@ -5,6 +5,7 @@ val _ = new_theory "agp32Internal";
 val _ = prefer_num ();
 val _ = guess_lengths ();
 
+
 (** self-defined tactics **)
 val check_hazard_ctrl =
  (fs [Hazard_ctrl_def] >>
@@ -46,6 +47,7 @@ val rw_hazard_ctrl_checks_regular =
   Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
             s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
             s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []);
+
 
 (** option from the ISA functions  **)
 Theorem isJump_isa_op_not_none:
@@ -290,6 +292,25 @@ Proof
   fs [EX_pipeline_def]
 QED
 
+(** when EX is enabled and EX_NOP_flag is F, EX_opc is the ID_opc at the previous cycle **)
+Theorem agp32_EX_opc_ID_opc_when_not_EX_NOP_flag:
+  !fext fbits t.
+    enable_stg 3 (agp32 fext fbits t) ==>
+    ~(agp32 fext fbits t).EX.EX_NOP_flag ==>
+    (agp32 fext fbits (SUC t)).EX.EX_opc = (agp32 fext fbits t).ID.ID_opc
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext t) s s').EX.EX_opc`
+    by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
+  (s'.EX.EX_NOP_flag = s.EX.EX_NOP_flag) /\
+  (s'.ID.ID_opc = s.ID.ID_opc)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
+  fs [EX_pipeline_def]
+QED
+
 (** if the EX stage is disabled, then EX_write_reg is unchanged at the next cycle **)
 Theorem agp32_EX_write_reg_unchanged_when_EX_disabled:
   !fext fbits t.
@@ -334,6 +355,30 @@ Proof
   (s'.EX.EX_NOP_flag = s.EX.EX_NOP_flag)`
     by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
   fs [EX_pipeline_def]
+QED
+
+(** when EX is enabled, EX_NOP_flag is F and EX_opc is 15/16, then EX_write_reg is F **)
+Theorem agp32_EX_write_reg_F_when_EX_opc_flushed:
+  !fext fbits t.
+    enable_stg 3 (agp32 fext fbits t) ==>
+    ~(agp32 fext fbits t).EX.EX_NOP_flag ==>
+    ((agp32 fext fbits (SUC t)).EX.EX_opc = 15w \/ (agp32 fext fbits (SUC t)).EX.EX_opc = 16w) ==>
+    ~(agp32 fext fbits (SUC t)).EX.EX_write_reg
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_write_reg = (EX_pipeline (fext t) s s').EX.EX_write_reg`
+    by fs [agp32_EX_write_reg_updated_by_EX_pipeline] >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = (EX_pipeline (fext t) s s').EX.EX_opc`
+    by fs [agp32_EX_opc_func_updated_by_EX_pipeline] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
+  (s'.EX.EX_NOP_flag = s.EX.EX_NOP_flag) /\
+  (s'.ID.ID_opc = s.ID.ID_opc)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_until_MEM_pipeline] >>
+  fs [EX_pipeline_def] >>
+  Cases_on `s.ID.ID_EX_write_enable` >> fs [] >>
+  Cases_on `s.EX.EX_NOP_flag` >> fs []
 QED
 
 
@@ -685,6 +730,20 @@ Proof
   rw_hazard_ctrl_checks_regular >> fs [reg_data_hazard_def,isJump_hw_op_def]
 QED
 
+(** ID_EX_write_enable, no jump singal or data hazard, then ID_ID_write_enable is T **)
+Theorem agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_ID_ID_write_enable:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_EX_write_enable ==>
+    ~isJump_hw_op (agp32 fext fbits t) ==>
+    ~reg_data_hazard (agp32 fext fbits t) ==>
+    (agp32 fext fbits t).ID.ID_ID_write_enable
+Proof
+  rw [] >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (rw_hazard_ctrl_checks_init >> fs [reg_data_hazard_def,isJump_hw_op_def]) >>
+  rw_hazard_ctrl_checks_regular >> fs [reg_data_hazard_def,isJump_hw_op_def]
+QED
+
 (** IF_PC_write_enable, ID_EX_write_enable and reg_data_hazard **)
 Theorem agp32_IF_PC_write_disable_ID_EX_write_enable_reg_data_hazard:
   !fext fbits t.
@@ -966,23 +1025,44 @@ QED
 
 
 (* lemmas about the scheduling function I *)
-(** false ID instr only flushed when jump happened in the EX stage
-Theorem ID_instr_index_NONE_opc_flush:
-  !I t fext fbits a.
+(** there exists a previous jump when I (3,SUC t) = I (2,t) = NONE **)
+Theorem EX_NONE_exists_a_previous_jump:
+  !I fext fbits a t.
     is_sch I (agp32 fext fbits) a ==>
-    I (2,t) = NONE ==>
-    (agp32 fext fbits t).ID.ID_opc = 16w
+    enable_stg 3 (agp32 fext fbits t) ==>
+    ~isJump_hw_op (agp32 fext fbits t) ==>
+    ~reg_data_hazard (agp32 fext fbits t) ==>
+    I (3,SUC t) = NONE ==>
+    isJump_hw_op (agp32 fext fbits (t-1)) /\ (I (3,t) = NONE)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_execute_def] >> fs [] >>
+  `enable_stg 2 (agp32 fext fbits t)`
+    by fs [enable_stg_def,agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_ID_ID_write_enable] >>
+  Cases_on `isJump_isa_op (I' (2,t)) a` >-
+   METIS_TAC [isJump_isa_op_not_none] >>
+  `I' (2,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_decode_def] >>
+  Cases_on `I' (1,t) = NONE` >-
+   cheat >>
+  cheat
+QED
+
+Theorem EX_isJump_hw_op_next_ID_opc_15:
+  !fext fbits t.
+    enable_stg 2 (agp32 fext fbits t) ==>
+    isJump_hw_op (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).ID.ID_opc = 15w
 Proof
   cheat
 QED
- **)
 
 (** NONE happened **)
+(** EX_opc is flushed **)
 Theorem EX_instr_index_NONE_opc_flush:
   !I t fext fbits a.
     is_sch I (agp32 fext fbits) a ==>
     I (3,t) = NONE ==>
-    (agp32 fext fbits t).EX.EX_opc = 16w
+    ((agp32 fext fbits t).EX.EX_opc = 16w) \/ ((agp32 fext fbits t).EX.EX_opc = 15w)
 Proof
   rw [is_sch_def] >>
   Induct_on `t` >>
@@ -997,11 +1077,16 @@ Proof
         by fs [enable_stg_def,agp32_ID_EX_write_enable_reg_data_hazard_EX_NOP_flag] >>
       fs [agp32_EX_opc_flush_when_EX_NOP_flag]) >>
     `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_execute_def] >> fs [] >>
+    `~(agp32 fext fbits t).EX.EX_NOP_flag`
+      by fs [enable_stg_def,agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_EX_NOP_flag_F] >>
+    `(agp32 fext fbits (SUC t)).EX.EX_opc = (agp32 fext fbits t).ID.ID_opc`
+      by fs [agp32_EX_opc_ID_opc_when_not_EX_NOP_flag] >> fs [] >>
     cheat) >>
   `I' (3,SUC t) = I' (3,t)` by METIS_TAC [is_sch_disable_def] >>
   fs [agp32_EX_opc_unchanged_when_EX_disabled]
 QED
 
+(** EX_write_reg **)
 Theorem EX_instr_index_NONE_EX_not_write_reg:
   !I t fext fbits a.
     is_sch I (agp32 fext fbits) a ==>
@@ -1010,7 +1095,7 @@ Theorem EX_instr_index_NONE_EX_not_write_reg:
 Proof
   rw [is_sch_def] >>
   Induct_on `t` >-
-  rw [agp32_init_EX_write_reg] >> rw [] >>
+   rw [agp32_init_EX_write_reg] >> rw [] >>
   Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
    (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
      (`(agp32 fext fbits t).EX.EX_NOP_flag`
@@ -1020,11 +1105,15 @@ Proof
      (`(agp32 fext fbits t).EX.EX_NOP_flag`
         by fs [enable_stg_def,agp32_ID_EX_write_enable_reg_data_hazard_EX_NOP_flag] >>
       fs [agp32_EX_write_reg_F_when_EX_NOP_flag]) >>
-    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_execute_def] >> fs [] >>
-    cheat) >>
+    `((agp32 fext fbits (SUC t)).EX.EX_opc = 16w) \/ ((agp32 fext fbits (SUC t)).EX.EX_opc = 15w)`
+      by METIS_TAC [is_sch_def,EX_instr_index_NONE_opc_flush] >>
+    `~(agp32 fext fbits t).EX.EX_NOP_flag`
+      by fs [enable_stg_def,agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_EX_NOP_flag_F] >>
+    fs [agp32_EX_write_reg_F_when_EX_opc_flushed]) >>
   `I' (3,SUC t) = I' (3,t)` by METIS_TAC [is_sch_disable_def] >>
   fs [agp32_EX_write_reg_unchanged_when_EX_disabled]
 QED
+
 
 (** instr index relation between IF and EX stages **)
 Theorem IF_instr_index_with_ID_instr:

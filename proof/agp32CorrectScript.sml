@@ -62,7 +62,7 @@ Proof
    (** PC_input when jump **)
    fs [is_sch_def,agp32_Rel_ag32_IF_PC_input_jump_correct] >-
    (** PC_input when no jump **)
-   fs [is_sch_def,agp32_Rel_ag32_IF_PC_input_not_jump_correct] >-
+   fs [agp32_Rel_ag32_IF_PC_input_not_jump_correct] >-
    (** memory under different conditions **)
    cheat >-
    cheat >-
@@ -85,7 +85,7 @@ Proof
    cheat >-
    cheat >-
    (** IF_PC **)
-   fs [is_sch_def,agp32_Rel_ag32_IF_PC_Rel_correct] >-
+   fs [agp32_Rel_ag32_IF_PC_Rel_correct] >-
    (** IF_instr **)
    fs [agp32_Rel_ag32_IF_instr_Rel_correct] >-
    (** ID **)

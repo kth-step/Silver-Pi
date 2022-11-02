@@ -313,15 +313,13 @@ Definition is_sch_fetch_def:
        I (1,SUC t) = SOME (THE (I (3,t)) + 1)) /\
   (!t. enable_stg 1 (sf t) ==>
        ~isJump_hw_op (sf t) ==>
-       (isJump_isa_op (I (1,t)) a \/ isJump_isa_op (I (2,t)) a \/
-        I (1,t) = NONE \/ THE (I (1,t)) = 0) ==>
+       (isJump_isa_op (I (1,t)) a \/ isJump_isa_op (I (2,t)) a \/ I (1,t) = NONE) ==>
        I (1,SUC t) = NONE) /\
   (!t. enable_stg 1 (sf t) ==>
        ~isJump_hw_op (sf t) ==>
        ~isJump_isa_op (I (1,t)) a ==>
        ~isJump_isa_op (I (2,t)) a ==>
        I (1,t) <> NONE ==>
-       THE (I (1,t)) <> 0 ==>
        I (1,SUC t) = SOME (THE (I (1,t)) + 1))
 End
 

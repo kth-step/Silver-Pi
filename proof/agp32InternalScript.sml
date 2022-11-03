@@ -562,6 +562,18 @@ Proof
   rw_hazard_ctrl_checks_regular
 QED
 
+Theorem agp32_ID_ID_write_enable_EX_jump_sel_and_ID_flush_flag:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_ID_write_enable ==>
+    (agp32 fext fbits t).EX.EX_jump_sel ==>
+    (agp32 fext fbits t).ID.ID_flush_flag
+Proof
+  rpt GEN_TAC >> STRIP_TAC >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   rw_hazard_ctrl_checks_init >>
+  rw_hazard_ctrl_checks_regular
+QED
+
 (** ID_ID_write_enable and not a jump, then there is no reg_data_hazard **)
 Theorem agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard:
   !fext fbits t.
@@ -858,7 +870,129 @@ Proof
 QED
 
 
+(** ID_instr is 63 when there is a jump in EX stage at the previous cycle **)
+Theorem EX_isJump_hw_op_next_ID_instr:
+  !fext fbits t.
+    enable_stg 2 (agp32 fext fbits t) ==>
+    isJump_hw_op (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).ID.ID_instr = 63w
+Proof
+  rw [enable_stg_def,isJump_hw_op_def] >>
+  `(agp32 fext fbits t).ID.ID_flush_flag`
+    by fs [agp32_ID_ID_write_enable_EX_jump_sel_and_ID_flush_flag] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;
+                            EX_pipeline;REG_write] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = (ID_pipeline (fext t) s s').ID.ID_instr`
+    by fs [agp32_ID_PC_instr_updated_by_ID_pipeline] >>
+  `(s'.ID.ID_ID_write_enable = s.ID.ID_ID_write_enable) /\ (s'.ID.ID_flush_flag = s.ID.ID_flush_flag)`
+    by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >>
+  fs [ID_pipeline_def]
+QED
+
+(** ID_opc is 15 when there is a jump in EX stage at the previous cycle **)
+Theorem EX_isJump_hw_op_next_ID_opc:
+  !fext fbits t.
+    enable_stg 2 (agp32 fext fbits t) ==>
+    isJump_hw_op (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).ID.ID_opc = 15w
+Proof
+  rw [] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = 63w` by fs [EX_isJump_hw_op_next_ID_instr] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update] (fext (SUC t)) s' s'` >>
+  `?s0.(agp32 fext fbits (SUC t)).ID.ID_opc = (ID_opc_func_update (fext (SUC t)) s0 s'').ID.ID_opc`
+    by fs [agp32_ID_opc_func_updated_by_ID_opc_func_update] >>
+  `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
+    by fs [agp32_same_ID_instr_after_IF_instr_update] >> fs [] >>
+  fs [ID_opc_func_update_def]
+QED
+
+(** ID_instr is unchanged when ID is disabled **)
+Theorem ID_instr_unchanged_when_ID_disabled:
+  !fext fbits t.
+    ~enable_stg 2 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).ID.ID_instr = (agp32 fext fbits t).ID.ID_instr
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;
+                            EX_pipeline;REG_write] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = (ID_pipeline (fext t) s s').ID.ID_instr`
+    by fs [agp32_ID_PC_instr_updated_by_ID_pipeline] >>
+  `(s'.ID.ID_ID_write_enable = s.ID.ID_ID_write_enable) /\ (s'.ID.ID_instr = s.ID.ID_instr)`
+    by METIS_TAC [agp32_same_items_before_ID_pipeline,Abbr `s`,Abbr `s'`] >>
+  fs [ID_pipeline_def]
+QED
+
+(** ID_opc is unchanged when ID is disabled **)
+Theorem ID_opc_unchanged_when_ID_disabled:
+  !fext fbits t.
+    ~enable_stg 2 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).ID.ID_opc = (agp32 fext fbits t).ID.ID_opc
+Proof
+  rw [] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = (agp32 fext fbits t).ID.ID_instr`
+    by rw [ID_instr_unchanged_when_ID_disabled] >>
+  `(agp32 fext fbits t).ID.ID_opc = (ID_opc_func_update (fext t) s (agp32 fext fbits t)).ID.ID_opc`
+    by rw [agp32_ID_opc_func_update_rewrite] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_opc =
+  (ID_opc_func_update (fext (SUC t)) s' (agp32 fext fbits (SUC t))).ID.ID_opc`
+    by rw [agp32_ID_opc_func_update_rewrite] >> fs [] >>
+  METIS_TAC [agp32_ID_opc_func_update_same_output_under_same_ID_instr]
+QED
+
+
 (* initial values *)
+(** intiial ID_instr **)
+Theorem agp32_init_ID_instr:
+  !fext fbits.
+    (agp32 fext fbits 0).ID.ID_instr = 63w
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_ID_pipeline_items,WB_update_unchanged_ID_pipeline_items,
+      MEM_ctrl_update_unchanged_ID_pipeline_items,IF_PC_input_update_unchanged_ID_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
+      EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_ID_pipeline_items,EX_ctrl_update_unchanged_ID_pipeline_items,
+      ID_data_check_update_unchanged_ID_pipeline_items,ID_data_update_unchanged_ID_pipeline_items,
+      ID_imm_update_unchanged_ID_pipeline_items,ID_opc_func_update_unchanged_ID_pipeline_items,
+      IF_instr_update_unchanged_ID_pipeline_items] >>
+   rw [agp32_init_def]
+QED
+
+(** intiial ID_opc **)
+Theorem agp32_init_ID_opc:
+  !fext fbits.
+    (agp32 fext fbits 0).ID.ID_opc = 15w
+Proof
+  rw [] >> `(agp32 fext fbits 0).ID.ID_instr = 63w` by rw [agp32_init_ID_instr] >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+      Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,
+      Hazard_ctrl_unchanged_ID_opc_func,Hazard_ctrl_unchanged_ID_pipeline_items,
+      WB_update_unchanged_ID_opc_func,WB_update_unchanged_ID_pipeline_items,
+      MEM_ctrl_update_unchanged_ID_opc_func,MEM_ctrl_update_unchanged_ID_pipeline_items,
+      IF_PC_input_update_unchanged_ID_opc_func,IF_PC_input_update_unchanged_ID_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_ID_opc_func,
+      EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
+      EX_SHIFT_update_unchanged_ID_opc_func,EX_SHIFT_update_unchanged_ID_pipeline_items,
+      EX_ALU_update_unchanged_ID_opc_func,EX_ALU_update_unchanged_ID_pipeline_items,
+      EX_ALU_input_imm_update_def,EX_ALU_input_imm_update_unchanged_ID_pipeline_items,
+      EX_ctrl_update_unchanged_ID_opc_func,EX_ctrl_update_unchanged_ID_pipeline_items,
+      ID_data_check_update_unchanged_ID_opc_func,ID_data_check_update_unchanged_ID_pipeline_items,
+      ID_data_update_unchanged_ID_opc_func,ID_data_update_unchanged_ID_pipeline_items,
+      ID_imm_update_unchanged_ID_opc_func,ID_imm_update_unchanged_ID_pipeline_items,
+      ID_opc_func_update_unchanged_ID_pipeline_items] >>
+   rw [ID_opc_func_update_def]
+QED
+        
 (** initial EX_PC_sel = 0w **)
 Theorem agp32_init_EX_PC_sel:
   !fext fbits.
@@ -1000,6 +1134,34 @@ Proof
       ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
       ID_opc_func_update_unchanged_state_items,IF_instr_update_unchanged_state_items] >>
   rw [agp32_init_def]
+QED
+
+(** initial ctrl flags are false **)
+Theorem agp32_init_ctrl_flags:
+  !fext fbits.
+    ~(agp32 fext fbits 0).IF.IF_PC_write_enable /\
+    ~(agp32 fext fbits 0).ID.ID_ID_write_enable /\
+    ~(agp32 fext fbits 0).ID.ID_flush_flag /\
+    ~(agp32 fext fbits 0).ID.ID_EX_write_enable /\
+    ~(agp32 fext fbits 0).EX.EX_NOP_flag /\
+    ~(agp32 fext fbits 0).MEM.MEM_state_flag /\
+    ~(agp32 fext fbits 0).MEM.MEM_NOP_flag /\
+    ~(agp32 fext fbits 0).WB.WB_state_flag
+Proof
+  rpt gen_tac >> `(agp32 fext fbits 0).state = 3w` by rw [agp32_init_state_3w] >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Hazard_ctrl_def] >>
+  Cases_on `s13.state = 1w \/ s13.state = 2w \/ s13.state = 3w \/
+            s13.state = 4w \/ s13.state = 5w` >> fs [] >>                                        
+  Cases_on `(fext 0).ready` >> fs [] >>
+  Cases_on `(agp32_init fbits).MEM.MEM_opc = 2w \/ (agp32_init fbits).MEM.MEM_opc = 3w \/
+            (agp32_init fbits).MEM.MEM_opc = 4w \/ (agp32_init fbits).MEM.MEM_opc = 5w \/      
+            (agp32_init fbits).MEM.MEM_opc = 8w \/ (agp32_init fbits).MEM.MEM_opc = 12w` >> fs [] >>
+  Cases_on `s13.EX.EX_jump_sel` >> fs [] >>
+  Cases_on `s13.EX.EX_checkA \/ s13.EX.EX_checkB \/ s13.EX.EX_checkW \/
+            s13.MEM.MEM_checkA \/ s13.MEM.MEM_checkB \/ s13.MEM.MEM_checkW \/   
+            s13.WB.WB_checkA \/ s13.WB.WB_checkB \/ s13.WB.WB_checkW` >> fs []
 QED
 
 
@@ -1170,7 +1332,7 @@ Proof
     cheat) >>
   `I' (2,SUC (t-1)) = I' (1,t-1)` by METIS_TAC [is_sch_decode_def] >> fs [] >>
   Cases_on `t` >> fs [] >-
-   cheat >>
+   fs [enable_stg_def,agp32_init_ctrl_flags] >>
   METIS_TAC [is_sch_def,IF_instr_index_not_none]
 QED
 
@@ -1189,15 +1351,7 @@ Proof
   METIS_TAC [ID_NONE_exists_a_jump]
 QED
 
-Theorem EX_isJump_hw_op_next_ID_opc_15:
-  !fext fbits t.
-    enable_stg 2 (agp32 fext fbits t) ==>
-    isJump_hw_op (agp32 fext fbits t) ==>
-    (agp32 fext fbits (SUC t)).ID.ID_opc = 15w
-Proof
-  cheat
-QED
-
+(** ID_opc is 15 under certain conditions **)
 Theorem ID_instr_index_NONE_opc_flush_when_disabled:
   !I t fext fbits a.
     is_sch I (agp32 fext fbits) a ==>
@@ -1206,14 +1360,14 @@ Theorem ID_instr_index_NONE_opc_flush_when_disabled:
     I (2,t) = NONE ==>
     (agp32 fext fbits t).ID.ID_opc = 15w
 Proof
-  rw [] >> Induct_on `t` >> rw [] >-
-   cheat >>
+  rw [] >> Induct_on `t` >> rw [agp32_init_ID_opc] >>
   `I' (2,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >>
-  `(agp32 fext fbits (SUC t)).ID.ID_opc = (agp32 fext fbits t).ID.ID_opc` by cheat >>
+  `(agp32 fext fbits (SUC t)).ID.ID_opc = (agp32 fext fbits t).ID.ID_opc`
+    by fs [ID_opc_unchanged_when_ID_disabled] >>
   Cases_on `enable_stg 2 (agp32 fext fbits (t − 1))` >-
    (Cases_on `~isJump_hw_op (agp32 fext fbits t)` >> fs [] >-
      (`isJump_hw_op (agp32 fext fbits (t − 1))` by METIS_TAC [ID_NONE_exists_a_jump] >>
-      `(agp32 fext fbits (SUC (t-1))).ID.ID_opc = 15w` by fs [EX_isJump_hw_op_next_ID_opc_15] >>
+      `(agp32 fext fbits (SUC (t-1))).ID.ID_opc = 15w` by fs [EX_isJump_hw_op_next_ID_opc] >>
       Cases_on `t` >> fs []) >>
     Cases_on `~enable_stg 3 (agp32 fext fbits t)` >-
      (`isJump_hw_op (agp32 fext fbits (SUC t)) = isJump_hw_op (agp32 fext fbits t)`
@@ -1258,7 +1412,7 @@ Proof
     Cases_on `enable_stg 2 (agp32 fext fbits (t-1))` >-
      (`isJump_hw_op (agp32 fext fbits (t-1))`
         by METIS_TAC [is_sch_def,EX_NONE_previous_jump_special] >>
-      `(agp32 fext fbits (SUC (t-1))).ID.ID_opc = 15w` by fs [EX_isJump_hw_op_next_ID_opc_15] >>
+      `(agp32 fext fbits (SUC (t-1))).ID.ID_opc = 15w` by fs [EX_isJump_hw_op_next_ID_opc] >>
       Cases_on `t` >> fs []) >>
     METIS_TAC [is_sch_def,ID_instr_index_NONE_opc_flush_when_disabled]) >>
   `I' (3,SUC t) = I' (3,t)` by METIS_TAC [is_sch_disable_def] >>

@@ -3075,6 +3075,95 @@ Proof
   METIS_TAC []
 QED
 
+(** ID_opc_func_uodate is only affected by the ID_instr **)
+Theorem agp32_ID_opc_func_update_same_output_under_same_ID_instr:
+  !fext fext' s1 s2 s3 s4.
+    s2.ID.ID_instr = s4.ID.ID_instr ==>
+    (ID_opc_func_update fext s1 s2).ID.ID_opc = (ID_opc_func_update fext' s3 s4).ID.ID_opc /\
+    (ID_opc_func_update fext s1 s2).ID.ID_func = (ID_opc_func_update fext' s3 s4).ID.ID_func
+Proof
+  rw [] >- rw [ID_opc_func_update_def] >>
+  Cases_on `word_bit 24 s4.ID.ID_instr` >-
+   (Cases_on `word_bit 31 s4.ID.ID_instr` >-
+     fs [ID_opc_func_update_def] >>
+    Cases_on `(23 >< 9) s4.ID.ID_instr = 0w` >>
+    fs [ID_opc_func_update_def]) >>
+  Cases_on `(5 >< 0) s4.ID.ID_instr = 10w` >-
+   fs  [ID_opc_func_update_def] >>
+  Cases_on `(5 >< 0) s4.ID.ID_instr = 11w` >-
+   fs  [ID_opc_func_update_def] >>
+  Cases_on `(5 >< 0) s4.ID.ID_instr = 12w` >-
+   fs  [ID_opc_func_update_def] >>
+  Cases_on `word_bit 31 s4.ID.ID_instr` >-
+   fs [ID_opc_func_update_def] >>
+  Cases_on `(5 >< 0) s4.ID.ID_instr <+ 10w` >-
+   (fs [ID_opc_func_update_def] >>
+    Cases_on `(5 >< 0) s4.ID.ID_instr = 0w \/ (5 >< 0) s4.ID.ID_instr = 6w \/
+              (5 >< 0) s4.ID.ID_instr = 9w` >> fs [] >>
+    Cases_on `(5 >< 0) s4.ID.ID_instr = 1w` >> fs [] >>
+    Cases_on_word_value `(7 >< 6) s4.ID.ID_instr` >> rw []) >>
+  fs [ID_opc_func_update_def]
+QED
+  
+
+(** ID_opc_func_update rewrite**)
+Theorem agp32_ID_opc_func_update_rewrite:
+  !fext fbits t s.
+    ((agp32 fext fbits t).ID.ID_opc = (ID_opc_func_update (fext t) s (agp32 fext fbits t)).ID.ID_opc) /\
+    ((agp32 fext fbits t).ID.ID_func = (ID_opc_func_update (fext t) s (agp32 fext fbits t)).ID.ID_func)
+Proof
+  rpt gen_tac >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (clist_update_state_tac >>
+    subgoal `s14.ID.ID_opc = (ID_opc_func_update (fext 0)  (agp32_init fbits) s1).ID.ID_opc /\
+    s14.ID.ID_func = (ID_opc_func_update (fext 0)  (agp32_init fbits) s1).ID.ID_func` >-
+     (fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+          Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,
+          Hazard_ctrl_unchanged_ID_opc_func,WB_update_unchanged_ID_opc_func,
+          MEM_ctrl_update_unchanged_ID_opc_func,IF_PC_input_update_unchanged_ID_opc_func,
+          EX_jump_sel_addr_update_unchanged_ID_opc_func,EX_SHIFT_update_unchanged_ID_opc_func,
+          EX_ALU_update_unchanged_ID_opc_func,EX_ALU_input_imm_update_unchanged_ID_opc_func,
+          EX_ctrl_update_unchanged_ID_opc_func,ID_data_check_update_unchanged_ID_opc_func,
+          ID_data_update_unchanged_ID_opc_func,ID_imm_update_unchanged_ID_opc_func]) >>
+    subgoal `s1.ID.ID_instr = s14.ID.ID_instr` >-
+     (fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+          Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+          Hazard_ctrl_unchanged_ID_pipeline_items,WB_update_unchanged_ID_pipeline_items,
+          MEM_ctrl_update_unchanged_ID_pipeline_items,IF_PC_input_update_unchanged_ID_pipeline_items,
+          EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
+          EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
+          EX_ALU_input_imm_update_unchanged_ID_pipeline_items,EX_ctrl_update_unchanged_ID_pipeline_items,
+          ID_data_check_update_unchanged_ID_pipeline_items,ID_data_update_unchanged_ID_pipeline_items,
+          ID_imm_update_unchanged_ID_pipeline_items,ID_opc_func_update_unchanged_ID_pipeline_items,
+          IF_instr_update_unchanged_ID_pipeline_items]) >>
+    fs [Abbr `s2`] >> METIS_TAC [agp32_ID_opc_func_update_same_output_under_same_ID_instr]) >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  subgoal `s14.ID.ID_opc = (ID_opc_func_update (fext (SUC n)) s''' s1).ID.ID_opc /\
+  s14.ID.ID_func = (ID_opc_func_update (fext (SUC n)) s''' s1).ID.ID_func` >-
+   (fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+        Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,
+        Hazard_ctrl_unchanged_ID_opc_func,WB_update_unchanged_ID_opc_func,
+        MEM_ctrl_update_unchanged_ID_opc_func,IF_PC_input_update_unchanged_ID_opc_func,
+        EX_jump_sel_addr_update_unchanged_ID_opc_func,EX_SHIFT_update_unchanged_ID_opc_func,
+        EX_ALU_update_unchanged_ID_opc_func,EX_ALU_input_imm_update_unchanged_ID_opc_func,
+        EX_ctrl_update_unchanged_ID_opc_func,ID_data_check_update_unchanged_ID_opc_func,
+        ID_data_update_unchanged_ID_opc_func,ID_imm_update_unchanged_ID_opc_func]) >>
+  subgoal `s1.ID.ID_instr = s14.ID.ID_instr`  >-
+   (fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+        Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+        Hazard_ctrl_unchanged_ID_pipeline_items,WB_update_unchanged_ID_pipeline_items,
+        MEM_ctrl_update_unchanged_ID_pipeline_items,IF_PC_input_update_unchanged_ID_pipeline_items,
+        EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
+        EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
+        EX_ALU_input_imm_update_unchanged_ID_pipeline_items,EX_ctrl_update_unchanged_ID_pipeline_items,
+        ID_data_check_update_unchanged_ID_pipeline_items,ID_data_update_unchanged_ID_pipeline_items,
+        ID_imm_update_unchanged_ID_pipeline_items,ID_opc_func_update_unchanged_ID_pipeline_items,
+        IF_instr_update_unchanged_ID_pipeline_items]) >>
+  fs [Abbr `s2`] >> METIS_TAC [agp32_ID_opc_func_update_same_output_under_same_ID_instr]
+QED
+
 (** control flags **)
 Theorem agp32_ctrl_flags_exists_Hazard_ctrl:
   !fext fbits t.

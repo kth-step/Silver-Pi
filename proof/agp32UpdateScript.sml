@@ -8,6 +8,15 @@ val _ = guess_lengths ();
 
 (* show the unchanged part of different circuit functions in the pipelined Silver *)
 (** unchanged items by IF_instr_update **)
+Theorem IF_instr_update_unchanged_enable_flags:
+  !fext s s'.
+    ((IF_instr_update fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((IF_instr_update fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((IF_instr_update fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [IF_instr_update_def]
+QED
+
 Theorem IF_instr_update_unchanged_IF:
   !fext s s'.
     ((IF_instr_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
@@ -237,6 +246,15 @@ Proof
 QED
 
 (** unchanged items by ID_opc_func_update **)
+Theorem ID_opc_func_update_unchanged_enable_flags:
+  !fext s s'.
+    ((ID_opc_func_update fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((ID_opc_func_update fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((ID_opc_func_update fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [ID_opc_func_update_def]
+QED
+
 Theorem ID_opc_func_update_unchanged_IF:
   !fext s s'.
     ((ID_opc_func_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
@@ -326,6 +344,15 @@ Proof
 QED
 
 (** unchanged items by ID_imm_update **)
+Theorem ID_imm_update_unchanged_enable_flags:
+  !fext s s'.
+    ((ID_imm_update fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((ID_imm_update fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((ID_imm_update fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [ID_imm_update_def]
+QED
+
 Theorem ID_imm_update_unchanged_IF:
   !fext s s'.
     ((ID_imm_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
@@ -423,6 +450,15 @@ Proof
 QED
 
 (** unchanged items by ID_data_update **)
+Theorem ID_data_update_unchanged_enable_flags:
+  !fext s s'.
+    ((ID_data_update fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((ID_data_update fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((ID_data_update fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [ID_data_update_def]
+QED
+
 Theorem ID_data_update_unchanged_IF:
   !fext s s'.
     ((ID_data_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
@@ -520,6 +556,15 @@ Proof
 QED
 
 (** unchanged items by ID_data_check_update **)
+Theorem ID_data_check_update_unchanged_enable_flags:
+  !fext s s'.
+    ((ID_data_check_update fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((ID_data_check_update fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((ID_data_check_update fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [ID_data_check_update_def]
+QED
+
 Theorem ID_data_check_update_unchanged_IF:
   !fext s s'.
     ((ID_data_check_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
@@ -632,6 +677,15 @@ Proof
 QED
 
 (** unchanged items by EX_ctrl_update **)
+Theorem EX_ctrl_update_unchanged_enable_flags:
+  !fext s s'.
+    ((EX_ctrl_update fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((EX_ctrl_update fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((EX_ctrl_update fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [EX_ctrl_update_def]
+QED
+
 Theorem EX_ctrl_update_unchanged_IF:
   !fext s s'.
     ((EX_ctrl_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
@@ -752,6 +806,15 @@ Proof
 QED
 
 (** unchanged items by EX_ALU_input_imm_update **)
+Theorem EX_ALU_input_imm_update_unchanged_enable_flags:
+  !fext s s'.
+    ((EX_ALU_input_imm_update fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((EX_ALU_input_imm_update fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((EX_ALU_input_imm_update fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [EX_ALU_input_imm_update_def]
+QED
+
 Theorem EX_ALU_input_imm_update_unchanged_IF:
   !fext s s'.
     ((EX_ALU_input_imm_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\  
@@ -1683,6 +1746,15 @@ Proof
 QED
 
 (** unchanged items by Acc_compute **)
+Theorem Acc_compute_unchanged_enable_flags:
+  !fext s s'.
+    ((Acc_compute fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((Acc_compute fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((Acc_compute fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [Acc_compute_def]
+QED
+
 Theorem Acc_compute_unchanged_IF:
   !fext s s'.
     (Acc_compute fext s s').PC = s'.PC
@@ -1747,6 +1819,15 @@ Proof
 QED
 
 (** unchanged items by IF_PC_update **)
+Theorem IF_PC_update_unchanged_enable_flags:
+  !fext s s'.
+    ((IF_PC_update fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((IF_PC_update fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((IF_PC_update fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [IF_PC_update_def]
+QED
+
 Theorem IF_PC_update_unchanged_ID_pipeline_items:
   !fext s s'.
     ((IF_PC_update fext s s').ID.ID_PC = s'.ID.ID_PC) /\
@@ -1804,6 +1885,15 @@ Proof
 QED
 
 (** unchanged items by ID_pipeline **)
+Theorem ID_pipeline_unchanged_enable_flags:
+  !fext s s'.
+    ((ID_pipeline fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((ID_pipeline fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((ID_pipeline fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [ID_pipeline_def]
+QED
+
 Theorem ID_pipeline_unchanged_IF_items:
   !fext s s'.
     ((ID_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
@@ -1862,6 +1952,15 @@ Proof
 QED
 
 (** unchanged items by REG_write **)
+Theorem REG_write_unchanged_enable_flags:
+  !fext s s'.
+    ((REG_write fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((REG_write fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((REG_write fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [REG_write_def]
+QED
+
 Theorem REG_write_unchanged_IF_items:
   !fext s s'.
     ((REG_write fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
@@ -1930,6 +2029,15 @@ Proof
 QED
 
 (** unchanged items by EX_pipeline **)
+Theorem EX_pipeline_unchanged_enable_flags:
+  !fext s s'.
+    ((EX_pipeline fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
+    ((EX_pipeline fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
+    ((EX_pipeline fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+Proof
+  rw [EX_pipeline_def]
+QED
+
 Theorem EX_pipeline_unchanged_IF_items:
   !fext s s'.
     ((EX_pipeline fext s s').IF.IF_PC_write_enable <=> s'.IF.IF_PC_write_enable) /\
@@ -2725,7 +2833,7 @@ Proof
       Abbr `ss5`,REG_write_unchanged_EX_pipeline_items]
 QED
 
-(** EX_carry_flag, EX_ALU_res are only changed by the EX_ALU_update function **)
+(** EX_carry_flag, EX_overflow_flag, EX_ALU_res are only changed by the EX_ALU_update function **)
 Theorem agp32_EX_ALU_items_updated_by_EX_ALU_update:
   !fext fbits t s s' s''.
     s = agp32 fext fbits t ==>
@@ -2734,8 +2842,11 @@ Theorem agp32_EX_ALU_items_updated_by_EX_ALU_update:
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
                  ID_data_update; ID_data_check_update; EX_ctrl_update;
                  EX_ALU_input_imm_update] (fext (SUC t)) s' s' ==>
-    (agp32 fext fbits (SUC t)).EX.EX_carry_flag =
-    (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_carry_flag
+    ((agp32 fext fbits (SUC t)).EX.EX_carry_flag =
+     (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_carry_flag) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_overflow_flag =
+     (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_overflow_flag) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_ALU_res = (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_ALU_res)
 Proof
   rw [agp32_def,mk_module_def,mk_circuit_def] >>
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
@@ -2838,7 +2949,7 @@ Proof
   rw [EX_pipeline_def]
 QED
 
-Theorem agp32_same_EX_carry_flag_as_before:
+Theorem agp32_same_items_until_EX_ALU_update:
   !fext fbits t s s' s''.
     s = agp32 fext fbits t ==>
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
@@ -2846,23 +2957,29 @@ Theorem agp32_same_EX_carry_flag_as_before:
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
                  ID_data_update; ID_data_check_update; EX_ctrl_update;
                  EX_ALU_input_imm_update] (fext (SUC t)) s' s' ==>
-    s''.EX.EX_carry_flag = s.EX.EX_carry_flag
+    (s''.EX.EX_carry_flag = s.EX.EX_carry_flag) /\
+    (s''.EX.EX_overflow_flag = s.EX.EX_overflow_flag) /\
+    (s''.EX.EX_ALU_res = s.EX.EX_ALU_res) /\
+    (s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable)
 Proof
   rw [] >> clist_update_state_before_ALU_tac >>
   fs [Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'`,
-      EX_ALU_input_imm_update_unchanged_EX_ALU,EX_ctrl_update_unchanged_EX_ALU,
-      ID_data_check_update_unchanged_EX_ALU,ID_data_update_unchanged_EX_ALU,
-      ID_imm_update_unchanged_EX_ALU,ID_opc_func_update_unchanged_EX_ALU,
-      IF_instr_update_unchanged_EX_ALU] >>
+      EX_ALU_input_imm_update_unchanged_EX_ALU,EX_ALU_input_imm_update_unchanged_enable_flags,
+      EX_ctrl_update_unchanged_EX_ALU,EX_ctrl_update_unchanged_enable_flags,
+      ID_data_check_update_unchanged_EX_ALU,ID_data_check_update_unchanged_enable_flags,
+      ID_data_update_unchanged_EX_ALU,ID_data_update_unchanged_enable_flags,
+      ID_imm_update_unchanged_EX_ALU,ID_imm_update_unchanged_enable_flags,
+      ID_opc_func_update_unchanged_EX_ALU,ID_opc_func_update_unchanged_enable_flags,
+      IF_instr_update_unchanged_EX_ALU,IF_instr_update_unchanged_enable_flags] >>
   slist_update_state_tac >>
-  fs [Abbr `ss8`,Acc_compute_unchanged_EX_ALU,
-      Abbr `ss7`,IF_PC_update_unchanged_EX_ALU,
-      Abbr `ss6`,ID_pipeline_unchanged_EX_ALU,
-      Abbr `ss5`,REG_write_unchanged_EX_ALU,
-      Abbr `ss4`,EX_pipeline_unchanged_EX_ALU,
-      Abbr `ss3`,MEM_pipeline_unchanged_EX_ALU,
-      Abbr `ss2`,WB_pipeline_unchanged_EX_ALU,
-      Abbr `ss1`,agp32_next_state_unchanged_EX_ALU]
+  fs [Abbr `ss8`,Acc_compute_unchanged_EX_ALU,Acc_compute_unchanged_enable_flags,
+      Abbr `ss7`,IF_PC_update_unchanged_EX_ALU,IF_PC_update_unchanged_enable_flags,
+      Abbr `ss6`,ID_pipeline_unchanged_EX_ALU,ID_pipeline_unchanged_enable_flags,
+      Abbr `ss5`,REG_write_unchanged_EX_ALU,REG_write_unchanged_enable_flags,
+      Abbr `ss4`,EX_pipeline_unchanged_EX_ALU,EX_pipeline_unchanged_enable_flags,
+      Abbr `ss3`,MEM_pipeline_unchanged_EX_ALU,MEM_pipeline_unchanged_enable_flags,
+      Abbr `ss2`,WB_pipeline_unchanged_EX_ALU,WB_pipeline_unchanged_enable_flags,
+      Abbr `ss1`,agp32_next_state_unchanged_EX_ALU,agp32_next_state_unchanged_enable_flags]
 QED
 
 Theorem agp32_same_EX_jump_items_after_EX_jump_update:

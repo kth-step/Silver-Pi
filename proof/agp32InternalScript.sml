@@ -396,8 +396,7 @@ Proof
                              EX_ALU_input_imm_update] (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).EX.EX_ALU_res = (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_ALU_res`
     by fs [agp32_EX_ALU_items_updated_by_EX_ALU_update] >>
-  `(s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
-  (s''.EX.EX_ALU_res = s.EX.EX_ALU_res)`
+  `(s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s''.EX.EX_ALU_res = s.EX.EX_ALU_res)`
     by METIS_TAC [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_items_until_EX_ALU_update] >>
   fs [EX_ALU_update_def]
 QED

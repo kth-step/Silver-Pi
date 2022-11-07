@@ -205,8 +205,12 @@ Definition EX_Rel_def:
    (s.EX.EX_ALU_input1 = ALU_input1 (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_ALU_input2 = ALU_input2 (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_ALU_res = ALU_res (FUNPOW Next (i-1) a)) /\
-   (s.EX.EX_SHIFT_res = shift_res (FUNPOW Next (i-1) a)) /\
-   (s.EX.EX_opc = 9w ==> s.EX.EX_PC_sel = 1w) /\
+   (s.EX.EX_SHIFT_res = shift_res (FUNPOW Next (i-1) a)))
+End
+
+Definition EX_inv_def:
+  EX_inv (s:state_circuit) <=>
+  ((s.EX.EX_opc = 9w ==> s.EX.EX_PC_sel = 1w) /\
    (s.EX.EX_opc = 10w ==> s.EX.EX_PC_sel = 2w) /\
    (s.EX.EX_opc = 11w ==> s.EX.EX_PC_sel = 3w))
 End
@@ -293,6 +297,7 @@ Definition Rel_def:
   (I (2,t) <> NONE ==> ID_data_dep_Rel s a (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (2,t) <> NONE ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (3,t) <> NONE ==> EX_Rel fext s a (THE (I (3,t)))) /\
+  (EX_inv s) /\
   (EX_Rel_spec s a (I (3,t))) /\
   (I (4,t) <> NONE ==> MEM_Rel fext s a (THE (I (4,t)))) /\
   (I (5,t) <> NONE ==> WB_Rel fext s a (THE (I (5,t))))

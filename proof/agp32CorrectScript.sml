@@ -27,8 +27,8 @@ Theorem agp32_Init_implies_Rel:
     Rel I (fext 0) (s 0) (s 0) a 0
 Proof
   rw [Init_def,Rel_def,is_sch_init_def] >>
-  fs [agp32_init_IF_PC_input,IF_PC_Rel_def,IF_instr_Rel_def,
-      enable_stg_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs []
+  fs [agp32_init_IF_PC_input,agp32_init_EX_opc,IF_PC_Rel_def,IF_instr_Rel_def,
+      enable_stg_def,EX_inv_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs []
 QED
 
 
@@ -94,6 +94,7 @@ Proof
    fs [agp32_Rel_ag32_ID_reg_data_Rel_correct] >-
    (** EX **)
    fs [is_sch_def,agp32_Rel_ag32_EX_Rel_correct] >-
+   METIS_TAC [agp32_Rel_ag32_EX_inv_correct] >-
    cheat >-
    (** MEM **)
    cheat >>

@@ -305,6 +305,44 @@ QED
 *)
 
 
+(** EX_PC_sel **)
+Theorem agp32_Rel_ag32_EX_PC_sel_correct:
+  !fext fbits a t I.
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    ((agp32 fext fbits (SUC t)).EX.EX_opc = 9w ==> (agp32 fext fbits (SUC t)).EX.EX_PC_sel = 1w) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_opc = 10w ==> (agp32 fext fbits (SUC t)).EX.EX_PC_sel = 2w) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_opc = 11w ==> (agp32 fext fbits (SUC t)).EX.EX_PC_sel = 3w)
+Proof
+  rpt gen_tac >> disch_tac >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
+                             ID_data_update; ID_data_check_update] (fext (SUC t)) s' s'` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_PC_sel = (EX_ctrl_update (fext (SUC t)) s' s'').EX.EX_PC_sel`
+    by fs [agp32_EX_PC_sel_updated_by_EX_ctrl_update] >>
+  `(s'.EX.EX_opc = (agp32 fext fbits (SUC t)).EX.EX_opc)`
+    by fs [agp32_same_EX_pipeline_items_after_EX_pipeline] >>
+  `(s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s''.EX.EX_PC_sel = s.EX.EX_PC_sel)`
+    by METIS_TAC [agp32_same_items_before_EX_ctrl_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >>
+  fs [EX_ctrl_update_def,enable_stg_def,Abbr `s`] >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = (agp32 fext fbits t).EX.EX_opc`
+    by fs [agp32_EX_opc_unchanged_when_EX_disabled,enable_stg_def] >> rw [] >>
+  fs [Rel_def,EX_inv_def]
+QED
+
+(** EX_inv **)
+Theorem agp32_Rel_ag32_EX_inv_correct:
+  !fext fbits a t I.
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    EX_inv (agp32 fext fbits (SUC t))
+Proof
+  rw [EX_inv_def] >>
+  METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct]
+QED
+
+
 (** EX_PC **)
 Theorem agp32_Rel_ag32_EX_PC_correct:
   !fext fbits a t I.
@@ -507,6 +545,106 @@ Proof
   fs [Rel_def,EX_Rel_def]
 QED
 
+(** EX_dataA/B/W **)
+Theorem agp32_Rel_ag32_EX_dataA_correct:
+  !fext fbits a t I.
+    is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_dataA = dataA (FUNPOW Next (THE (I (3,SUC t)) − 1) a)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_dataA = (EX_pipeline (fext t) s s').EX.EX_dataA`
+    by fs [agp32_EX_data_updated_by_EX_pipeline] >> rw [] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
+  (s'.EX.EX_dataA = s.EX.EX_dataA) /\ (s'.ID.ID_dataA = s.ID.ID_dataA)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_EX_items_before_EX_pipeline,
+                  agp32_same_ID_items_before_EX_pipeline] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (fs [is_sch_execute_def] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [] >> fs [] >>
+    `s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    rw [EX_pipeline_def] >> fs [Rel_def,ID_Rel_def,ID_reg_data_Rel_def] >>
+    Cases_on `s.ID.ID_addrA_disable` >>
+    fs [reg_data_hazard_def,ID_data_dep_Rel_def] >> METIS_TAC []) >> 
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_disable_def] >>
+  `~s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  rw [EX_pipeline_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
+
+Theorem agp32_Rel_ag32_EX_dataB_correct:
+  !fext fbits a t I.
+    is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_dataB = dataB (FUNPOW Next (THE (I (3,SUC t)) − 1) a)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_dataB = (EX_pipeline (fext t) s s').EX.EX_dataB`
+    by fs [agp32_EX_data_updated_by_EX_pipeline] >> rw [] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
+  (s'.EX.EX_dataB = s.EX.EX_dataB) /\ (s'.ID.ID_dataB = s.ID.ID_dataB)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_EX_items_before_EX_pipeline,
+                  agp32_same_ID_items_before_EX_pipeline] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (fs [is_sch_execute_def] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [] >> fs [] >>
+    `s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    rw [EX_pipeline_def] >> fs [Rel_def,ID_Rel_def,ID_reg_data_Rel_def] >>
+    Cases_on `s.ID.ID_addrB_disable` >>
+    fs [reg_data_hazard_def,ID_data_dep_Rel_def] >> METIS_TAC []) >> 
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_disable_def] >>
+  `~s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  rw [EX_pipeline_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
+
+Theorem agp32_Rel_ag32_EX_dataW_correct:
+  !fext fbits a t I.
+    is_sch_execute I (agp32 fext fbits) a ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_dataW = dataW (FUNPOW Next (THE (I (3,SUC t)) − 1) a)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_dataW = (EX_pipeline (fext t) s s').EX.EX_dataW`
+    by fs [agp32_EX_data_updated_by_EX_pipeline] >> rw [] >>
+  `(s'.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
+  (s'.EX.EX_dataW = s.EX.EX_dataW) /\ (s'.ID.ID_dataW = s.ID.ID_dataW)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_EX_items_before_EX_pipeline,
+                  agp32_same_ID_items_before_EX_pipeline] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (fs [is_sch_execute_def] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     METIS_TAC [] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [] >> fs [] >>
+    `s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    rw [EX_pipeline_def] >> fs [Rel_def,ID_Rel_def,ID_reg_data_Rel_def] >>
+    Cases_on `s.ID.ID_addrW_disable` >>
+    fs [reg_data_hazard_def,ID_data_dep_Rel_def] >> METIS_TAC []) >> 
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_disable_def] >>
+  `~s'.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  rw [EX_pipeline_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
+
 
 (* EX stage *)
 Theorem agp32_Rel_ag32_EX_Rel_correct:
@@ -520,7 +658,9 @@ Proof
   rw [EX_Rel_def] >>
   fs [agp32_Rel_ag32_EX_PC_correct,agp32_Rel_ag32_EX_addrW_correct,
       agp32_Rel_ag32_EX_imm_correct,agp32_Rel_ag32_EX_opc_correct,
-      agp32_Rel_ag32_EX_func_correct,agp32_Rel_ag32_EX_write_reg_correct] >>
+      agp32_Rel_ag32_EX_func_correct,agp32_Rel_ag32_EX_write_reg_correct,
+      agp32_Rel_ag32_EX_dataA_correct,agp32_Rel_ag32_EX_dataB_correct,
+      agp32_Rel_ag32_EX_dataW_correct] >>
   cheat
 QED
 

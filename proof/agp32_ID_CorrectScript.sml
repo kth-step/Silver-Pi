@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory wordsExtraTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32_EX_CorrectTheory;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory wordsExtraTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32SpecialTheory agp32_EX_CorrectTheory;
 
 (* correctness of ID stage items with respect to the ISA *)
 val _ = new_theory "agp32_ID_Correct";
@@ -907,7 +907,7 @@ Proof
           fs [isJump_hw_op_def,enable_stg_def] >>
           METIS_TAC [agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard]) >> fs [] >>
         `THE (I' (1,t)) = THE (I' (5,t)) + 1`
-          by METIS_TAC [ID_EX_MEM_NONE_IF_instr_index_with_WB_instr_plus_1] >> fs []) >>
+          by fs [Rel_def,Inv_Rel_def] >> fs []) >>
       `I' (2,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_disable_def] >>
       subgoal `I' (5,SUC t) = I' (4,t)` >-
        (fs [is_sch_def,is_sch_writeback_def,is_sch_disable_def,Abbr `s`] >>
@@ -1397,7 +1397,7 @@ Proof
           fs [isJump_hw_op_def,enable_stg_def] >>
           METIS_TAC [agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard]) >> fs [] >>
         `THE (I' (1,t)) = THE (I' (5,t)) + 1`
-          by METIS_TAC [ID_EX_MEM_NONE_IF_instr_index_with_WB_instr_plus_1] >> fs []) >>
+          by fs [Rel_def,Inv_Rel_def] >> fs []) >>
       `I' (2,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_disable_def] >>
       subgoal `I' (5,SUC t) = I' (4,t)` >-
        (fs [is_sch_def,is_sch_writeback_def,is_sch_disable_def,Abbr `s`] >>
@@ -1887,7 +1887,7 @@ Proof
           fs [isJump_hw_op_def,enable_stg_def] >>
           METIS_TAC [agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard]) >> fs [] >>
         `THE (I' (1,t)) = THE (I' (5,t)) + 1`
-          by METIS_TAC [ID_EX_MEM_NONE_IF_instr_index_with_WB_instr_plus_1] >> fs []) >>
+          by fs [Rel_def,Inv_Rel_def] >> fs []) >>
       `I' (2,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_disable_def] >>
       subgoal `I' (5,SUC t) = I' (4,t)` >-
        (fs [is_sch_def,is_sch_writeback_def,is_sch_disable_def,Abbr `s`] >>

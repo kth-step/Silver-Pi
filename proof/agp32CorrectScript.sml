@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32_IF_CorrectTheory agp32_ID_CorrectTheory agp32_EX_CorrectTheory agp32_WB_CorrectTheory;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32SpecialTheory agp32_IF_CorrectTheory agp32_ID_CorrectTheory agp32_EX_CorrectTheory agp32_WB_CorrectTheory;
 
 (* correctness of the pipelined Silver circuit against the ISA *)
 val _ = new_theory "agp32Correct";
@@ -28,7 +28,8 @@ Theorem agp32_Init_implies_Rel:
 Proof
   rw [Init_def,Rel_def,is_sch_init_def] >>
   fs [agp32_init_IF_PC_input,agp32_init_EX_opc,IF_PC_Rel_def,IF_instr_Rel_def,
-      enable_stg_def,EX_inv_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs []
+      Inv_Rel_def,enable_stg_def,EX_inv_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs [] >>
+  rw [agp32_init_ID_opc,agp32_init_EX_opc,agp32_init_EX_write_reg]
 QED
 
 
@@ -84,6 +85,8 @@ Proof
    cheat >-
    cheat >-
    cheat >-
+   (** Inv_Rel **)
+   fs [agp32_Rel_ag32_Inv_Rel_correct] >-
    (** IF_PC **)
    fs [agp32_Rel_ag32_IF_PC_Rel_correct] >-
    (** IF_instr **)

@@ -222,6 +222,7 @@ Definition EX_Rel_spec_def:
    (s.EX.EX_jump_sel ==> s.EX.EX_jump_addr = (FUNPOW Next (THE iop) a).PC)
 End
 
+(** memory stage **)
 Definition MEM_Rel_def:
   MEM_Rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
   ((s.MEM.MEM_PC = (FUNPOW Next (i-1) a).PC) /\
@@ -246,6 +247,7 @@ Definition MEM_Rel_def:
    (fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a)))
 End
 
+(** write back stage **)
 Definition WB_Rel_def:
   WB_Rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
   ((s.WB.WB_PC = (FUNPOW Next (i-1) a).PC) /\
@@ -265,7 +267,22 @@ Definition WB_Rel_def:
    (s.WB.WB_write_data = reg_wdata (FUNPOW Next (i-1) a)))
 End
 
-(* TODO: refine the definition *)
+(** circuit level invariants **)
+Definition Inv_Rel_def:
+  Inv_Rel (I:num # num -> num option) (si:state_circuit) (s:state_circuit) (a:ag32_state) (t:num) <=>
+  ((~isJump_hw_op s ==> ~isJump_isa_op (I (2,t)) a ==> I (1,t) <> NONE) /\
+   (enable_stg 2 si ==> ~isJump_hw_op s ==> I (2,t) = NONE ==> isJump_hw_op si) /\
+   (enable_stg 2 si ==> enable_stg 3 s ==> ~isJump_hw_op s ==> ~reg_data_hazard s ==> I (3,SUC t) = NONE ==>
+    isJump_hw_op si) /\
+   (~enable_stg 2 si ==> ~isJump_hw_op s ==> I (2,t) = NONE ==> s.ID.ID_opc = 15w) /\
+   (I (3,t) = NONE ==> (s.EX.EX_opc = 16w \/ s.EX.EX_opc = 15w)) /\
+   (I (3,t) = NONE ==> ~s.EX.EX_write_reg) /\
+   (I (1,t) <> NONE ==> I (2,t) = NONE ==> I (3,t) = NONE ==> I (4,t) = NONE ==> I (5,t) <> NONE ==>
+    (THE (I (1,t)) > THE (I (5,t))) /\ (THE (I (1,t)) < THE (I (5,t)) + 2)))
+End
+
+
+
 (* si: circuit state at the previous cycle *)
 Definition Rel_def:
   Rel (I:num # num -> num option) (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (t:num) <=>
@@ -291,6 +308,7 @@ Definition Rel_def:
    (s.R = (FUNPOW Next (THE (I (3,t)) - 1) a).R)) /\
   (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) <> NONE ==>
    (s.R = (FUNPOW Next (THE (I (2,t)) - 1) a).R)) /\
+  (Inv_Rel I si s a t) /\
   (I (1,t) <> NONE ==> IF_PC_Rel s a (THE (I (1,t)))) /\
   (I (1,t) <> NONE ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
   (I (2,t) <> NONE ==> ID_Rel s a (THE (I (2,t)))) /\

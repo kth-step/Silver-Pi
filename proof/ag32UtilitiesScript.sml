@@ -626,7 +626,7 @@ Proof
    (** JumpIfNotZero **)
    (PairCases_on `p` >>
     `opc ag = 11w` by fs [ag32_Decode_JumpIfNotZero_opc_11w] >>
-    fs [Run_def,dfn'JumpIfNotZero_def,ALU_res_def] >>
+    fs [Run_def,dfn'JumpIfNotZero_def,ALU_res_def,ALU_input1_def,ALU_input2_def] >>
     UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (p0,p1,p2,p3)`` >> 
     simp [Decode_def,boolify32_def] >>
     CONV_TAC v2w_word_bit_list_cleanup >>
@@ -640,7 +640,7 @@ Proof
    (** JumpIfZero **)
    (PairCases_on `p` >>
     `opc ag = 10w` by fs [ag32_Decode_JumpIfZero_opc_10w] >>
-    fs [Run_def,dfn'JumpIfZero_def,ALU_res_def] >>
+    fs [Run_def,dfn'JumpIfZero_def,ALU_res_def,ALU_input1_def,ALU_input2_def] >>
     UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (p0,p1,p2,p3)`` >> 
     simp [Decode_def,boolify32_def] >>
     CONV_TAC v2w_word_bit_list_cleanup >>

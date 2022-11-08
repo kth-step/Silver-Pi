@@ -128,8 +128,8 @@ Definition ALU_res_def:
   ALU_res a =
   let opc = opc a;
       func = func a;
-      input1 = if opc = 9w then a.PC else dataA a;
-      input2 = if opc = 9w then dataA a else dataB a;
+      input1 = ALU_input1 a;
+      input2 = ALU_input2 a;
       (v,a') = ALU (num2funcT (w2n func), input1, input2) a in
     v
 End

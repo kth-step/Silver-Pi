@@ -1236,6 +1236,23 @@ Proof
   fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
 QED
 
+(** I (2,t) is not 0 **)
+Theorem ID_instr_index_not_0:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (2,t) <> NONE ==>
+    THE (I (2,t)) <> 0
+Proof
+  rw [] >> Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def] >>
+  rw [] >> Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_isa_op (I' (2,t)) a \/ isJump_hw_op (agp32 fext fbits t)` >-
+     (fs [is_sch_def,is_sch_decode_def] >> METIS_TAC []) >>
+    `I' (2,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_decode_def] >> fs [] >>
+    METIS_TAC [IF_instr_index_not_0]) >>
+  fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
+QED
+
 
 (** IF is a jump then ID is not a jump **)
 Theorem IF_instr_isJump_ID_instr_not_isJump:

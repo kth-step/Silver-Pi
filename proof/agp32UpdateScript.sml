@@ -3102,6 +3102,32 @@ Proof
   rw [EX_pipeline_def]
 QED
 
+Theorem agp32_same_EX_ALU_input_until_ALU_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
+    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
+                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 EX_ALU_input_imm_update] (fext (SUC t)) s' s' ==>
+    (s''.EX.EX_ALU_input1 = (agp32 fext fbits (SUC t)).EX.EX_ALU_input1) /\
+    (s''.EX.EX_ALU_input2 = (agp32 fext fbits (SUC t)).EX.EX_ALU_input2)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s0 = procs _ (fext t) s''' s'''` >>
+  Q.ABBREV_TAC `s1 = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;
+                            ID_data_update;ID_data_check_update;
+                            EX_ctrl_update;EX_ALU_input_imm_update] (fext (SUC t)) s0 s0` >>
+  clist_update_state_tac >>
+  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Hazard_ctrl_unchanged_EX_ALU,WB_update_unchanged_EX_ALU,
+      MEM_ctrl_update_unchanged_EX_ALU,IF_PC_input_update_unchanged_EX_ALU,
+      EX_jump_sel_addr_update_unchanged_EX_ALU,EX_SHIFT_update_unchanged_EX_ALU,
+      EX_ALU_update_unchanged_EX_ALU_input]
+QED
+
 Theorem agp32_same_items_until_EX_ALU_update:
   !fext fbits t s s' s''.
     s = agp32 fext fbits t ==>

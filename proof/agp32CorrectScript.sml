@@ -56,9 +56,10 @@ Proof
     `a.data_in = (FUNPOW Next 0 a).data_in` by rw [] >>
     METIS_TAC [ag32_data_in_unchanged_all]) >-
    (** carryflag **)
-   (*METIS_TAC [agp32_Rel_ag32_carry_flag_correct]*)
+   fs [agp32_Rel_ag32_EX_ALU_carry_flag_correct] >-
    cheat >-
    (** overflow flag **)
+   cheat >-
    cheat >-
    (** PC_input when jump **)
    fs [is_sch_def,agp32_Rel_ag32_IF_PC_input_jump_correct] >-
@@ -96,7 +97,7 @@ Proof
    fs [agp32_Rel_ag32_ID_data_dep_Rel_correct] >-
    fs [agp32_Rel_ag32_ID_reg_data_Rel_correct] >-
    (** EX **)
-   fs [is_sch_def,agp32_Rel_ag32_EX_Rel_correct] >-
+   fs [agp32_Rel_ag32_EX_Rel_correct] >-
    METIS_TAC [agp32_Rel_ag32_EX_inv_correct] >-
    cheat >-
    (** MEM **)

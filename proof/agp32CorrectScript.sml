@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32SpecialTheory agp32_IF_CorrectTheory agp32_ID_CorrectTheory agp32_EX_CorrectTheory agp32_WB_CorrectTheory;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32SpecialTheory agp32_IF_CorrectTheory agp32_ID_CorrectTheory agp32_EX_CorrectTheory agp32_EX_Flags_CorrectTheory agp32_WB_CorrectTheory;
 
 (* correctness of the pipelined Silver circuit against the ISA *)
 val _ = new_theory "agp32Correct";
@@ -57,10 +57,12 @@ Proof
     METIS_TAC [ag32_data_in_unchanged_all]) >-
    (** carryflag **)
    fs [agp32_Rel_ag32_EX_ALU_carry_flag_correct] >-
-   cheat >-
+   fs [agp32_Rel_ag32_EX_ALU_flags_correct_ID_not_NONE] >-
+   fs [agp32_Rel_ag32_EX_ALU_flags_correct_IF_not_NONE] >-
    (** overflow flag **)
-   cheat >-
-   cheat >-
+   fs [agp32_Rel_ag32_EX_ALU_overflow_flag_correct] >-
+   fs [agp32_Rel_ag32_EX_ALU_flags_correct_ID_not_NONE] >-
+   fs [agp32_Rel_ag32_EX_ALU_flags_correct_IF_not_NONE] >-
    (** PC_input when jump **)
    fs [is_sch_def,agp32_Rel_ag32_IF_PC_input_jump_correct] >-
    (** PC_input when no jump **)

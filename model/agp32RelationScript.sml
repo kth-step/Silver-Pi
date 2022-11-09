@@ -288,8 +288,12 @@ Definition Rel_def:
   (I (5,t) <> NONE ==> fext.data_in = (FUNPOW Next (THE (I (5,t))) a).data_in) /\
   (I (3,t) <> NONE ==> (s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (3,t))) a).CarryFlag)) /\
   (I (3,t) = NONE ==> I (2,t) <> NONE ==> (s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (2,t)) - 1) a).CarryFlag)) /\
+  (I (3,t) = NONE ==> I (2,t) = NONE ==> I (1,t) <> NONE ==>
+   (s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (1,t)) - 1) a).CarryFlag)) /\
   (I (3,t) <> NONE ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I (3,t))) a).OverflowFlag)) /\
   (I (3,t) = NONE ==> I (2,t) <> NONE ==> (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I (2,t)) - 1) a).OverflowFlag)) /\
+  (I (3,t) = NONE ==> I (2,t) = NONE ==> I (1,t) <> NONE ==>
+   (s.EX.EX_overflow_flag <=> (FUNPOW Next (THE (I (1,t)) - 1) a).OverflowFlag)) /\
   (I (3,t) <> NONE ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
   (I (1,t) <> NONE ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (1,t)) - 1) a).PC + 4w)) /\
   (I (4,t) <> NONE ==> fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t))) a).MEM) /\

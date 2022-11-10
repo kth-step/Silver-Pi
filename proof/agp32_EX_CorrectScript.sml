@@ -707,9 +707,46 @@ Theorem agp32_Rel_ag32_EX_jump_sel_correct:
     (agp32 fext fbits (SUC t)).EX.EX_jump_sel = isJump_isa_op (I (3,SUC t)) a
 Proof
   rw [isJump_isa_op_def] >>
-  Cases_on `I' (3,SUC t) <> NONE` >> fs [] >-
-   (cheat) >>
-  cheat
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;
+                             ID_data_update;ID_data_check_update;EX_ctrl_update;
+                             EX_ALU_input_imm_update;EX_ALU_update;EX_SHIFT_update] (fext (SUC t)) s' s'` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_jump_sel =
+  (EX_jump_sel_addr_update (fext (SUC t)) s' s'').EX.EX_jump_sel`
+    by fs [agp32_EX_jump_items_updated_by_EX_jump_sel_addr_update] >>
+  `s''.EX.EX_PC_sel = (agp32 fext fbits (SUC t)).EX.EX_PC_sel /\
+  s''.EX.EX_ALU_res = (agp32 fext fbits (SUC t)).EX.EX_ALU_res` by cheat >>
+  Cases_on `I' (3,SUC t) = NONE` >> fs [] >-
+   (fs [EX_jump_sel_addr_update_def] >> rw [] >-
+     (`(agp32 fext fbits (SUC t)).EX.EX_opc = 9w` by METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct] >>
+      `((agp32 fext fbits (SUC t)).EX.EX_opc = 16w) \/ ((agp32 fext fbits (SUC t)).EX.EX_opc = 15w)`
+        by METIS_TAC [EX_instr_index_NONE_opc_flush] >> fs []) >-
+     (`(agp32 fext fbits (SUC t)).EX.EX_opc = 10w` by METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct] >>
+      `((agp32 fext fbits (SUC t)).EX.EX_opc = 16w) \/ ((agp32 fext fbits (SUC t)).EX.EX_opc = 15w)`
+        by METIS_TAC [EX_instr_index_NONE_opc_flush] >> fs []) >>
+    `(agp32 fext fbits (SUC t)).EX.EX_opc = 11w` by METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct] >>
+    `((agp32 fext fbits (SUC t)).EX.EX_opc = 16w) \/ ((agp32 fext fbits (SUC t)).EX.EX_opc = 15w)`
+      by METIS_TAC [EX_instr_index_NONE_opc_flush] >> fs []) >>
+  rw [isJump_isa_def,EX_jump_sel_addr_update_def] >-
+   (`(agp32 fext fbits (SUC t)).EX.EX_opc = 9w` by METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct] >>
+    fs [is_sch_def] >> METIS_TAC [agp32_Rel_ag32_EX_opc_correct]) >-
+   (`(agp32 fext fbits (SUC t)).EX.EX_opc = 10w` by METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct] >>
+    METIS_TAC [is_sch_def,agp32_Rel_ag32_EX_opc_correct,agp32_Rel_ag32_EX_ALU_res_correct]) >-
+   (`(agp32 fext fbits (SUC t)).EX.EX_opc = 11w` by METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct] >>
+    METIS_TAC [is_sch_def,agp32_Rel_ag32_EX_opc_correct,agp32_Rel_ag32_EX_ALU_res_correct]) >-
+   (`(agp32 fext fbits (SUC t)).EX.EX_opc <> 9w` by METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct] >>
+    fs [is_sch_def] >> METIS_TAC [agp32_Rel_ag32_EX_opc_correct]) >-
+   (fs [] >> cheat) >-
+   (`(agp32 fext fbits (SUC t)).EX.EX_opc = 10w`
+      by METIS_TAC [is_sch_def,agp32_Rel_ag32_EX_opc_correct] >>
+    `(agp32 fext fbits (SUC t)).EX.EX_PC_sel = 2w` by METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct] >>
+    fs [] >> METIS_TAC [agp32_Rel_ag32_EX_ALU_res_correct]) >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = 11w`
+    by METIS_TAC [is_sch_def,agp32_Rel_ag32_EX_opc_correct] >>
+  `(agp32 fext fbits (SUC t)).EX.EX_PC_sel = 3w` by METIS_TAC [agp32_Rel_ag32_EX_PC_sel_correct] >>
+  fs [] >> METIS_TAC [agp32_Rel_ag32_EX_ALU_res_correct]
 QED
 
 
@@ -721,6 +758,7 @@ Theorem agp32_Rel_ag32_EX_Rel_spec_correct:
     EX_Rel_spec (agp32 fext fbits (SUC t)) a (I (3,SUC t))
 Proof
   rw [EX_Rel_spec_def] >>
+  fs [agp32_Rel_ag32_EX_jump_sel_correct] >>
   cheat
 QED
 

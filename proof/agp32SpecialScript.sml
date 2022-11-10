@@ -32,7 +32,7 @@ Proof
                agp32_IF_PC_write_enable_EX_jump_sel_then_no_reg_data_hazard] >>
       `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >>
       `isJump_isa_op (I' (3,SUC t)) a` by fs [] >>
-      cheat) >>
+      fs [isJump_hw_op_def] >> METIS_TAC [agp32_Rel_ag32_EX_jump_sel_correct]) >>
     Cases_on `I' (1,t) = NONE` >> fs [] >>
     fs [is_sch_def,is_sch_fetch_def] >>
     fs [Rel_def,Inv_Rel_def]) >>
@@ -68,7 +68,7 @@ Proof
              agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard] >>
     `I' (3,SUC t) = I' (2,t)` by fs [is_sch_execute_def] >> rw [] >>
     `isJump_isa_op (I' (3,SUC t)) a` by fs [] >>
-    cheat) >>
+    fs [isJump_hw_op_def] >> METIS_TAC [is_sch_def,agp32_Rel_ag32_EX_jump_sel_correct]) >>
   `I' (2,SUC t) = I' (1,t)` by METIS_TAC [is_sch_decode_def] >> fs [] >>
   Cases_on `t` >> fs [] >-
    fs [enable_stg_def,agp32_init_ctrl_flags] >>

@@ -29,7 +29,7 @@ Proof
   rw [Init_def,Rel_def,is_sch_init_def] >>
   fs [agp32_init_IF_PC_input,agp32_init_EX_opc,IF_PC_Rel_def,IF_instr_Rel_def,
       Inv_Rel_def,enable_stg_def,EX_inv_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs [] >>
-  rw [agp32_init_ID_opc,agp32_init_EX_opc,agp32_init_EX_write_reg]
+  rw [agp32_init_ID_opc,agp32_init_EX_opc,agp32_init_EX_write_reg,agp32_init_EX_PC_sel]
 QED
 
 

@@ -205,14 +205,14 @@ Definition EX_Rel_def:
    (s.EX.EX_ALU_input1 = ALU_input1 (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_ALU_input2 = ALU_input2 (FUNPOW Next (i-1) a)) /\
    (s.EX.EX_ALU_res = ALU_res (FUNPOW Next (i-1) a)) /\
-   (s.EX.EX_SHIFT_res = shift_res (FUNPOW Next (i-1) a)))
+   (s.EX.EX_opc = 1w ==> s.EX.EX_SHIFT_res = shift_res (FUNPOW Next (i-1) a)))
 End
 
 Definition EX_inv_def:
   EX_inv (s:state_circuit) <=>
-  ((s.EX.EX_opc = 9w ==> s.EX.EX_PC_sel = 1w) /\
-   (s.EX.EX_opc = 10w ==> s.EX.EX_PC_sel = 2w) /\
-   (s.EX.EX_opc = 11w ==> s.EX.EX_PC_sel = 3w))
+  ((s.EX.EX_opc = 9w <=> s.EX.EX_PC_sel = 1w) /\
+   (s.EX.EX_opc = 10w <=> s.EX.EX_PC_sel = 2w) /\
+   (s.EX.EX_opc = 11w <=> s.EX.EX_PC_sel = 3w))
 End
 
 (** items belong to the EX stage that are related to jumps **)
@@ -234,7 +234,7 @@ Definition MEM_Rel_def:
    (s.MEM.MEM_opc = 14w ==> s.MEM.MEM_imm =
     ((8 >< 0) (imm (FUNPOW Next (i-1) a))) @@ ((22 >< 0) (dataW (FUNPOW Next (i-1) a)))) /\
    (s.MEM.MEM_ALU_res = ALU_res (FUNPOW Next (i-1) a)) /\
-   (s.MEM.MEM_SHIFT_res = shift_res (FUNPOW Next (i-1) a)) /\
+   (s.MEM.MEM_opc = 1w ==> s.MEM.MEM_SHIFT_res = shift_res (FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_write_reg <=> reg_iswrite (FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_read_mem = mem_isread (FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_write_mem = mem_iswrite (FUNPOW Next (i-1) a)) /\
@@ -258,7 +258,7 @@ Definition WB_Rel_def:
                           ((8 >< 0) (imm (FUNPOW Next (i-1) a))) @@ ((22 >< 0) (dataW (FUNPOW Next (i-1) a)))) /\
    (s.WB.WB_opc <> 14w ==> s.WB.WB_imm = imm (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_ALU_res = ALU_res (FUNPOW Next (i-1) a)) /\
-   (s.WB.WB_SHIFT_res = shift_res (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 1w ==> s.WB.WB_SHIFT_res = shift_res (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_read_data = mem_data_rdata (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_read_data_byte = mem_data_rdata (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_isOut = (s.WB.WB_opc = 6w)) /\ 

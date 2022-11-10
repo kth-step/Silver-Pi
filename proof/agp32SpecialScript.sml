@@ -44,7 +44,7 @@ Proof
      METIS_TAC [enable_stg_def,agp32_ID_EX_write_enable_isJump_hw_op_IF_PC_write_enable] >>
     fs [Rel_def,Inv_Rel_def] >> METIS_TAC []) >>
   `isJump_hw_op (agp32 fext fbits (SUC t)) = isJump_hw_op (agp32 fext fbits t)`
-    by cheat >>
+    by fs [isJump_hw_op_def,agp32_EX_jump_sel_unchanged_when_EX_disabled] >>
   fs [Rel_def,Inv_Rel_def] >> METIS_TAC []
 QED
 
@@ -112,7 +112,7 @@ Proof
       Cases_on `t` >> fs []) >>
     Cases_on `~enable_stg 3 (agp32 fext fbits t)` >-
      (`isJump_hw_op (agp32 fext fbits (SUC t)) = isJump_hw_op (agp32 fext fbits t)`
-        by cheat >> fs []) >>
+        by fs [isJump_hw_op_def,agp32_EX_jump_sel_unchanged_when_EX_disabled] >> fs []) >>
     fs [enable_stg_def] >>
     METIS_TAC [agp32_IF_PC_write_enable_and_ID_ID_write_enable,
                agp32_ID_EX_write_enable_isJump_hw_op_IF_PC_write_enable]) >>
@@ -120,41 +120,10 @@ Proof
    fs [Rel_def,Inv_Rel_def] >>
   Cases_on `~enable_stg 3 (agp32 fext fbits t)` >-
    (`isJump_hw_op (agp32 fext fbits (SUC t)) = isJump_hw_op (agp32 fext fbits t)`
-      by cheat >> fs []) >>
+      by fs [isJump_hw_op_def,agp32_EX_jump_sel_unchanged_when_EX_disabled] >> fs []) >>
   fs [enable_stg_def] >>
   METIS_TAC [agp32_IF_PC_write_enable_and_ID_ID_write_enable,
              agp32_ID_EX_write_enable_isJump_hw_op_IF_PC_write_enable]
-QED
-
-(** EX_opc is flushed **)
-Theorem EX_instr_index_NONE_opc_flush:
-  !I t fext fbits a.
-    is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
-    I (3,SUC t) = NONE ==>
-    ((agp32 fext fbits (SUC t)).EX.EX_opc = 16w) \/ ((agp32 fext fbits (SUC t)).EX.EX_opc = 15w)
-Proof
-  rw [] >> Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
-   (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
-     (`(agp32 fext fbits t).EX.EX_NOP_flag`
-        by fs [enable_stg_def,agp32_ID_EX_write_enable_isJump_hw_op_EX_NOP_flag] >>
-      fs [agp32_EX_opc_flush_when_EX_NOP_flag]) >>
-    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
-     (`(agp32 fext fbits t).EX.EX_NOP_flag`
-        by fs [enable_stg_def,agp32_ID_EX_write_enable_reg_data_hazard_EX_NOP_flag] >>
-      fs [agp32_EX_opc_flush_when_EX_NOP_flag]) >>
-    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_execute_def] >> fs [] >>
-    `~(agp32 fext fbits t).EX.EX_NOP_flag`
-      by fs [enable_stg_def,agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_EX_NOP_flag_F] >>
-    `(agp32 fext fbits (SUC t)).EX.EX_opc = (agp32 fext fbits t).ID.ID_opc`
-      by fs [agp32_EX_opc_ID_opc_when_not_EX_NOP_flag] >> fs [] >>
-    Cases_on `enable_stg 2 (agp32 fext fbits (t-1))` >-
-     (`isJump_hw_op (agp32 fext fbits (t-1))` by fs [Rel_def,Inv_Rel_def] >>
-      `(agp32 fext fbits (SUC (t-1))).ID.ID_opc = 15w` by fs [EX_isJump_hw_op_next_ID_opc] >>
-      Cases_on `t` >> fs []) >>
-    fs [Rel_def,Inv_Rel_def]) >>
-  `I' (3,SUC t) = I' (3,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >>
-  fs [agp32_EX_opc_unchanged_when_EX_disabled,Rel_def,Inv_Rel_def]
 QED
 
 (** EX_write_reg **)

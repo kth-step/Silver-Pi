@@ -7,7 +7,7 @@ val _ = prefer_num ();
 val _ = guess_lengths ();
 
 
-(** lemmas about words for ALU **)
+(** lemmas about words for ALU and SHIFT **)
 Theorem ALU_correct_carry_lem:
   !(w:33 word). word_bit 32 w <=> n2w (dimword(:32)) <=+ w
 Proof
@@ -44,14 +44,71 @@ Proof
   fs []
 QED
 
+Theorem MOD_MOD_lt:
+  !x n m. n < m /\ 0 <> n ==> (x MOD n) MOD m = x MOD n
+Proof
+  metis_tac [LESS_MOD,MOD_LESS,LESS_TRANS,NOT_ZERO_LT_ZERO]
+QED
+
+Theorem dimindex_MOD_dimword:
+  dimindex (:'a) MOD dimword (:'a) = dimindex (:'a)
+Proof
+  simp [MOD_LESS, dimindex_lt_dimword]
+QED
+
+Theorem word_ror_intro_mod:
+  !(w:'a word) sh. w #>>~ sh = w #>>~ word_mod sh (n2w (dimindex(:'a)))
+Proof
+ simp [word_ror_bv_def,word_ror_def,word_mod_def,
+       dimindex_MOD_dimword,MOD_MOD_lt,dimindex_lt_dimword]
+QED
+
+Theorem word_ror_impl:
+  !(w:word32) sh. sh <+ 32w ==> w #>>~ sh = (w >>>~ sh || w <<~ (32w - sh))
+Proof
+  BBLAST_TAC
+QED
+
+
+(** EX_opc is flushed **)
+Theorem EX_instr_index_NONE_opc_flush:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) = NONE ==>
+    ((agp32 fext fbits (SUC t)).EX.EX_opc = 16w) \/ ((agp32 fext fbits (SUC t)).EX.EX_opc = 15w)
+Proof
+  rw [] >> Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     (`(agp32 fext fbits t).EX.EX_NOP_flag`
+        by fs [enable_stg_def,agp32_ID_EX_write_enable_isJump_hw_op_EX_NOP_flag] >>
+      fs [agp32_EX_opc_flush_when_EX_NOP_flag]) >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >-
+     (`(agp32 fext fbits t).EX.EX_NOP_flag`
+        by fs [enable_stg_def,agp32_ID_EX_write_enable_reg_data_hazard_EX_NOP_flag] >>
+      fs [agp32_EX_opc_flush_when_EX_NOP_flag]) >>
+    `I' (3,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_execute_def] >> fs [] >>
+    `~(agp32 fext fbits t).EX.EX_NOP_flag`
+      by fs [enable_stg_def,agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_EX_NOP_flag_F] >>
+    `(agp32 fext fbits (SUC t)).EX.EX_opc = (agp32 fext fbits t).ID.ID_opc`
+      by fs [agp32_EX_opc_ID_opc_when_not_EX_NOP_flag] >> fs [] >>
+    Cases_on `enable_stg 2 (agp32 fext fbits (t-1))` >-
+     (`isJump_hw_op (agp32 fext fbits (t-1))` by fs [Rel_def,Inv_Rel_def] >>
+      `(agp32 fext fbits (SUC (t-1))).ID.ID_opc = 15w` by fs [EX_isJump_hw_op_next_ID_opc] >>
+      Cases_on `t` >> fs []) >>
+    fs [Rel_def,Inv_Rel_def]) >>
+  `I' (3,SUC t) = I' (3,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >>
+  fs [agp32_EX_opc_unchanged_when_EX_disabled,Rel_def,Inv_Rel_def]
+QED
+
 
 (** EX_PC_sel **)
 Theorem agp32_Rel_ag32_EX_PC_sel_correct:
   !fext fbits a t I.
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
-    ((agp32 fext fbits (SUC t)).EX.EX_opc = 9w ==> (agp32 fext fbits (SUC t)).EX.EX_PC_sel = 1w) /\
-    ((agp32 fext fbits (SUC t)).EX.EX_opc = 10w ==> (agp32 fext fbits (SUC t)).EX.EX_PC_sel = 2w) /\
-    ((agp32 fext fbits (SUC t)).EX.EX_opc = 11w ==> (agp32 fext fbits (SUC t)).EX.EX_PC_sel = 3w)
+    ((agp32 fext fbits (SUC t)).EX.EX_opc = 9w <=> (agp32 fext fbits (SUC t)).EX.EX_PC_sel = 1w) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_opc = 10w <=> (agp32 fext fbits (SUC t)).EX.EX_PC_sel = 2w) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_opc = 11w <=> (agp32 fext fbits (SUC t)).EX.EX_PC_sel = 3w)
 Proof
   rpt gen_tac >> disch_tac >>
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
@@ -66,7 +123,7 @@ Proof
   `(s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s''.EX.EX_PC_sel = s.EX.EX_PC_sel)`
     by METIS_TAC [agp32_same_items_before_EX_ctrl_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
   Cases_on `enable_stg 3 (agp32 fext fbits t)` >>
-  fs [EX_ctrl_update_def,enable_stg_def,Abbr `s`] >>
+  fs [EX_ctrl_update_def,enable_stg_def,Abbr `s`] >> rw [] >>
   `(agp32 fext fbits (SUC t)).EX.EX_opc = (agp32 fext fbits t).EX.EX_opc`
     by fs [agp32_EX_opc_unchanged_when_EX_disabled,enable_stg_def] >> rw [] >>
   fs [Rel_def,EX_inv_def]
@@ -568,8 +625,61 @@ Proof
   fs [Rel_def,EX_Rel_def]
 QED
 
+(** EX_SHIFT_res **)
+Theorem agp32_Rel_ag32_EX_SHIFT_res_correct:
+  !fext fbits a t I.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (3,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).EX.EX_opc = 1w ==>
+    (agp32 fext fbits (SUC t)).EX.EX_SHIFT_res = shift_res (FUNPOW Next (THE (I (3,SUC t)) − 1) a)
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;
+                             ID_data_update;ID_data_check_update;EX_ctrl_update;
+                             EX_ALU_input_imm_update;EX_ALU_update] (fext (SUC t)) s' s'` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_SHIFT_res =
+  (EX_SHIFT_update (fext (SUC t)) s' s'').EX.EX_SHIFT_res`
+    by fs [agp32_EX_SHIFT_res_updated_by_EX_SHIFT_update] >>
+   `(s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
+  (s''.EX.EX_SHIFT_res = s.EX.EX_SHIFT_res)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_items_until_EX_SHIFT_update] >>
+  `(s'.EX.EX_dataA = (agp32 fext fbits (SUC t)).EX.EX_dataA) /\
+  (s'.EX.EX_dataB = (agp32 fext fbits (SUC t)).EX.EX_dataB) /\
+  (s'.EX.EX_opc = (agp32 fext fbits (SUC t)).EX.EX_opc)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_EX_pipeline_items_after_EX_pipeline] >>
+  `s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func`      
+    by METIS_TAC [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_EX_func_after_EX_ALU_update] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (`s''.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+    `s'.EX.EX_opc = opc (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
+      by METIS_TAC [is_sch_def,agp32_Rel_ag32_EX_opc_correct] >>
+    `s''.EX.EX_func = func (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
+      by fs [is_sch_def,agp32_Rel_ag32_EX_func_correct] >>
+    `s'.EX.EX_dataA = dataA (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
+      by fs [is_sch_def,agp32_Rel_ag32_EX_dataA_correct] >>
+    `s'.EX.EX_dataB = dataB (FUNPOW Next (THE (I' (3,SUC t)) − 1) a)`
+      by fs [is_sch_def,agp32_Rel_ag32_EX_dataB_correct] >>
+    fs [EX_SHIFT_update_def,shift_res_def,shift_def] >>
+    qpat_abbrev_tac `a' = FUNPOW Next _ _` >>
+    `(1 >< 0) (agp32 fext fbits (SUC t)).EX.EX_func = (7 >< 6) (instr a')`
+      by METIS_TAC [ag32_func_for_SHIFT] >> fs [] >>
+    Cases_on_word_value `(7 >< 6) (instr a')` >> fs [] >>
+    once_rewrite_tac [word_ror_intro_mod] >> simp [] >>
+    DEP_REWRITE_TAC [word_ror_impl] >> simp [] >>
+    rw [word_mod_def,WORD_LO,MOD_MOD_lt]) >>
+  `I' (3,SUC t) = I' (3,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `~s''.ID.ID_EX_write_enable` by fs [enable_stg_def,Abbr `s`] >>
+  `(agp32 fext fbits (SUC t)).EX.EX_opc = (agp32 fext fbits t).EX.EX_opc`
+    by fs [agp32_EX_opc_unchanged_when_EX_disabled,enable_stg_def] >>
+  rw [EX_SHIFT_update_def] >>
+  fs [Rel_def,EX_Rel_def]
+QED
 
-(* EX stage *)
+
+(* EX Rel *)
 Theorem agp32_Rel_ag32_EX_Rel_correct:
   !fext fbits a t I.
     is_sch I (agp32 fext fbits) a ==>
@@ -585,7 +695,32 @@ Proof
       agp32_Rel_ag32_EX_dataW_correct,agp32_Rel_ag32_EX_imm_updated_correct_not_LoadUpperConstant,
       agp32_Rel_ag32_EX_imm_updated_correct_LoadUpperConstant,
       agp32_Rel_ag32_EX_ALU_input1_correct,agp32_Rel_ag32_EX_ALU_input2_correct,
-      agp32_Rel_ag32_EX_ALU_res_correct] >>
+      agp32_Rel_ag32_EX_ALU_res_correct,agp32_Rel_ag32_EX_SHIFT_res_correct]
+QED
+
+
+(** EX_jump_sel **)
+Theorem agp32_Rel_ag32_EX_jump_sel_correct:
+  !fext fbits a t I.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    (agp32 fext fbits (SUC t)).EX.EX_jump_sel = isJump_isa_op (I (3,SUC t)) a
+Proof
+  rw [isJump_isa_op_def] >>
+  Cases_on `I' (3,SUC t) <> NONE` >> fs [] >-
+   (cheat) >>
+  cheat
+QED
+
+
+(* EX Rel_spec: for jumps *)
+Theorem agp32_Rel_ag32_EX_Rel_spec_correct:
+  !fext fbits a t I.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    EX_Rel_spec (agp32 fext fbits (SUC t)) a (I (3,SUC t))
+Proof
+  rw [EX_Rel_spec_def] >>
   cheat
 QED
 

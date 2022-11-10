@@ -401,6 +401,44 @@ Proof
   fs [EX_ALU_update_def]
 QED
 
+(** if the EX stage is disabled, then EX_PC_sel is unchanged at the next cycle **)
+Theorem agp32_EX_PC_sel_unchanged_when_EX_disabled:
+  !fext fbits t.
+    ~enable_stg 3 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).EX.EX_PC_sel = (agp32 fext fbits t).EX.EX_PC_sel
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;
+                             ID_data_update; ID_data_check_update] (fext (SUC t)) s' s'` >>
+  `(agp32 fext fbits (SUC t)).EX.EX_PC_sel = (EX_ctrl_update (fext (SUC t)) s' s'').EX.EX_PC_sel`
+    by fs [agp32_EX_PC_sel_updated_by_EX_ctrl_update] >>
+  `(s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\ (s''.EX.EX_PC_sel = s.EX.EX_PC_sel)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_items_before_EX_ctrl_update] >>
+  fs [EX_ctrl_update_def]
+QED
+
+(** if the EX stage is disabled, then EX_jump_sel is unchanged at the next cycle **)
+Theorem agp32_EX_jump_sel_unchanged_when_EX_disabled:
+  !fext fbits t.
+    ~enable_stg 3 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).EX.EX_jump_sel = (agp32 fext fbits t).EX.EX_jump_sel
+Proof
+  rw [] >>
+  `(agp32 fext fbits (SUC t)).EX.EX_PC_sel = (agp32 fext fbits t).EX.EX_PC_sel /\
+  (agp32 fext fbits (SUC t)).EX.EX_ALU_res = (agp32 fext fbits t).EX.EX_ALU_res`
+    by rw [agp32_EX_PC_sel_unchanged_when_EX_disabled,agp32_EX_ALU_res_unchanged_when_EX_disabled] >>
+  `(agp32 fext fbits t).EX.EX_jump_sel =
+  (EX_jump_sel_addr_update (fext t) s (agp32 fext fbits t)).EX.EX_jump_sel`
+    by rw [agp32_EX_jump_sel_addr_update_rewrite] >>
+  `(agp32 fext fbits (SUC t)).EX.EX_jump_sel =
+  (EX_jump_sel_addr_update (fext (SUC t)) s (agp32 fext fbits (SUC t))).EX.EX_jump_sel`
+    by rw [agp32_EX_jump_sel_addr_update_rewrite] >> fs [] >>
+  METIS_TAC [agp32_EX_jump_sel_update_same_output_under_same_EX_items]
+QED
+
 
 (** WB stage **)
 (** when WB is disabled, the R is unchanged **)

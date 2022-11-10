@@ -838,6 +838,16 @@ Proof
 QED
 
 
+(** func **)
+Theorem ag32_func_for_SHIFT:
+  !ag.
+    opc ag = 1w ==>
+    (1 >< 0) (func ag) = (7 >< 6) (instr ag)
+Proof
+  rw [func_def,instr_def] >> BBLAST_TAC
+QED
+
+
 (* if the current instr does not jump, the next pc = current pc + 4w *)
 Theorem ag32_not_isJump_isa_Next_PC:
   !ag.

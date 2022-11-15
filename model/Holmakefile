@@ -4,4 +4,4 @@ INCLUDES = $(HOLDIR)/examples/l3-machine-code/common \
            $(HOLDIR)/examples/l3-machine-code/lib \
            $(HWDIR) \
            $(HWDIR)/translator \
-           $(CAKEMLDIR)/compiler/encoders/ag32
+           ../silver_isa

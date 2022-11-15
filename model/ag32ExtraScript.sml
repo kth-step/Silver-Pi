@@ -260,7 +260,7 @@ Definition isJump_isa_def:
   isJump_isa a =
   let opc = opc a;
       ALU_res = ALU_res a in
-  ((opc = 9w) \/ (opc = 15w) \/ (opc = 10w /\ ALU_res = 0w) \/ (opc = 11w /\ ALU_res <> 0w))
+  ((opc = 9w) \/ (opc = 10w /\ ALU_res = 0w) \/ (opc = 11w /\ ALU_res <> 0w))
 End
 
 val _ = export_theory ();

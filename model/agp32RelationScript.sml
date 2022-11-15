@@ -208,17 +208,10 @@ Definition EX_Rel_def:
    (s.EX.EX_opc = 1w ==> s.EX.EX_SHIFT_res = shift_res (FUNPOW Next (i-1) a)))
 End
 
-Definition EX_inv_def:
-  EX_inv (s:state_circuit) <=>
-  ((s.EX.EX_opc = 9w <=> s.EX.EX_PC_sel = 1w) /\
-   (s.EX.EX_opc = 10w <=> s.EX.EX_PC_sel = 2w) /\
-   (s.EX.EX_opc = 11w <=> s.EX.EX_PC_sel = 3w))
-End
-
 (** items belong to the EX stage that are related to jumps **)
 Definition EX_Rel_spec_def:
    EX_Rel_spec (s:state_circuit) (a:ag32_state) (iop:num option) <=>
-   (s.EX.EX_jump_sel <=> isJump_isa_op iop a) /\
+   (s.EX.EX_jump_sel = isJump_isa_op iop a) /\
    (s.EX.EX_jump_sel ==> s.EX.EX_jump_addr = (FUNPOW Next (THE iop) a).PC)
 End
 
@@ -277,6 +270,10 @@ Definition Inv_Rel_def:
    (~enable_stg 2 si ==> ~isJump_hw_op s ==> I (2,t) = NONE ==> s.ID.ID_opc = 15w) /\
    (I (3,t) = NONE ==> (s.EX.EX_opc = 16w \/ s.EX.EX_opc = 15w)) /\
    (I (3,t) = NONE ==> ~s.EX.EX_write_reg) /\
+   (I (4,t) = NONE ==> (s.MEM.MEM_opc = 16w \/ s.MEM.MEM_opc = 15w)) /\
+   (I (4,t) = NONE ==> ~s.MEM.MEM_write_reg) /\
+   (I (5,t) = NONE ==> (s.WB.WB_opc = 16w \/ s.WB.WB_opc = 15w)) /\
+   (I (5,t) = NONE ==> ~s.WB.WB_write_reg) /\
    (I (1,t) <> NONE ==> I (2,t) = NONE ==> I (3,t) = NONE ==> I (4,t) = NONE ==> I (5,t) <> NONE ==>
     (THE (I (1,t)) > THE (I (5,t))) /\ (THE (I (1,t)) < THE (I (5,t)) + 2)))
 End
@@ -320,7 +317,6 @@ Definition Rel_def:
   (I (2,t) <> NONE ==> ID_data_dep_Rel s a (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (2,t) <> NONE ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (3,t) <> NONE ==> EX_Rel fext s a (THE (I (3,t)))) /\
-  (EX_inv s) /\
   (EX_Rel_spec s a (I (3,t))) /\
   (I (4,t) <> NONE ==> MEM_Rel fext s a (THE (I (4,t)))) /\
   (I (5,t) <> NONE ==> WB_Rel fext s a (THE (I (5,t))))

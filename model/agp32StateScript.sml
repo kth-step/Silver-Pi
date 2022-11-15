@@ -57,7 +57,6 @@ Datatype:
                  EX_checkA: bool;
                  EX_checkB: bool;
                  EX_checkW: bool;
-                 EX_PC_sel: word2;
                  EX_jump_sel: bool;
                  EX_jump_addr: word32;
                  EX_addrW: word6;

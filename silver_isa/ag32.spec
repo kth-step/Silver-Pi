@@ -241,8 +241,9 @@ define Interrupt = {
   incPC ()
 }
 
-define ReservedInstr =
-  nothing
+define ReservedInstr = {
+  incPC ()
+}
 
 define Run
 

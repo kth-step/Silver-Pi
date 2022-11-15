@@ -16,23 +16,21 @@ val  clist_update_state_tac =
   fs [Once procs_def] >>
   qpat_abbrev_tac `s5 = ID_data_check_update _ _ _` >>
   fs [Once procs_def] >>
-  qpat_abbrev_tac `s6 = EX_ctrl_update _ _ _` >>
+  qpat_abbrev_tac `s6 = EX_ALU_input_imm_update _ _ _` >>
   fs [Once procs_def] >>
-  qpat_abbrev_tac `s7 = EX_ALU_input_imm_update _ _ _` >>
+  qpat_abbrev_tac `s7 = EX_ALU_update _ _ _` >>
   fs [Once procs_def] >>
-  qpat_abbrev_tac `s8 = EX_ALU_update _ _ _` >>
+  qpat_abbrev_tac `s8 = EX_SHIFT_update _ _ _` >>
   fs [Once procs_def] >>
-  qpat_abbrev_tac `s9 = EX_SHIFT_update _ _ _` >>
+  qpat_abbrev_tac `s9 = EX_jump_sel_addr_update _ _ _` >>
   fs [Once procs_def] >>
-  qpat_abbrev_tac `s10 = EX_jump_sel_addr_update _ _ _` >>
+  qpat_abbrev_tac `s10 = IF_PC_input_update _ _ _` >>
   fs [Once procs_def] >>
-  qpat_abbrev_tac `s11 = IF_PC_input_update _ _ _` >>
+  qpat_abbrev_tac `s11 = MEM_ctrl_update _ _ _` >>
   fs [Once procs_def] >>
-  qpat_abbrev_tac `s12 = MEM_ctrl_update _ _ _` >>
-  fs [Once procs_def] >>
-  qpat_abbrev_tac `s13 = WB_update _ _ _` >>
+  qpat_abbrev_tac `s12 = WB_update _ _ _` >>
   fs [procs_def] >>
-  qpat_abbrev_tac `s14 = Hazard_ctrl _ _ _`);
+  qpat_abbrev_tac `s13 = Hazard_ctrl _ _ _`);
 
 val clist_update_state_before_ALU_tac =
  (rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
@@ -47,10 +45,8 @@ val clist_update_state_before_ALU_tac =
   qpat_abbrev_tac `s4 = ID_data_update _ _ _` >>
   rw [Once procs_def] >>
   qpat_abbrev_tac `s5 = ID_data_check_update _ _ _` >>
-  rw [Once procs_def] >>
-  qpat_abbrev_tac `s6 = EX_ctrl_update _ _ _` >>
   rw [procs_def] >>
-  qpat_abbrev_tac `s7 = EX_ALU_input_imm_update _ _ _`);
+  qpat_abbrev_tac `s6 = EX_ALU_input_imm_update _ _ _`);
 
 val slist_update_state_tac =
  (rw [Once procs_def] >>

@@ -139,17 +139,6 @@ Definition ID_data_check_update_def:
     (s.WB.WB_write_reg /\ (s.WB.WB_addrW = s'.ID.ID_addrW) /\ (~s'.ID.ID_addrW_disable))
 End
 
-(** set up flags of EX stage **)
-Definition EX_ctrl_update_def:
-  EX_ctrl_update (fext:ext) s s' =
-  if s'.ID.ID_EX_write_enable then
-      s' with EX := s'.EX with EX_PC_sel := if s.EX.EX_opc = 9w then 1w
-                                            else if s.EX.EX_opc = 10w then 2w
-                                            else if s.EX.EX_opc = 11w then 3w
-                                            else 0w
-  else s'
-End
-
 (** set up inputs for ALU and imm **)
 Definition EX_ALU_input_imm_update_def:
   EX_ALU_input_imm_update (fext:ext) s s' =
@@ -224,11 +213,11 @@ Theorem EX_SHIFT_update_trans = REWRITE_RULE [word_mod_32] EX_SHIFT_update_def
 (** handling jumps **)
 Definition EX_jump_sel_addr_update_def:
   EX_jump_sel_addr_update (fext:ext) s s' =
-  if (s'.EX.EX_PC_sel = 1w) then
+  if (s.EX.EX_opc = 9w) then
     let s' = s' with EX := s'.EX with EX_jump_sel := T in
       s' with EX := s'.EX with EX_jump_addr := s'.EX.EX_ALU_res
-  else if ((s'.EX.EX_PC_sel = 2w) /\ (s'.EX.EX_ALU_res = 0w)) \/
-          ((s'.EX.EX_PC_sel = 3w) /\ (s'.EX.EX_ALU_res <> 0w)) then
+  else if ((s.EX.EX_opc = 10w) /\ (s'.EX.EX_ALU_res = 0w)) \/
+          ((s.EX.EX_opc = 11w) /\ (s'.EX.EX_ALU_res <> 0w)) then
     let s' = s' with EX := s'.EX with EX_jump_sel := T in
       s' with EX := s'.EX with EX_jump_addr := s.EX.EX_PC + s'.EX.EX_dataW
   else let s' = s' with EX := s'.EX with EX_jump_sel := F in
@@ -250,10 +239,10 @@ Definition WB_update_def:
   WB_update fext s s' =
   let s' = s' with WB := s'.WB with WB_read_data := fext.data_rdata;
       s' = s' with WB := s'.WB with WB_read_data_byte := MUX_41 ((1 >< 0) s'.WB.WB_dataA)
-                                                                (w2w ((7 >< 0) s'.WB.WB_read_data))
-                                                                (w2w ((15 >< 8) s'.WB.WB_read_data))
-                                                                (w2w ((23 >< 16) s'.WB.WB_read_data))
-                                                                (w2w ((31 >< 24) s'.WB.WB_read_data));
+                                                                (w2w ((7 >< 0) fext.data_rdata))
+                                                                (w2w ((15 >< 8) fext.data_rdata))
+                                                                (w2w ((23 >< 16) fext.data_rdata))
+                                                                (w2w ((31 >< 24) fext.data_rdata));
       s' = (if s'.WB.WB_state_flag then
               let s' = s' with WB := s'.WB with WB_isOut := (s'.WB.WB_opc = 6w) in
                 s' with WB := s'.WB with WB_data_sel :=
@@ -398,10 +387,11 @@ Definition MEM_pipeline_def:
         s' = s' with MEM := s'.MEM with MEM_SHIFT_res := s'.EX.EX_SHIFT_res;
         s' = s' with MEM := s'.MEM with MEM_addrW := s.EX.EX_addrW;
         s' = s' with MEM := s'.MEM with MEM_opc := if s'.MEM.MEM_NOP_flag then 16w else s.EX.EX_opc in
-      s' with MEM := s'.MEM with MEM_write_reg := ((s.EX.EX_opc = 0w) \/ (s.EX.EX_opc = 1w) \/ (s.EX.EX_opc = 4w) \/
-                                                   (s.EX.EX_opc = 5w) \/ (s.EX.EX_opc = 6w) \/ (s.EX.EX_opc = 7w) \/
-                                                   (s.EX.EX_opc = 8w) \/ (s.EX.EX_opc = 9w) \/ (s.EX.EX_opc = 13w) \/
-                                                   (s.EX.EX_opc = 14w))
+      s' with MEM := s'.MEM with MEM_write_reg := if s'.MEM.MEM_NOP_flag then F else
+                                                    ((s.EX.EX_opc = 0w) \/ (s.EX.EX_opc = 1w) \/ (s.EX.EX_opc = 4w) \/
+                                                     (s.EX.EX_opc = 5w) \/ (s.EX.EX_opc = 6w) \/ (s.EX.EX_opc = 7w) \/
+                                                     (s.EX.EX_opc = 8w) \/ (s.EX.EX_opc = 9w) \/ (s.EX.EX_opc = 13w) \/
+                                                     (s.EX.EX_opc = 14w))
   else s'
 End
 
@@ -517,9 +507,9 @@ val init_tm = add_x_inits ``<| R := K 0w;
                                interrupt_req := F;           
                                IF := <| IF_PC_write_enable := F |>;           
                                ID := <| ID_instr := 0x0000003Fw |>;
-                               EX := <| EX_PC_sel := 0w; EX_opc := 16w; EX_write_reg := F |>;
+                               EX := <| EX_opc := 16w; EX_write_reg := F |>;
                                MEM := <| MEM_write_reg := F; MEM_opc := 16w |>;
-                               WB := <| WB_write_reg := F |> |>``;
+                               WB := <| WB_write_reg := F; WB_opc := 16w |> |>``;
 
 Definition agp32_init_def:
   agp32_init fbits = ^init_tm
@@ -531,7 +521,7 @@ Definition agp32_def:
                             EX_pipeline; REG_write; ID_pipeline; IF_PC_update; Acc_compute])
                     (procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
                             ID_data_update; ID_data_check_update;
-                            EX_ctrl_update; EX_ALU_input_imm_update;
+                            EX_ALU_input_imm_update;
                             EX_ALU_update; EX_SHIFT_update; 
                             EX_jump_sel_addr_update; IF_PC_input_update;
                             MEM_ctrl_update; WB_update; Hazard_ctrl])

@@ -50,13 +50,6 @@ Proof
   rw [IF_instr_update_def]
 QED
 
-Theorem IF_instr_update_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (IF_instr_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
-Proof
-  rw [IF_instr_update_def]
-QED
-
 Theorem IF_instr_update_unchanged_EX_ALU:
   !fext s s'.
     ((IF_instr_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
@@ -186,7 +179,6 @@ QED
 
 Theorem IF_PC_input_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((IF_PC_input_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
     ((IF_PC_input_update fext s s').EX.EX_imm_updated = s'.EX.EX_imm_updated)
 Proof
   rw [IF_PC_input_update_def]
@@ -294,13 +286,6 @@ Proof
   rw [ID_opc_func_update_def]
 QED
 
-Theorem ID_opc_func_update_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (ID_opc_func_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
-Proof
-  rw [ID_opc_func_update_def]
-QED
-
 Theorem ID_opc_func_update_unchanged_EX_ALU:
   !fext s s'.
     ((ID_opc_func_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
@@ -397,13 +382,6 @@ Theorem ID_imm_update_unchanged_EX_pipeline_items:
     ((ID_imm_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((ID_imm_update fext s s').EX.EX_func = s'.EX.EX_func) /\
     ((ID_imm_update fext s s').EX.EX_SHIFT_res = s'.EX.EX_SHIFT_res)
-Proof
-  rw [ID_imm_update_def]
-QED
-
-Theorem ID_imm_update_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (ID_imm_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [ID_imm_update_def]
 QED
@@ -511,13 +489,6 @@ Theorem ID_data_update_unchanged_EX_pipeline_items:
     ((ID_data_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
     ((ID_data_update fext s s').EX.EX_func = s'.EX.EX_func) /\
     ((ID_data_update fext s s').EX.EX_SHIFT_res = s'.EX.EX_SHIFT_res)
-Proof
-  rw [ID_data_update_def]
-QED
-
-Theorem ID_data_update_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (ID_data_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [ID_data_update_def]
 QED
@@ -637,13 +608,6 @@ Proof
   rw [ID_data_check_update_def]
 QED
 
-Theorem ID_data_check_update_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (ID_data_check_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
-Proof
-  rw [ID_data_check_update_def]
-QED
-
 Theorem ID_data_check_update_unchanged_EX_ALU:
   !fext s s'.
     ((ID_data_check_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
@@ -683,136 +647,6 @@ Theorem ID_data_check_update_unchanged_state_items:
     ((ID_data_check_update fext s s').R = s'.R)
 Proof
   rw [ID_data_check_update_def]
-QED
-
-(** unchanged items by EX_ctrl_update **)
-Theorem EX_ctrl_update_unchanged_enable_flags:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
-    ((EX_ctrl_update fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_IF:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').IF.IF_PC_input = s'.IF.IF_PC_input) /\
-    ((EX_ctrl_update fext s s').IF.IF_instr = s'.IF.IF_instr) /\
-    ((EX_ctrl_update fext s s').IF.IF_PC_write_enable = s'.IF.IF_PC_write_enable) /\
-    ((EX_ctrl_update fext s s').PC = s'.PC)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_ID_pipeline_items:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').ID.ID_PC = s'.ID.ID_PC) /\
-    ((EX_ctrl_update fext s s').ID.ID_instr = s'.ID.ID_instr)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_ID_opc_func:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').ID.ID_opc = s'.ID.ID_opc) /\
-    ((EX_ctrl_update fext s s').ID.ID_func = s'.ID.ID_func)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_ID_data_items:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').ID.ID_addrA = s'.ID.ID_addrA) /\
-    ((EX_ctrl_update fext s s').ID.ID_addrB = s'.ID.ID_addrB) /\
-    ((EX_ctrl_update fext s s').ID.ID_addrW = s'.ID.ID_addrW) /\
-    ((EX_ctrl_update fext s s').ID.ID_addrA_disable = s'.ID.ID_addrA_disable) /\
-    ((EX_ctrl_update fext s s').ID.ID_addrB_disable = s'.ID.ID_addrB_disable) /\
-    ((EX_ctrl_update fext s s').ID.ID_addrW_disable = s'.ID.ID_addrW_disable) /\
-    ((EX_ctrl_update fext s s').ID.ID_read_dataA = s'.ID.ID_read_dataA) /\
-    ((EX_ctrl_update fext s s').ID.ID_read_dataB = s'.ID.ID_read_dataB) /\
-    ((EX_ctrl_update fext s s').ID.ID_read_dataW = s'.ID.ID_read_dataW) /\
-    ((EX_ctrl_update fext s s').ID.ID_immA = s'.ID.ID_immA) /\
-    ((EX_ctrl_update fext s s').ID.ID_immB = s'.ID.ID_immB) /\
-    ((EX_ctrl_update fext s s').ID.ID_immW = s'.ID.ID_immW) /\
-    ((EX_ctrl_update fext s s').ID.ID_imm = s'.ID.ID_imm) /\
-    ((EX_ctrl_update fext s s').ID.ID_dataA = s'.ID.ID_dataA) /\
-    ((EX_ctrl_update fext s s').ID.ID_dataB = s'.ID.ID_dataB) /\
-    ((EX_ctrl_update fext s s').ID.ID_dataW = s'.ID.ID_dataW)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_ID_data_check_items:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').EX.EX_checkA = s'.EX.EX_checkA) /\
-    ((EX_ctrl_update fext s s').EX.EX_checkB = s'.EX.EX_checkB) /\
-    ((EX_ctrl_update fext s s').EX.EX_checkW = s'.EX.EX_checkW) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_checkA = s'.MEM.MEM_checkA) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_checkB = s'.MEM.MEM_checkB) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_checkW = s'.MEM.MEM_checkW) /\
-    ((EX_ctrl_update fext s s').WB.WB_checkA = s'.WB.WB_checkA) /\
-    ((EX_ctrl_update fext s s').WB.WB_checkB = s'.WB.WB_checkB) /\
-    ((EX_ctrl_update fext s s').WB.WB_checkW = s'.WB.WB_checkW)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_EX_pipeline_items:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').EX.EX_PC = s'.EX.EX_PC) /\
-    ((EX_ctrl_update fext s s').EX.EX_dataA = s'.EX.EX_dataA) /\
-    ((EX_ctrl_update fext s s').EX.EX_dataB = s'.EX.EX_dataB) /\
-    ((EX_ctrl_update fext s s').EX.EX_dataW = s'.EX.EX_dataW) /\
-    ((EX_ctrl_update fext s s').EX.EX_imm = s'.EX.EX_imm) /\
-    ((EX_ctrl_update fext s s').EX.EX_addrW = s'.EX.EX_addrW) /\
-    ((EX_ctrl_update fext s s').EX.EX_write_reg = s'.EX.EX_write_reg) /\
-    ((EX_ctrl_update fext s s').EX.EX_opc = s'.EX.EX_opc) /\
-    ((EX_ctrl_update fext s s').EX.EX_func = s'.EX.EX_func) /\
-    ((EX_ctrl_update fext s s').EX.EX_SHIFT_res = s'.EX.EX_SHIFT_res)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_EX_ALU:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
-    ((EX_ctrl_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
-    ((EX_ctrl_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_MEM_pipeline_items:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').MEM.MEM_PC = s'.MEM.MEM_PC) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_dataA = s'.MEM.MEM_dataA) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_dataB = s'.MEM.MEM_dataB) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_imm = s'.MEM.MEM_imm) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_ALU_res = s'.MEM.MEM_ALU_res) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_SHIFT_res = s'.MEM.MEM_SHIFT_res) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
-    ((EX_ctrl_update fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_WB_pipeline_items:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((EX_ctrl_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
-Proof
-  rw [EX_ctrl_update_def]
-QED
-
-Theorem EX_ctrl_update_unchanged_state_items:
-  !fext s s'.
-    ((EX_ctrl_update fext s s').command = s'.command) /\
-    ((EX_ctrl_update fext s s').state = s'.state) /\
-    ((EX_ctrl_update fext s s').R = s'.R)
-Proof
-  rw [EX_ctrl_update_def]
 QED
 
 (** unchanged items by EX_ALU_input_imm_update **)
@@ -909,13 +743,6 @@ Theorem EX_ALU_input_imm_update_unchanged_EX_ALU:
     ((EX_ALU_input_imm_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
     ((EX_ALU_input_imm_update fext s s').EX.EX_carry_flag = s'.EX.EX_carry_flag) /\
     ((EX_ALU_input_imm_update fext s s').EX.EX_overflow_flag = s'.EX.EX_overflow_flag)
-Proof
-  rw [EX_ALU_input_imm_update_def]
-QED
-
-Theorem EX_ALU_input_imm_update_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (EX_ALU_input_imm_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
 Proof
   rw [EX_ALU_input_imm_update_def]
 QED
@@ -1050,7 +877,6 @@ QED
 
 Theorem EX_ALU_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_ALU_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
     ((EX_ALU_update fext s s').EX.EX_imm_updated = s'.EX.EX_imm_updated)
 Proof
   rw [EX_ALU_update_def] >>
@@ -1188,7 +1014,6 @@ QED
 
 Theorem EX_SHIFT_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_SHIFT_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
     ((EX_SHIFT_update fext s s').EX.EX_imm_updated = s'.EX.EX_imm_updated)
 Proof
   rw [EX_SHIFT_update_def] >>
@@ -1324,7 +1149,6 @@ QED
      
 Theorem EX_jump_sel_addr_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_jump_sel_addr_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
     ((EX_jump_sel_addr_update fext s s').EX.EX_imm_updated = s'.EX.EX_imm_updated)
 Proof
   rw [EX_jump_sel_addr_update_def]
@@ -1455,7 +1279,6 @@ QED
 
 Theorem MEM_ctrl_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((MEM_ctrl_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
     ((MEM_ctrl_update fext s s').EX.EX_imm_updated = s'.EX.EX_imm_updated)
 Proof
   rw [MEM_ctrl_update_def]
@@ -1594,7 +1417,6 @@ QED
 
 Theorem WB_update_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((WB_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
     ((WB_update fext s s').EX.EX_imm_updated = s'.EX.EX_imm_updated)
 Proof
   rw [WB_update_def]
@@ -1630,6 +1452,17 @@ Theorem WB_update_unchanged_MEM_pipeline_items:
     ((WB_update fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
     ((WB_update fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
     ((WB_update fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
+Proof
+  rw [WB_update_def]
+QED
+
+Theorem WB_update_unchanged_MEM_ctrl_items:
+  !fext s s'.
+    ((WB_update fext s s').MEM.MEM_read_mem = s'.MEM.MEM_read_mem) /\
+    ((WB_update fext s s').MEM.MEM_write_mem = s'.MEM.MEM_write_mem) /\
+    ((WB_update fext s s').MEM.MEM_write_mem_byte = s'.MEM.MEM_write_mem_byte) /\
+    ((WB_update fext s s').MEM.MEM_isAcc = s'.MEM.MEM_isAcc) /\
+    ((WB_update fext s s').MEM.MEM_isInterrupt = s'.MEM.MEM_isInterrupt)
 Proof
   rw [WB_update_def]
 QED
@@ -1739,7 +1572,6 @@ QED
 
 Theorem Hazard_ctrl_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((Hazard_ctrl fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
     ((Hazard_ctrl fext s s').EX.EX_imm_updated = s'.EX.EX_imm_updated)
 Proof
   rw [Hazard_ctrl_def]
@@ -1775,6 +1607,17 @@ Theorem Hazard_ctrl_unchanged_MEM_pipeline_items:
     ((Hazard_ctrl fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
     ((Hazard_ctrl fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
     ((Hazard_ctrl fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
+Proof
+  rw [Hazard_ctrl_def]
+QED
+
+Theorem Hazard_ctrl_unchanged_MEM_ctrl_items:
+  !fext s s'.
+    ((Hazard_ctrl fext s s').MEM.MEM_read_mem = s'.MEM.MEM_read_mem) /\
+    ((Hazard_ctrl fext s s').MEM.MEM_write_mem = s'.MEM.MEM_write_mem) /\
+    ((Hazard_ctrl fext s s').MEM.MEM_write_mem_byte = s'.MEM.MEM_write_mem_byte) /\
+    ((Hazard_ctrl fext s s').MEM.MEM_isAcc = s'.MEM.MEM_isAcc) /\
+    ((Hazard_ctrl fext s s').MEM.MEM_isInterrupt = s'.MEM.MEM_isInterrupt)
 Proof
   rw [Hazard_ctrl_def]
 QED
@@ -1837,13 +1680,6 @@ Proof
   rw [Acc_compute_def]
 QED
 
-Theorem Acc_compute_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (Acc_compute fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
-Proof
-  rw [Acc_compute_def]
-QED
-
 Theorem Acc_compute_unchanged_EX_ALU:
   !fext s s'.
     ((Acc_compute fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
@@ -1857,6 +1693,21 @@ Theorem Acc_compute_unchanged_EX_jump:
   !fext s s'.
     ((Acc_compute fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
     ((Acc_compute fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [Acc_compute_def]
+QED
+
+Theorem Acc_compute_unchanged_MEM_pipeline_items:
+  !fext s s'.
+    ((Acc_compute fext s s').MEM.MEM_PC = s'.MEM.MEM_PC) /\
+    ((Acc_compute fext s s').MEM.MEM_dataA = s'.MEM.MEM_dataA) /\
+    ((Acc_compute fext s s').MEM.MEM_dataB = s'.MEM.MEM_dataB) /\
+    ((Acc_compute fext s s').MEM.MEM_imm = s'.MEM.MEM_imm) /\
+    ((Acc_compute fext s s').MEM.MEM_ALU_res = s'.MEM.MEM_ALU_res) /\
+    ((Acc_compute fext s s').MEM.MEM_SHIFT_res = s'.MEM.MEM_SHIFT_res) /\
+    ((Acc_compute fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
+    ((Acc_compute fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
+    ((Acc_compute fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
 Proof
   rw [Acc_compute_def]
 QED
@@ -1911,13 +1762,6 @@ Proof
   rw [IF_PC_update_def]
 QED
 
-Theorem IF_PC_update_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (IF_PC_update fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
-Proof
-  rw [IF_PC_update_def]
-QED
-
 Theorem IF_PC_update_unchanged_EX_ALU:
   !fext s s'.
     ((IF_PC_update fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
@@ -1931,6 +1775,21 @@ Theorem IF_PC_update_unchanged_EX_jump:
   !fext s s'.
     ((IF_PC_update fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
     ((IF_PC_update fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [IF_PC_update_def]
+QED
+
+Theorem IF_PC_update_unchanged_MEM_pipeline_items:
+  !fext s s'.
+    ((IF_PC_update fext s s').MEM.MEM_PC = s'.MEM.MEM_PC) /\
+    ((IF_PC_update fext s s').MEM.MEM_dataA = s'.MEM.MEM_dataA) /\
+    ((IF_PC_update fext s s').MEM.MEM_dataB = s'.MEM.MEM_dataB) /\
+    ((IF_PC_update fext s s').MEM.MEM_imm = s'.MEM.MEM_imm) /\
+    ((IF_PC_update fext s s').MEM.MEM_ALU_res = s'.MEM.MEM_ALU_res) /\
+    ((IF_PC_update fext s s').MEM.MEM_SHIFT_res = s'.MEM.MEM_SHIFT_res) /\
+    ((IF_PC_update fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
+    ((IF_PC_update fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
+    ((IF_PC_update fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
 Proof
   rw [IF_PC_update_def]
 QED
@@ -1986,13 +1845,6 @@ Proof
   rw [ID_pipeline_def]
 QED
 
-Theorem ID_pipeline_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (ID_pipeline fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
-Proof
-  rw [ID_pipeline_def]
-QED
-
 Theorem ID_pipeline_unchanged_EX_ALU:
   !fext s s'.
     ((ID_pipeline fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
@@ -2006,6 +1858,21 @@ Theorem ID_pipeline_unchanged_EX_jump:
   !fext s s'.
     ((ID_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
     ((ID_pipeline fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [ID_pipeline_def]
+QED
+
+Theorem ID_pipeline_unchanged_MEM_pipeline_items:
+  !fext s s'.
+    ((ID_pipeline fext s s').MEM.MEM_PC = s'.MEM.MEM_PC) /\
+    ((ID_pipeline fext s s').MEM.MEM_dataA = s'.MEM.MEM_dataA) /\
+    ((ID_pipeline fext s s').MEM.MEM_dataB = s'.MEM.MEM_dataB) /\
+    ((ID_pipeline fext s s').MEM.MEM_imm = s'.MEM.MEM_imm) /\
+    ((ID_pipeline fext s s').MEM.MEM_ALU_res = s'.MEM.MEM_ALU_res) /\
+    ((ID_pipeline fext s s').MEM.MEM_SHIFT_res = s'.MEM.MEM_SHIFT_res) /\
+    ((ID_pipeline fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
+    ((ID_pipeline fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
+    ((ID_pipeline fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
 Proof
   rw [ID_pipeline_def]
 QED
@@ -2072,13 +1939,6 @@ Proof
   rw [REG_write_def]
 QED
 
-Theorem REG_write_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (REG_write fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
-Proof
-  rw [REG_write_def]
-QED
-
 Theorem REG_write_unchanged_EX_ALU:
   !fext s s'.
     ((REG_write fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
@@ -2092,6 +1952,21 @@ Theorem REG_write_unchanged_EX_jump:
   !fext s s'.
     ((REG_write fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
     ((REG_write fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [REG_write_def]
+QED
+
+Theorem REG_write_unchanged_MEM_pipeline_items:
+  !fext s s'.
+    ((REG_write fext s s').MEM.MEM_PC = s'.MEM.MEM_PC) /\
+    ((REG_write fext s s').MEM.MEM_dataA = s'.MEM.MEM_dataA) /\
+    ((REG_write fext s s').MEM.MEM_dataB = s'.MEM.MEM_dataB) /\
+    ((REG_write fext s s').MEM.MEM_imm = s'.MEM.MEM_imm) /\
+    ((REG_write fext s s').MEM.MEM_ALU_res = s'.MEM.MEM_ALU_res) /\
+    ((REG_write fext s s').MEM.MEM_SHIFT_res = s'.MEM.MEM_SHIFT_res) /\
+    ((REG_write fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
+    ((REG_write fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
+    ((REG_write fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
 Proof
   rw [REG_write_def]
 QED
@@ -2143,7 +2018,6 @@ QED
 
 Theorem EX_pipeline_unchanged_EX_ctrl_items:
   !fext s s'.
-    ((EX_pipeline fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel) /\
     ((EX_pipeline fext s s').EX.EX_SHIFT_res = s'.EX.EX_SHIFT_res)
 Proof
   rw [EX_pipeline_def]
@@ -2162,6 +2036,21 @@ Theorem EX_pipeline_unchanged_EX_jump:
   !fext s s'.
     ((EX_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
     ((EX_pipeline fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [EX_pipeline_def]
+QED
+
+Theorem EX_pipeline_unchanged_MEM_pipeline_items:
+  !fext s s'.
+    ((EX_pipeline fext s s').MEM.MEM_PC = s'.MEM.MEM_PC) /\
+    ((EX_pipeline fext s s').MEM.MEM_dataA = s'.MEM.MEM_dataA) /\
+    ((EX_pipeline fext s s').MEM.MEM_dataB = s'.MEM.MEM_dataB) /\
+    ((EX_pipeline fext s s').MEM.MEM_imm = s'.MEM.MEM_imm) /\
+    ((EX_pipeline fext s s').MEM.MEM_ALU_res = s'.MEM.MEM_ALU_res) /\
+    ((EX_pipeline fext s s').MEM.MEM_SHIFT_res = s'.MEM.MEM_SHIFT_res) /\
+    ((EX_pipeline fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
+    ((EX_pipeline fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
+    ((EX_pipeline fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
 Proof
   rw [EX_pipeline_def]
 QED
@@ -2241,13 +2130,6 @@ Proof
   rw [MEM_pipeline_def]
 QED
 
-Theorem MEM_pipeline_unchanged_EX_ctrl_items:
-  !fext s s'.
-    (MEM_pipeline fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
-Proof
-  rw [MEM_pipeline_def]
-QED
-
 Theorem MEM_pipeline_unchanged_EX_ALU:
   !fext s s'.
     ((MEM_pipeline fext s s').EX.EX_ALU_res = s'.EX.EX_ALU_res) /\
@@ -2286,7 +2168,8 @@ Theorem WB_pipeline_unchanged_enable_flags:
   !fext s s'.
     ((WB_pipeline fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
     ((WB_pipeline fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
-    ((WB_pipeline fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+    ((WB_pipeline fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag) /\
+    ((WB_pipeline fext s s').MEM.MEM_NOP_flag <=> s'.MEM.MEM_NOP_flag)
 Proof
   rw [WB_pipeline_def]
 QED
@@ -2342,7 +2225,7 @@ QED
 
 Theorem WB_pipeline_unchanged_EX_ctrl_items:
   !fext s s'.
-    (WB_pipeline fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
+    ((WB_pipeline fext s s').EX.EX_imm_updated = s'.EX.EX_imm_updated)
 Proof
   rw [WB_pipeline_def]
 QED
@@ -2360,6 +2243,21 @@ Theorem WB_pipeline_unchanged_EX_jump:
   !fext s s'.
     ((WB_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
     ((WB_pipeline fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [WB_pipeline_def]
+QED
+
+Theorem WB_pipeline_unchanged_MEM_pipeline_items:
+  !fext s s'.
+    ((WB_pipeline fext s s').MEM.MEM_PC = s'.MEM.MEM_PC) /\
+    ((WB_pipeline fext s s').MEM.MEM_dataA = s'.MEM.MEM_dataA) /\
+    ((WB_pipeline fext s s').MEM.MEM_dataB = s'.MEM.MEM_dataB) /\
+    ((WB_pipeline fext s s').MEM.MEM_imm = s'.MEM.MEM_imm) /\
+    ((WB_pipeline fext s s').MEM.MEM_ALU_res = s'.MEM.MEM_ALU_res) /\
+    ((WB_pipeline fext s s').MEM.MEM_SHIFT_res = s'.MEM.MEM_SHIFT_res) /\
+    ((WB_pipeline fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
+    ((WB_pipeline fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
+    ((WB_pipeline fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
 Proof
   rw [WB_pipeline_def]
 QED
@@ -2385,7 +2283,8 @@ Theorem agp32_next_state_unchanged_enable_flags:
   !fext s s'.
     ((agp32_next_state fext s s').ID.ID_EX_write_enable <=> s'.ID.ID_EX_write_enable) /\
     ((agp32_next_state fext s s').EX.EX_NOP_flag <=> s'.EX.EX_NOP_flag) /\
-    ((agp32_next_state fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag)
+    ((agp32_next_state fext s s').MEM.MEM_state_flag <=> s'.MEM.MEM_state_flag) /\
+    ((agp32_next_state fext s s').MEM.MEM_NOP_flag <=> s'.MEM.MEM_NOP_flag)
 Proof
   rw [agp32_next_state_def] >>
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
@@ -2446,7 +2345,7 @@ QED
    
 Theorem agp32_next_state_unchanged_EX_ctrl_items:
   !fext s s'.
-    (agp32_next_state fext s s').EX.EX_PC_sel = s'.EX.EX_PC_sel
+    ((agp32_next_state fext s s').EX.EX_imm_updated = s'.EX.EX_imm_updated)
 Proof
   rw [agp32_next_state_def] >>
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
@@ -2466,6 +2365,22 @@ Theorem agp32_next_state_unchanged_EX_jump:
   !fext s s'.
     ((agp32_next_state fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
     ((agp32_next_state fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
+Theorem agp32_next_state_unchanged_MEM_pipeline_items:
+  !fext s s'.
+    ((agp32_next_state fext s s').MEM.MEM_PC = s'.MEM.MEM_PC) /\
+    ((agp32_next_state fext s s').MEM.MEM_dataA = s'.MEM.MEM_dataA) /\
+    ((agp32_next_state fext s s').MEM.MEM_dataB = s'.MEM.MEM_dataB) /\
+    ((agp32_next_state fext s s').MEM.MEM_imm = s'.MEM.MEM_imm) /\
+    ((agp32_next_state fext s s').MEM.MEM_ALU_res = s'.MEM.MEM_ALU_res) /\
+    ((agp32_next_state fext s s').MEM.MEM_SHIFT_res = s'.MEM.MEM_SHIFT_res) /\
+    ((agp32_next_state fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
+    ((agp32_next_state fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
+    ((agp32_next_state fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
 Proof
   rw [agp32_next_state_def] >>
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
@@ -2526,13 +2441,13 @@ Proof
   qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
   qpat_abbrev_tac `s' = procs _ (fext t) s s` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s0`,Abbr `s'`,
       Hazard_ctrl_unchanged_IF,WB_update_unchanged_IF,
       MEM_ctrl_update_unchanged_IF,IF_PC_input_update_unchanged_IF,
       EX_jump_sel_addr_update_unchanged_IF,EX_SHIFT_update_unchanged_IF,
       EX_ALU_update_unchanged_IF,EX_ALU_input_imm_update_unchanged_IF,
-      EX_ctrl_update_unchanged_IF,ID_data_check_update_unchanged_IF,
+      ID_data_check_update_unchanged_IF,
       ID_data_update_unchanged_IF,ID_imm_update_unchanged_IF,
       ID_opc_func_update_unchanged_IF,IF_instr_update_unchanged_IF] >>
   slist_update_state_tac >>
@@ -2547,7 +2462,7 @@ Theorem agp32_IF_PC_input_updated_by_IF_PC_input_update:
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute]
                (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 ID_data_update; ID_data_check_update;
                  EX_ALU_input_imm_update; EX_ALU_update;
                  EX_SHIFT_update; EX_jump_sel_addr_update]
                 (fext (SUC t)) s' s' ==>
@@ -2558,7 +2473,7 @@ Proof
   qpat_abbrev_tac `s = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,
       Hazard_ctrl_unchanged_IF,WB_update_unchanged_IF,MEM_ctrl_update_unchanged_IF]
 QED
 
@@ -2572,13 +2487,13 @@ Proof
   qpat_abbrev_tac `s = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s' = procs _ (fext t) s s` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
       Hazard_ctrl_unchanged_IF,WB_update_unchanged_IF,
       MEM_ctrl_update_unchanged_IF,IF_PC_input_update_unchanged_IF,
       EX_jump_sel_addr_update_unchanged_IF,EX_SHIFT_update_unchanged_IF,
       EX_ALU_update_unchanged_IF,EX_ALU_input_imm_update_unchanged_IF,
-      EX_ctrl_update_unchanged_IF,ID_data_check_update_unchanged_IF,
+      ID_data_check_update_unchanged_IF,
       ID_data_update_unchanged_IF,ID_imm_update_unchanged_IF,
       ID_opc_func_update_unchanged_IF,IF_instr_update_def]
 QED
@@ -2596,13 +2511,13 @@ Proof
   qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
   qpat_abbrev_tac `s' = procs _ (fext t) s s` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s0`,Abbr `s'`,
       Hazard_ctrl_unchanged_ID_pipeline_items,WB_update_unchanged_ID_pipeline_items,
       MEM_ctrl_update_unchanged_ID_pipeline_items,IF_PC_input_update_unchanged_ID_pipeline_items,
       EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
       EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
-      EX_ALU_input_imm_update_unchanged_ID_pipeline_items,EX_ctrl_update_unchanged_ID_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_ID_pipeline_items,
       ID_data_check_update_unchanged_ID_pipeline_items,ID_data_update_unchanged_ID_pipeline_items,
       ID_imm_update_unchanged_ID_pipeline_items,ID_opc_func_update_unchanged_ID_pipeline_items,
       IF_instr_update_unchanged_ID_pipeline_items] >>
@@ -2625,13 +2540,13 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,
       Hazard_ctrl_unchanged_ID_opc_func,WB_update_unchanged_ID_opc_func,
       MEM_ctrl_update_unchanged_ID_opc_func,IF_PC_input_update_unchanged_ID_opc_func,
       EX_jump_sel_addr_update_unchanged_ID_opc_func,EX_SHIFT_update_unchanged_ID_opc_func,
       EX_ALU_update_unchanged_ID_opc_func,EX_ALU_input_imm_update_def,
-      EX_ctrl_update_unchanged_ID_opc_func,ID_data_check_update_unchanged_ID_opc_func,
+      ID_data_check_update_unchanged_ID_opc_func,
       ID_data_update_unchanged_ID_opc_func,ID_imm_update_unchanged_ID_opc_func] >>
   rw [ID_opc_func_update_def]
 QED
@@ -2652,14 +2567,13 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
       EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
-      EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
-      ID_data_check_update_unchanged_ID_data_items] >>
+      EX_ALU_input_imm_update_unchanged_ID_data_items,ID_data_check_update_unchanged_ID_data_items] >>
   fs [ID_data_update_def]
 QED
 
@@ -2682,14 +2596,13 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
       EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
-      EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
-      ID_data_check_update_unchanged_ID_data_items] >>
+      EX_ALU_input_imm_update_unchanged_ID_data_items,ID_data_check_update_unchanged_ID_data_items] >>
   fs [ID_data_update_def]
 QED
 
@@ -2712,14 +2625,13 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
       EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
-      EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
-      ID_data_check_update_unchanged_ID_data_items] >>
+      EX_ALU_input_imm_update_unchanged_ID_data_items,ID_data_check_update_unchanged_ID_data_items] >>
   fs [ID_data_update_def]
 QED
 
@@ -2739,14 +2651,13 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
       EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
-      EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
-      ID_data_check_update_unchanged_ID_data_items] >>
+      EX_ALU_input_imm_update_unchanged_ID_data_items,ID_data_check_update_unchanged_ID_data_items] >>
   fs [ID_data_update_def]
 QED
 
@@ -2766,14 +2677,13 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
       EX_jump_sel_addr_update_unchanged_ID_data_items,
       EX_SHIFT_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_data_items,
-      EX_ALU_input_imm_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_ID_data_items,
-      ID_data_check_update_unchanged_ID_data_items] >>
+      EX_ALU_input_imm_update_unchanged_ID_data_items,ID_data_check_update_unchanged_ID_data_items] >>
   fs [ID_data_update_def]
 QED
 
@@ -2790,14 +2700,13 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_items,WB_update_unchanged_ID_data_items,
       MEM_ctrl_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_data_items,
       EX_jump_sel_addr_update_unchanged_ID_data_items,EX_SHIFT_update_unchanged_ID_data_items,
       EX_ALU_update_unchanged_ID_data_items,EX_ALU_input_imm_update_unchanged_ID_data_items,
-      EX_ctrl_update_unchanged_ID_data_items,ID_data_check_update_unchanged_ID_data_items,
-      ID_data_update_unchanged_ID_data_items]
+      ID_data_check_update_unchanged_ID_data_items,ID_data_update_unchanged_ID_data_items]
 QED
 
 (** data hazard checks are only updated the ID_data_check_update function **)
@@ -2822,14 +2731,13 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_data_check_items,WB_update_unchanged_ID_data_check_items,
       MEM_ctrl_update_unchanged_ID_data_check_items,IF_PC_input_update_unchanged_ID_data_check_items,
       EX_jump_sel_addr_update_unchanged_ID_data_check_items,
       EX_SHIFT_update_unchanged_ID_data_check_items,EX_ALU_update_unchanged_ID_data_check_items,
-      EX_ALU_input_imm_update_unchanged_ID_data_check_items,
-      EX_ctrl_update_unchanged_ID_data_check_items]
+      EX_ALU_input_imm_update_unchanged_ID_data_check_items]
 QED
 
 (** EX_PC/imm/addrW are only changed by the EX_pipeline function **)
@@ -2845,14 +2753,14 @@ Proof
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
       Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
       MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
       EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
       EX_SHIFT_update_unchanged_EX_pipeline_items,EX_ALU_update_unchanged_EX_pipeline_items,
       EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
-      EX_ctrl_update_unchanged_EX_pipeline_items,ID_data_check_update_unchanged_EX_pipeline_items,
+      ID_data_check_update_unchanged_EX_pipeline_items,
       ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
       ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items] >>
   slist_update_state_tac >>
@@ -2875,14 +2783,14 @@ Proof
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
       Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
       MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
       EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
       EX_SHIFT_update_unchanged_EX_pipeline_items,EX_ALU_update_unchanged_EX_pipeline_items,
       EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
-      EX_ctrl_update_unchanged_EX_pipeline_items,ID_data_check_update_unchanged_EX_pipeline_items,
+      ID_data_check_update_unchanged_EX_pipeline_items,
       ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
       ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items] >>
   slist_update_state_tac >>
@@ -2903,14 +2811,14 @@ Proof
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
       Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
       MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
       EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
       EX_SHIFT_update_unchanged_EX_pipeline_items,EX_ALU_update_unchanged_EX_pipeline_items,
       EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
-      EX_ctrl_update_unchanged_EX_pipeline_items,ID_data_check_update_unchanged_EX_pipeline_items,
+      ID_data_check_update_unchanged_EX_pipeline_items,
       ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
       ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items] >>
   slist_update_state_tac >>
@@ -2932,14 +2840,14 @@ Proof
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
       Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
       MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
       EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
       EX_SHIFT_update_unchanged_EX_pipeline_items,EX_ALU_update_unchanged_EX_pipeline_items,
       EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
-      EX_ctrl_update_unchanged_EX_pipeline_items,ID_data_check_update_unchanged_EX_pipeline_items,
+      ID_data_check_update_unchanged_EX_pipeline_items,
       ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
       ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items] >>
   slist_update_state_tac >>
@@ -2949,36 +2857,14 @@ Proof
       Abbr `ss5`,REG_write_unchanged_EX_pipeline_items]
 QED
 
-(** EX_PC_sel is only changed by the EX_ctrl_update function **)
-Theorem agp32_EX_PC_sel_updated_by_EX_ctrl_update:
-  !fext fbits t s s' s''.
-    s = agp32 fext fbits t ==>
-    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
-                REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
-    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update] (fext (SUC t)) s' s' ==>
-    (agp32 fext fbits (SUC t)).EX.EX_PC_sel = (EX_ctrl_update (fext (SUC t)) s' s'').EX.EX_PC_sel
-Proof
-  rw [agp32_def,mk_module_def,mk_circuit_def] >>
-  qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
-  qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
-  clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,
-      Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
-      Hazard_ctrl_unchanged_EX_ctrl_items,WB_update_unchanged_EX_ctrl_items,
-      MEM_ctrl_update_unchanged_EX_ctrl_items,IF_PC_input_update_unchanged_EX_ctrl_items,
-      EX_jump_sel_addr_update_unchanged_EX_ctrl_items,EX_SHIFT_update_unchanged_EX_ctrl_items,
-      EX_ALU_update_unchanged_EX_ctrl_items,EX_ALU_input_imm_update_unchanged_EX_ctrl_items]
-QED
-
 (** EX_ALU_input1/2 are only changed by the EX_ALU_input_imm_update function **)
 Theorem agp32_EX_ALU_input_updated_by_EX_ALU_input_imm_update:
   !fext fbits t s s' s''.
     s = agp32 fext fbits t ==>
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
-    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update; ID_data_update;
-                 ID_data_check_update; EX_ctrl_update] (fext (SUC t)) s' s' ==>
+    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
+                 ID_data_update; ID_data_check_update] (fext (SUC t)) s' s' ==>
     ((agp32 fext fbits (SUC t)).EX.EX_ALU_input1 =
      (EX_ALU_input_imm_update (fext (SUC t)) s' s'').EX.EX_ALU_input1) /\
     ((agp32 fext fbits (SUC t)).EX.EX_ALU_input2 =
@@ -2988,7 +2874,7 @@ Proof
   qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Hazard_ctrl_unchanged_EX_ALU,WB_update_unchanged_EX_ALU,
       MEM_ctrl_update_unchanged_EX_ALU,IF_PC_input_update_unchanged_EX_ALU,
       EX_jump_sel_addr_update_unchanged_EX_ALU,EX_SHIFT_update_unchanged_EX_ALU,
@@ -3001,8 +2887,8 @@ Theorem agp32_EX_imm_updated_updated_by_EX_ALU_input_imm_update:
     s = agp32 fext fbits t ==>
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
-    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update; ID_data_update;
-                 ID_data_check_update; EX_ctrl_update] (fext (SUC t)) s' s' ==>
+    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
+                 ID_data_update; ID_data_check_update] (fext (SUC t)) s' s' ==>
     (agp32 fext fbits (SUC t)).EX.EX_imm_updated =
     (EX_ALU_input_imm_update (fext (SUC t)) s' s'').EX.EX_imm_updated
 Proof
@@ -3010,7 +2896,7 @@ Proof
   qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Hazard_ctrl_unchanged_EX_ctrl_items,WB_update_unchanged_EX_ctrl_items,
       MEM_ctrl_update_unchanged_EX_ctrl_items,IF_PC_input_update_unchanged_EX_ctrl_items,
       EX_jump_sel_addr_update_unchanged_EX_ctrl_items,EX_SHIFT_update_unchanged_EX_ctrl_items,
@@ -3024,7 +2910,7 @@ Theorem agp32_EX_ALU_items_updated_by_EX_ALU_update:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 ID_data_update; ID_data_check_update;
                  EX_ALU_input_imm_update] (fext (SUC t)) s' s' ==>
     ((agp32 fext fbits (SUC t)).EX.EX_carry_flag =
      (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_carry_flag) /\
@@ -3036,7 +2922,7 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
       Hazard_ctrl_unchanged_EX_ALU,WB_update_unchanged_EX_ALU,
       MEM_ctrl_update_unchanged_EX_ALU,IF_PC_input_update_unchanged_EX_ALU,
       EX_jump_sel_addr_update_unchanged_EX_ALU,EX_SHIFT_update_unchanged_EX_ALU]
@@ -3049,7 +2935,7 @@ Theorem agp32_EX_SHIFT_res_updated_by_EX_SHIFT_update:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 ID_data_update; ID_data_check_update;
                  EX_ALU_input_imm_update; EX_ALU_update] (fext (SUC t)) s' s' ==>
     (agp32 fext fbits (SUC t)).EX.EX_SHIFT_res =
     (EX_SHIFT_update (fext (SUC t)) s' s'').EX.EX_SHIFT_res
@@ -3058,7 +2944,7 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
       MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
       EX_jump_sel_addr_update_unchanged_EX_pipeline_items]
@@ -3071,7 +2957,7 @@ Theorem agp32_EX_jump_items_updated_by_EX_jump_sel_addr_update:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 ID_data_update; ID_data_check_update;
                  EX_ALU_input_imm_update; EX_ALU_update; EX_SHIFT_update] (fext (SUC t)) s' s' ==>
     ((agp32 fext fbits (SUC t)).EX.EX_jump_sel =
      (EX_jump_sel_addr_update (fext (SUC t)) s' s'').EX.EX_jump_sel) /\
@@ -3082,11 +2968,217 @@ Proof
   qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
       Hazard_ctrl_unchanged_EX_jump,WB_update_unchanged_EX_jump,
       MEM_ctrl_update_unchanged_EX_jump,IF_PC_input_update_unchanged_EX_jump]
 QED
 
+(** MEM_PC/imm/addrW are only changed by the MEM_pipeline function **)
+Theorem agp32_MEM_PC_imm_addrW_updated_by_MEM_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline] (fext t) s s ==>
+    ((agp32 fext fbits (SUC t)).MEM.MEM_PC = (MEM_pipeline (fext t) s s').MEM.MEM_PC) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_imm = (MEM_pipeline (fext t) s s').MEM.MEM_imm) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_addrW = (MEM_pipeline (fext t) s s').MEM.MEM_addrW)
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_pipeline_items,
+      MEM_ctrl_update_unchanged_MEM_pipeline_items,IF_PC_input_update_unchanged_MEM_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+      EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+      ID_data_check_update_unchanged_MEM_pipeline_items,
+      ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+      ID_opc_func_update_unchanged_MEM_pipeline_items,IF_instr_update_unchanged_MEM_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_MEM_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_MEM_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_MEM_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_MEM_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_MEM_pipeline_items]
+QED
+
+(** MEM_dataA/B are only changed by the MEM_pipeline function **)
+Theorem agp32_MEM_data_updated_by_MEM_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline] (fext t) s s ==>
+    ((agp32 fext fbits (SUC t)).MEM.MEM_dataA = (MEM_pipeline (fext t) s s').MEM.MEM_dataA) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_dataB = (MEM_pipeline (fext t) s s').MEM.MEM_dataB)
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_pipeline_items,
+      MEM_ctrl_update_unchanged_MEM_pipeline_items,IF_PC_input_update_unchanged_MEM_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+      EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+      ID_data_check_update_unchanged_MEM_pipeline_items,
+      ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+      ID_opc_func_update_unchanged_MEM_pipeline_items,IF_instr_update_unchanged_MEM_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_MEM_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_MEM_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_MEM_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_MEM_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_MEM_pipeline_items]
+QED
+
+(** MEM_opc is only changed by the MEM_pipeline function **)
+Theorem agp32_MEM_opc_updated_by_MEM_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).MEM.MEM_opc = (MEM_pipeline (fext t) s s').MEM.MEM_opc
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_pipeline_items,
+      MEM_ctrl_update_unchanged_MEM_pipeline_items,IF_PC_input_update_unchanged_MEM_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+      EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+      ID_data_check_update_unchanged_MEM_pipeline_items,
+      ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+      ID_opc_func_update_unchanged_MEM_pipeline_items,IF_instr_update_unchanged_MEM_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_MEM_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_MEM_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_MEM_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_MEM_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_MEM_pipeline_items]
+QED
+
+(** MEM_ALU_res is only changed by the MEM_pipeline function **)
+Theorem agp32_MEM_ALU_res_updated_by_MEM_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).MEM.MEM_ALU_res = (MEM_pipeline (fext t) s s').MEM.MEM_ALU_res
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_pipeline_items,
+      MEM_ctrl_update_unchanged_MEM_pipeline_items,IF_PC_input_update_unchanged_MEM_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+      EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+      ID_data_check_update_unchanged_MEM_pipeline_items,
+      ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+      ID_opc_func_update_unchanged_MEM_pipeline_items,IF_instr_update_unchanged_MEM_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_MEM_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_MEM_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_MEM_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_MEM_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_MEM_pipeline_items]
+QED
+
+(** MEM_SHIFT_res is only changed by the MEM_pipeline function **)
+Theorem agp32_MEM_SHIFT_res_updated_by_MEM_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).MEM.MEM_SHIFT_res = (MEM_pipeline (fext t) s s').MEM.MEM_SHIFT_res
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_pipeline_items,
+      MEM_ctrl_update_unchanged_MEM_pipeline_items,IF_PC_input_update_unchanged_MEM_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+      EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+      ID_data_check_update_unchanged_MEM_pipeline_items,
+      ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+      ID_opc_func_update_unchanged_MEM_pipeline_items,IF_instr_update_unchanged_MEM_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_MEM_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_MEM_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_MEM_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_MEM_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_MEM_pipeline_items]
+QED
+
+(** MEM_write_reg is only changed by the MEM_pipeline function **)
+Theorem agp32_MEM_write_reg_updated_by_MEM_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).MEM.MEM_write_reg = (MEM_pipeline (fext t) s s').MEM.MEM_write_reg
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_pipeline_items,
+      MEM_ctrl_update_unchanged_MEM_pipeline_items,IF_PC_input_update_unchanged_MEM_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+      EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+      ID_data_check_update_unchanged_MEM_pipeline_items,
+      ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+      ID_opc_func_update_unchanged_MEM_pipeline_items,IF_instr_update_unchanged_MEM_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_MEM_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_MEM_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_MEM_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_MEM_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_MEM_pipeline_items]
+QED
+
+(** MEM stage request singals are only changed by the MEM_ctrl_update function **)
+Theorem agp32_MEM_ctrl_items_updated_by_MEM_ctrl_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
+    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
+                 ID_data_update; ID_data_check_update;
+                 EX_ALU_input_imm_update; EX_ALU_update; EX_SHIFT_update;
+                 EX_jump_sel_addr_update; IF_PC_input_update] (fext (SUC t)) s' s' ==>
+    ((agp32 fext fbits (SUC t)).MEM.MEM_read_mem =
+     (MEM_ctrl_update (fext (SUC t)) s' s'').MEM.MEM_read_mem) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_write_mem =
+     (MEM_ctrl_update (fext (SUC t)) s' s'').MEM.MEM_write_mem) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_write_mem_byte =
+     (MEM_ctrl_update (fext (SUC t)) s' s'').MEM.MEM_write_mem_byte) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_isAcc =
+     (MEM_ctrl_update (fext (SUC t)) s' s'').MEM.MEM_isAcc) /\
+    ((agp32 fext fbits (SUC t)).MEM.MEM_isInterrupt =
+     (MEM_ctrl_update (fext (SUC t)) s' s'').MEM.MEM_isInterrupt)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,
+      Hazard_ctrl_unchanged_MEM_ctrl_items,WB_update_unchanged_MEM_ctrl_items]
+QED
 
 (** command and state are updated by the agp32_next_state function **)
 Theorem agp32_command_state_updated_by_agp32_next_state:
@@ -3099,13 +3191,13 @@ Proof
   qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''`,
       Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
       MEM_ctrl_update_unchanged_state_items,IF_PC_input_update_unchanged_state_items,
       EX_jump_sel_addr_update_unchanged_state_items,EX_SHIFT_update_unchanged_state_items,
       EX_ALU_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_state_items,
-      EX_ctrl_update_unchanged_state_items,ID_data_check_update_unchanged_state_items,
+      ID_data_check_update_unchanged_state_items,
       ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
       ID_opc_func_update_unchanged_state_items,IF_instr_update_unchanged_state_items] >>
   slist_update_state_tac >>
@@ -3127,13 +3219,13 @@ Proof
   qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''`,
       Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
       MEM_ctrl_update_unchanged_state_items,IF_PC_input_update_unchanged_state_items,
       EX_jump_sel_addr_update_unchanged_state_items,EX_SHIFT_update_unchanged_state_items,
       EX_ALU_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_state_items,
-      EX_ctrl_update_unchanged_state_items,ID_data_check_update_unchanged_state_items,
+      ID_data_check_update_unchanged_state_items,
       ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
       ID_opc_func_update_unchanged_state_items,IF_instr_update_unchanged_state_items] >>
   slist_update_state_tac >>
@@ -3150,7 +3242,7 @@ Theorem agp32_same_EX_opc_func_until_ALU_update:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 ID_data_update; ID_data_check_update;
                  EX_ALU_input_imm_update] (fext (SUC t)) s' s' ==>
     (s''.EX.EX_opc = (agp32 fext fbits (SUC t)).EX.EX_opc) /\
     (s''.EX.EX_func = (agp32 fext fbits (SUC t)).EX.EX_func)
@@ -3161,9 +3253,8 @@ Proof
    ((agp32 fext fbits (SUC t)).EX.EX_func = (EX_pipeline (fext t) s s0).EX.EX_func)`
     by fs [agp32_EX_opc_func_updated_by_EX_pipeline,Abbr `s0`] >>
   clist_update_state_before_ALU_tac >>
-  fs [Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'`,
+  fs [Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'`,
       EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
-      EX_ctrl_update_unchanged_EX_pipeline_items,
       ID_data_check_update_unchanged_EX_pipeline_items,
       ID_data_update_unchanged_EX_pipeline_items,
       ID_imm_update_unchanged_EX_pipeline_items,
@@ -3184,7 +3275,7 @@ Theorem agp32_same_EX_ALU_input_until_ALU_update:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 ID_data_update; ID_data_check_update;
                  EX_ALU_input_imm_update] (fext (SUC t)) s' s' ==>
     (s''.EX.EX_ALU_input1 = (agp32 fext fbits (SUC t)).EX.EX_ALU_input1) /\
     (s''.EX.EX_ALU_input2 = (agp32 fext fbits (SUC t)).EX.EX_ALU_input2)
@@ -3195,9 +3286,9 @@ Proof
   qpat_abbrev_tac `s0 = procs _ (fext t) s''' s'''` >>
   Q.ABBREV_TAC `s1 = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;
                             ID_data_update;ID_data_check_update;
-                            EX_ctrl_update;EX_ALU_input_imm_update] (fext (SUC t)) s0 s0` >>
+                            EX_ALU_input_imm_update] (fext (SUC t)) s0 s0` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
       Hazard_ctrl_unchanged_EX_ALU,WB_update_unchanged_EX_ALU,
       MEM_ctrl_update_unchanged_EX_ALU,IF_PC_input_update_unchanged_EX_ALU,
       EX_jump_sel_addr_update_unchanged_EX_ALU,EX_SHIFT_update_unchanged_EX_ALU,
@@ -3210,7 +3301,7 @@ Theorem agp32_same_items_until_EX_ALU_update:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 ID_data_update; ID_data_check_update;
                  EX_ALU_input_imm_update] (fext (SUC t)) s' s' ==>
     (s''.EX.EX_carry_flag = s.EX.EX_carry_flag) /\
     (s''.EX.EX_overflow_flag = s.EX.EX_overflow_flag) /\
@@ -3218,9 +3309,8 @@ Theorem agp32_same_items_until_EX_ALU_update:
     (s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable)
 Proof
   rw [] >> clist_update_state_before_ALU_tac >>
-  fs [Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'`,
+  fs [Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'`,
       EX_ALU_input_imm_update_unchanged_EX_ALU,EX_ALU_input_imm_update_unchanged_enable_flags,
-      EX_ctrl_update_unchanged_EX_ALU,EX_ctrl_update_unchanged_enable_flags,
       ID_data_check_update_unchanged_EX_ALU,ID_data_check_update_unchanged_enable_flags,
       ID_data_update_unchanged_EX_ALU,ID_data_update_unchanged_enable_flags,
       ID_imm_update_unchanged_EX_ALU,ID_imm_update_unchanged_enable_flags,
@@ -3243,7 +3333,7 @@ Theorem agp32_same_items_until_EX_SHIFT_update:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 ID_data_update; ID_data_check_update;
                  EX_ALU_input_imm_update; EX_ALU_update] (fext (SUC t)) s' s' ==>
     (s''.EX.EX_SHIFT_res = s.EX.EX_SHIFT_res) /\
     (s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable)
@@ -3258,14 +3348,12 @@ Proof
   qpat_abbrev_tac `s3 = ID_imm_update _ _ _` >>
   qpat_abbrev_tac `s4 = ID_data_update _ _ _` >>
   qpat_abbrev_tac `s5 = ID_data_check_update _ _ _` >>
-  qpat_abbrev_tac `s6 = EX_ctrl_update _ _ _` >>
-  qpat_abbrev_tac `s7 = EX_ALU_input_imm_update _ _ _` >>
-  qpat_abbrev_tac `s8 = EX_ALU_update _ _ _` >>
-  fs [Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''''`,
+  qpat_abbrev_tac `s6 = EX_ALU_input_imm_update _ _ _` >>
+  qpat_abbrev_tac `s7 = EX_ALU_update _ _ _` >>
+  fs [Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''''`,
       EX_ALU_update_unchanged_EX_pipeline_items,EX_ALU_update_unchanged_enable_flags,
       EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
       EX_ALU_input_imm_update_unchanged_enable_flags,
-      EX_ctrl_update_unchanged_EX_pipeline_items,EX_ctrl_update_unchanged_enable_flags,
       ID_data_check_update_unchanged_EX_pipeline_items,ID_data_check_update_unchanged_enable_flags,
       ID_data_update_unchanged_EX_pipeline_items,ID_data_update_unchanged_enable_flags,
       ID_imm_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_enable_flags,
@@ -3288,7 +3376,7 @@ Theorem agp32_same_EX_func_after_EX_ALU_update:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
-                 ID_data_update; ID_data_check_update; EX_ctrl_update;
+                 ID_data_update; ID_data_check_update;
                  EX_ALU_input_imm_update; EX_ALU_update] (fext (SUC t)) s' s' ==>
     ((agp32 fext fbits (SUC t)).EX.EX_func = s''.EX.EX_func)
 Proof
@@ -3296,10 +3384,37 @@ Proof
   qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
       Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
       MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
       EX_jump_sel_addr_update_unchanged_EX_pipeline_items,EX_SHIFT_update_unchanged_EX_pipeline_items]
+QED
+
+Theorem agp32_same_EX_items_after_EX_SHIFT_update:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
+    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
+                 ID_data_update; ID_data_check_update;
+                 EX_ALU_input_imm_update; EX_ALU_update; EX_SHIFT_update] (fext (SUC t)) s' s' ==>
+    ((agp32 fext fbits (SUC t)).EX.EX_ALU_res = s''.EX.EX_ALU_res) /\
+    ((agp32 fext fbits (SUC t)).EX.EX_dataW = s''.EX.EX_dataW)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s''' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'''' = procs _ (fext t) s''' s'''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+      Hazard_ctrl_unchanged_EX_ALU,Hazard_ctrl_unchanged_EX_ctrl_items,
+      Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_ALU,
+      WB_update_unchanged_EX_ctrl_items,WB_update_unchanged_EX_pipeline_items,
+      MEM_ctrl_update_unchanged_EX_ALU,MEM_ctrl_update_unchanged_EX_ctrl_items,
+      MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_ALU,
+      IF_PC_input_update_unchanged_EX_ctrl_items,IF_PC_input_update_unchanged_EX_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_EX_ALU,EX_jump_sel_addr_update_unchanged_EX_ctrl_items,
+      EX_jump_sel_addr_update_unchanged_EX_pipeline_items]
 QED
 
 Theorem agp32_same_EX_jump_items_after_EX_jump_update:
@@ -3308,7 +3423,7 @@ Theorem agp32_same_EX_jump_items_after_EX_jump_update:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update; ID_data_update;
-                 ID_data_check_update; EX_ctrl_update; EX_ALU_input_imm_update;
+                 ID_data_check_update; EX_ALU_input_imm_update;
                  EX_ALU_update; EX_SHIFT_update; EX_jump_sel_addr_update] (fext (SUC t)) s' s' ==>
     ((agp32 fext fbits (SUC t)).EX.EX_jump_sel <=> s''.EX.EX_jump_sel) /\
     ((agp32 fext fbits (SUC t)).EX.EX_jump_addr = s''.EX.EX_jump_addr)
@@ -3317,45 +3432,9 @@ Proof
   qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
       Hazard_ctrl_unchanged_EX_jump,WB_update_unchanged_EX_jump,
       MEM_ctrl_update_unchanged_EX_jump,IF_PC_input_update_unchanged_EX_jump]
-QED
-
-Theorem agp32_same_items_before_EX_ctrl_update:
-  !fext fbits t s s' s''.
-    s = agp32 fext fbits t ==>
-    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
-                REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
-    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update; 
-                 ID_data_update; ID_data_check_update] (fext (SUC t)) s' s' ==>
-    (s''.ID.ID_EX_write_enable <=> s.ID.ID_EX_write_enable) /\
-    (s''.EX.EX_PC_sel = s.EX.EX_PC_sel)
-Proof
-  rw [agp32_def,mk_module_def,mk_circuit_def] >>
-  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
-  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
-  fs [procs_def] >>
-  qpat_abbrev_tac `s1 = IF_instr_update _ _ _` >>
-  qpat_abbrev_tac `s2 = ID_opc_func_update _ _ _` >>
-  qpat_abbrev_tac `s3 = ID_imm_update _ _ _` >>
-  qpat_abbrev_tac `s4 = ID_data_update _ _ _` >>
-  qpat_abbrev_tac `s5 = ID_data_check_update _ _ _` >>
-  fs [Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''`,
-      ID_data_check_update_unchanged_enable_flags,ID_data_check_update_unchanged_EX_ctrl_items,
-      ID_data_update_unchanged_enable_flags,ID_data_update_unchanged_EX_ctrl_items,
-      ID_imm_update_unchanged_enable_flags,ID_imm_update_unchanged_EX_ctrl_items,
-      ID_opc_func_update_unchanged_enable_flags,ID_opc_func_update_unchanged_EX_ctrl_items,
-      IF_instr_update_unchanged_enable_flags,IF_instr_update_unchanged_EX_ctrl_items] >>
-  slist_update_state_tac >>
-  fs [Abbr `ss8`,Acc_compute_unchanged_EX_ctrl_items,Acc_compute_unchanged_enable_flags,
-      Abbr `ss7`,IF_PC_update_unchanged_EX_ctrl_items,IF_PC_update_unchanged_enable_flags,
-      Abbr `ss6`,ID_pipeline_unchanged_EX_ctrl_items,ID_pipeline_unchanged_enable_flags,
-      Abbr `ss5`,REG_write_unchanged_EX_ctrl_items,REG_write_unchanged_enable_flags,
-      Abbr `ss4`,EX_pipeline_unchanged_EX_ctrl_items,EX_pipeline_unchanged_enable_flags,
-      Abbr `ss3`,MEM_pipeline_unchanged_EX_ctrl_items,MEM_pipeline_unchanged_enable_flags,
-      Abbr `ss2`,WB_pipeline_unchanged_EX_ctrl_items,WB_pipeline_unchanged_enable_flags,
-      Abbr `ss1`,agp32_next_state_unchanged_EX_ctrl_items,agp32_next_state_unchanged_enable_flags]
 QED
 
 Theorem agp32_same_items_until_MEM_pipeline:
@@ -3492,6 +3571,49 @@ Proof
       Abbr `ss1`,agp32_next_state_unchanged_EX_pipeline_items,agp32_next_state_unchanged_enable_flags]
 QED
 
+Theorem agp32_same_items_before_MEM_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline] (fext t) s s ==>
+    (s'.MEM.MEM_state_flag <=> s.MEM.MEM_state_flag) /\
+    (s'.MEM.MEM_NOP_flag <=> s.MEM.MEM_NOP_flag) /\
+    (s'.MEM.MEM_PC = s.MEM.MEM_PC) /\
+    (s'.MEM.MEM_addrW = s.MEM.MEM_addrW) /\
+    (s'.MEM.MEM_dataA = s.MEM.MEM_dataA) /\
+    (s'.MEM.MEM_dataB = s.MEM.MEM_dataB) /\
+    (s'.MEM.MEM_opc = s.MEM.MEM_opc) /\
+    (s'.MEM.MEM_imm = s.MEM.MEM_imm) /\
+    (s'.MEM.MEM_ALU_res = s.MEM.MEM_ALU_res) /\
+    (s'.MEM.MEM_SHIFT_res = s.MEM.MEM_SHIFT_res) /\
+    (s'.MEM.MEM_write_reg = s.MEM.MEM_write_reg)
+Proof
+  rw [procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  qpat_abbrev_tac `ss2 = WB_pipeline _ _ _` >>
+  fs [Abbr `ss2`,WB_pipeline_unchanged_enable_flags,
+      WB_pipeline_unchanged_MEM_pipeline_items,
+      Abbr `ss1`,agp32_next_state_unchanged_enable_flags,
+      agp32_next_state_unchanged_MEM_pipeline_items]
+QED
+
+Theorem agp32_same_EX_items_before_MEM_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline] (fext t) s s ==>
+    (s'.EX.EX_imm_updated = s.EX.EX_imm_updated) /\
+    (s'.EX.EX_ALU_res = s.EX.EX_ALU_res) /\
+    (s'.EX.EX_SHIFT_res = s.EX.EX_SHIFT_res) /\
+    (s'.EX.EX_opc = s.EX.EX_opc)
+Proof
+  rw [procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  qpat_abbrev_tac `ss2 = WB_pipeline _ _ _` >>
+  fs [Abbr `ss2`,WB_pipeline_unchanged_EX_pipeline_items,
+      WB_pipeline_unchanged_EX_ALU,WB_pipeline_unchanged_EX_ctrl_items,
+      Abbr `ss1`,agp32_next_state_unchanged_EX_pipeline_items,
+      agp32_next_state_unchanged_EX_ALU,agp32_next_state_unchanged_EX_ctrl_items]
+QED
+
 
 (* states exist to update specific items *)
 (** IF_instr **)
@@ -3502,15 +3624,14 @@ Proof
   rw [] >> Cases_on `t` >-
    (rw [agp32_def,mk_module_def,mk_circuit_def] >>
     clist_update_state_tac >>
-    fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+    fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
         Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
-      Hazard_ctrl_unchanged_IF,WB_update_unchanged_IF,
-      MEM_ctrl_update_unchanged_IF,IF_PC_input_update_unchanged_IF,
-      EX_jump_sel_addr_update_unchanged_IF,EX_SHIFT_update_unchanged_IF,
-      EX_ALU_update_unchanged_IF,EX_ALU_input_imm_update_unchanged_IF,
-      EX_ctrl_update_unchanged_IF,ID_data_check_update_unchanged_IF,
-      ID_data_update_unchanged_IF,ID_imm_update_unchanged_IF,
-      ID_opc_func_update_unchanged_IF] >>
+        Hazard_ctrl_unchanged_IF,WB_update_unchanged_IF,
+        MEM_ctrl_update_unchanged_IF,IF_PC_input_update_unchanged_IF,
+        EX_jump_sel_addr_update_unchanged_IF,EX_SHIFT_update_unchanged_IF,
+        EX_ALU_update_unchanged_IF,EX_ALU_input_imm_update_unchanged_IF,
+        ID_data_check_update_unchanged_IF,ID_data_update_unchanged_IF,
+        ID_imm_update_unchanged_IF,ID_opc_func_update_unchanged_IF] >>
     METIS_TAC []) >>
   rw [agp32_IF_instr_updated_by_IF_instr_update]
 QED
@@ -3525,25 +3646,25 @@ Proof
   rw [] >> Cases_on `t` >>
   rw [agp32_def,mk_module_def,mk_circuit_def] >-
    (clist_update_state_tac >>
-    fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+    fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
         Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,
         Hazard_ctrl_unchanged_ID_opc_func,WB_update_unchanged_ID_opc_func,
         MEM_ctrl_update_unchanged_ID_opc_func,IF_PC_input_update_unchanged_ID_opc_func,
         EX_jump_sel_addr_update_unchanged_ID_opc_func,EX_SHIFT_update_unchanged_ID_opc_func,
         EX_ALU_update_unchanged_ID_opc_func,EX_ALU_input_imm_update_unchanged_ID_opc_func,
-        EX_ctrl_update_unchanged_ID_opc_func,ID_data_check_update_unchanged_ID_opc_func,
+        ID_data_check_update_unchanged_ID_opc_func,
         ID_data_update_unchanged_ID_opc_func,ID_imm_update_unchanged_ID_opc_func] >>
     METIS_TAC []) >>
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
       Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,
       Hazard_ctrl_unchanged_ID_opc_func,WB_update_unchanged_ID_opc_func,
       MEM_ctrl_update_unchanged_ID_opc_func,IF_PC_input_update_unchanged_ID_opc_func,
       EX_jump_sel_addr_update_unchanged_ID_opc_func,EX_SHIFT_update_unchanged_ID_opc_func,
       EX_ALU_update_unchanged_ID_opc_func,EX_ALU_input_imm_update_unchanged_ID_opc_func,
-      EX_ctrl_update_unchanged_ID_opc_func,ID_data_check_update_unchanged_ID_opc_func,
+      ID_data_check_update_unchanged_ID_opc_func,
       ID_data_update_unchanged_ID_opc_func,ID_imm_update_unchanged_ID_opc_func] >>
   METIS_TAC []
 QED
@@ -3588,24 +3709,24 @@ Proof
   rpt gen_tac >> Cases_on `t` >>
   fs [agp32_def,mk_module_def,mk_circuit_def] >-
    (clist_update_state_tac >>
-    subgoal `s14.ID.ID_opc = (ID_opc_func_update (fext 0)  (agp32_init fbits) s1).ID.ID_opc /\
-    s14.ID.ID_func = (ID_opc_func_update (fext 0)  (agp32_init fbits) s1).ID.ID_func` >-
-     (fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+    subgoal `s13.ID.ID_opc = (ID_opc_func_update (fext 0)  (agp32_init fbits) s1).ID.ID_opc /\
+    s13.ID.ID_func = (ID_opc_func_update (fext 0)  (agp32_init fbits) s1).ID.ID_func` >-
+     (fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
           Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,
           Hazard_ctrl_unchanged_ID_opc_func,WB_update_unchanged_ID_opc_func,
           MEM_ctrl_update_unchanged_ID_opc_func,IF_PC_input_update_unchanged_ID_opc_func,
           EX_jump_sel_addr_update_unchanged_ID_opc_func,EX_SHIFT_update_unchanged_ID_opc_func,
           EX_ALU_update_unchanged_ID_opc_func,EX_ALU_input_imm_update_unchanged_ID_opc_func,
-          EX_ctrl_update_unchanged_ID_opc_func,ID_data_check_update_unchanged_ID_opc_func,
+          ID_data_check_update_unchanged_ID_opc_func,
           ID_data_update_unchanged_ID_opc_func,ID_imm_update_unchanged_ID_opc_func]) >>
-    subgoal `s1.ID.ID_instr = s14.ID.ID_instr` >-
-     (fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+    subgoal `s1.ID.ID_instr = s13.ID.ID_instr` >-
+     (fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
           Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
           Hazard_ctrl_unchanged_ID_pipeline_items,WB_update_unchanged_ID_pipeline_items,
           MEM_ctrl_update_unchanged_ID_pipeline_items,IF_PC_input_update_unchanged_ID_pipeline_items,
           EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
           EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
-          EX_ALU_input_imm_update_unchanged_ID_pipeline_items,EX_ctrl_update_unchanged_ID_pipeline_items,
+          EX_ALU_input_imm_update_unchanged_ID_pipeline_items,
           ID_data_check_update_unchanged_ID_pipeline_items,ID_data_update_unchanged_ID_pipeline_items,
           ID_imm_update_unchanged_ID_pipeline_items,ID_opc_func_update_unchanged_ID_pipeline_items,
           IF_instr_update_unchanged_ID_pipeline_items]) >>
@@ -3613,24 +3734,24 @@ Proof
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  subgoal `s14.ID.ID_opc = (ID_opc_func_update (fext (SUC n)) s''' s1).ID.ID_opc /\
-  s14.ID.ID_func = (ID_opc_func_update (fext (SUC n)) s''' s1).ID.ID_func` >-
-   (fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+  subgoal `s13.ID.ID_opc = (ID_opc_func_update (fext (SUC n)) s''' s1).ID.ID_opc /\
+  s13.ID.ID_func = (ID_opc_func_update (fext (SUC n)) s''' s1).ID.ID_func` >-
+   (fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
         Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,
         Hazard_ctrl_unchanged_ID_opc_func,WB_update_unchanged_ID_opc_func,
         MEM_ctrl_update_unchanged_ID_opc_func,IF_PC_input_update_unchanged_ID_opc_func,
         EX_jump_sel_addr_update_unchanged_ID_opc_func,EX_SHIFT_update_unchanged_ID_opc_func,
         EX_ALU_update_unchanged_ID_opc_func,EX_ALU_input_imm_update_unchanged_ID_opc_func,
-        EX_ctrl_update_unchanged_ID_opc_func,ID_data_check_update_unchanged_ID_opc_func,
+        ID_data_check_update_unchanged_ID_opc_func,
         ID_data_update_unchanged_ID_opc_func,ID_imm_update_unchanged_ID_opc_func]) >>
-  subgoal `s1.ID.ID_instr = s14.ID.ID_instr`  >-
-   (fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  subgoal `s1.ID.ID_instr = s13.ID.ID_instr`  >-
+   (fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
         Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
         Hazard_ctrl_unchanged_ID_pipeline_items,WB_update_unchanged_ID_pipeline_items,
         MEM_ctrl_update_unchanged_ID_pipeline_items,IF_PC_input_update_unchanged_ID_pipeline_items,
         EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
         EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
-        EX_ALU_input_imm_update_unchanged_ID_pipeline_items,EX_ctrl_update_unchanged_ID_pipeline_items,
+        EX_ALU_input_imm_update_unchanged_ID_pipeline_items,
         ID_data_check_update_unchanged_ID_pipeline_items,ID_data_update_unchanged_ID_pipeline_items,
         ID_imm_update_unchanged_ID_pipeline_items,ID_opc_func_update_unchanged_ID_pipeline_items,
         IF_instr_update_unchanged_ID_pipeline_items]) >>
@@ -3640,7 +3761,7 @@ QED
 (** EX_jump_sel_addr_update is affected by EX_PC_sel, EX_ALU_res for EX_jump_sel **)
 Theorem agp32_EX_jump_sel_update_same_output_under_same_EX_items:
   !fext fext' s1 s2 s3 s4.
-    s2.EX.EX_PC_sel = s4.EX.EX_PC_sel ==>
+    s1.EX.EX_opc = s3.EX.EX_opc ==>
     s2.EX.EX_ALU_res = s4.EX.EX_ALU_res ==>
     (EX_jump_sel_addr_update fext s1 s2).EX.EX_jump_sel =
     (EX_jump_sel_addr_update fext' s3 s4).EX.EX_jump_sel
@@ -3652,40 +3773,56 @@ QED
 Theorem agp32_EX_jump_sel_addr_update_rewrite:
   !fext fbits t s.
     (agp32 fext fbits t).EX.EX_jump_sel =
-    (EX_jump_sel_addr_update (fext t) s (agp32 fext fbits t)).EX.EX_jump_sel
+    (EX_jump_sel_addr_update (fext t) (agp32 fext fbits t) (agp32 fext fbits t)).EX.EX_jump_sel
 Proof
   rw [] >> Cases_on `t` >>
   fs [agp32_def,mk_module_def,mk_circuit_def] >-
    (clist_update_state_tac >>
-    subgoal `(s14.EX.EX_jump_sel = (EX_jump_sel_addr_update (fext 0) (agp32_init fbits) s9).EX.EX_jump_sel) /\
-    (s14.EX.EX_jump_addr = (EX_jump_sel_addr_update (fext 0) (agp32_init fbits) s9).EX.EX_jump_addr)` >-
-     fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+    subgoal `s13.EX.EX_jump_sel = (EX_jump_sel_addr_update (fext 0) (agp32_init fbits) s8).EX.EX_jump_sel` >-
+     fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
          Hazard_ctrl_unchanged_EX_jump,WB_update_unchanged_EX_jump,
          MEM_ctrl_update_unchanged_EX_jump,IF_PC_input_update_unchanged_EX_jump] >>
-    subgoal `s9.EX.EX_PC_sel = s14.EX.EX_PC_sel /\ s9.EX.EX_ALU_res = s14.EX.EX_ALU_res` >-
-     fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
-         Hazard_ctrl_unchanged_EX_ctrl_items,Hazard_ctrl_unchanged_EX_ALU,
-         WB_update_unchanged_EX_ctrl_items,WB_update_unchanged_EX_ALU,
-         MEM_ctrl_update_unchanged_EX_ctrl_items,MEM_ctrl_update_unchanged_EX_ALU,
-         IF_PC_input_update_unchanged_EX_ctrl_items,IF_PC_input_update_unchanged_EX_ALU,
-         EX_jump_sel_addr_update_unchanged_EX_ctrl_items,EX_jump_sel_addr_update_unchanged_EX_ALU] >>
-    fs [Abbr `s10`] >> METIS_TAC [agp32_EX_jump_sel_update_same_output_under_same_EX_items]) >>
+    subgoal `s8.EX.EX_ALU_res = s13.EX.EX_ALU_res` >-
+     fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+         Hazard_ctrl_unchanged_EX_ALU,WB_update_unchanged_EX_ALU,
+         MEM_ctrl_update_unchanged_EX_ALU,IF_PC_input_update_unchanged_EX_ALU,
+         EX_jump_sel_addr_update_unchanged_EX_ALU] >>
+    subgoal `(agp32_init fbits).EX.EX_opc = s13.EX.EX_opc` >-
+     fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+         Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+         Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
+         MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
+         EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
+         EX_SHIFT_update_unchanged_EX_pipeline_items,EX_ALU_update_unchanged_EX_pipeline_items,
+         EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
+         ID_data_check_update_unchanged_EX_pipeline_items,
+         ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
+         ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items] >>
+    fs [Abbr `s9`] >> METIS_TAC [agp32_EX_jump_sel_update_same_output_under_same_EX_items]) >>
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  subgoal `(s14.EX.EX_jump_sel = (EX_jump_sel_addr_update (fext (SUC n)) s''' s9).EX.EX_jump_sel) /\
-  (s14.EX.EX_jump_addr = (EX_jump_sel_addr_update (fext (SUC n)) s''' s9).EX.EX_jump_addr)` >-
-   fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+  subgoal `s13.EX.EX_jump_sel = (EX_jump_sel_addr_update (fext (SUC n)) s''' s8).EX.EX_jump_sel` >-
+   fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
        Hazard_ctrl_unchanged_EX_jump,WB_update_unchanged_EX_jump,
        MEM_ctrl_update_unchanged_EX_jump,IF_PC_input_update_unchanged_EX_jump] >>
-  subgoal `s9.EX.EX_PC_sel = s14.EX.EX_PC_sel /\ s9.EX.EX_ALU_res = s14.EX.EX_ALU_res` >-
-   fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
-       Hazard_ctrl_unchanged_EX_ctrl_items,Hazard_ctrl_unchanged_EX_ALU,
-       WB_update_unchanged_EX_ctrl_items,WB_update_unchanged_EX_ALU,
-       MEM_ctrl_update_unchanged_EX_ctrl_items,MEM_ctrl_update_unchanged_EX_ALU,
-       IF_PC_input_update_unchanged_EX_ctrl_items,IF_PC_input_update_unchanged_EX_ALU,
-       EX_jump_sel_addr_update_unchanged_EX_ctrl_items,EX_jump_sel_addr_update_unchanged_EX_ALU] >>
-  fs [Abbr `s10`] >> METIS_TAC [agp32_EX_jump_sel_update_same_output_under_same_EX_items]
+  subgoal `s8.EX.EX_ALU_res = s13.EX.EX_ALU_res` >-
+   fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+       Hazard_ctrl_unchanged_EX_ALU,WB_update_unchanged_EX_ALU,
+       MEM_ctrl_update_unchanged_EX_ALU,IF_PC_input_update_unchanged_EX_ALU,
+       EX_jump_sel_addr_update_unchanged_EX_ALU] >>
+  subgoal `s'''.EX.EX_opc = s13.EX.EX_opc` >-
+   fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+       Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+       Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
+       MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
+       EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
+       EX_SHIFT_update_unchanged_EX_pipeline_items,EX_ALU_update_unchanged_EX_pipeline_items,
+       EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
+       ID_data_check_update_unchanged_EX_pipeline_items,
+       ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
+       ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items] >>
+  fs [Abbr `s9`] >> METIS_TAC [agp32_EX_jump_sel_update_same_output_under_same_EX_items]
 QED
 
 (** control flags **)
@@ -3727,7 +3864,7 @@ Proof
   rpt gen_tac >> Cases_on `t` >>
   fs [agp32_def,mk_module_def,mk_circuit_def] >-
    (clist_update_state_tac >>
-    fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+    fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
         Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
         Hazard_ctrl_unchanged_state_items,Hazard_ctrl_unchanged_ID_data_items,
         WB_update_unchanged_state_items,WB_update_unchanged_ID_data_items,
@@ -3737,13 +3874,12 @@ Proof
         EX_SHIFT_update_unchanged_state_items,EX_SHIFT_update_unchanged_ID_data_items,
         EX_ALU_update_unchanged_state_items,EX_ALU_update_unchanged_ID_data_items,
         EX_ALU_input_imm_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_ID_data_items,
-        EX_ctrl_update_unchanged_state_items,EX_ctrl_update_unchanged_ID_data_items,
         ID_data_check_update_unchanged_state_items,ID_data_check_update_unchanged_ID_data_items] >>
     rw [ID_data_update_def]) >>
   qpat_abbrev_tac `s = mk_circuit (procs _) (procs _) (agp32_init fbits) fext _` >>
   qpat_abbrev_tac `s' = procs _ (fext t) s s` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
       Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_state_items,Hazard_ctrl_unchanged_ID_data_items,
       WB_update_unchanged_state_items,WB_update_unchanged_ID_data_items,
@@ -3753,7 +3889,6 @@ Proof
       EX_SHIFT_update_unchanged_state_items,EX_SHIFT_update_unchanged_ID_data_items,
       EX_ALU_update_unchanged_state_items,EX_ALU_update_unchanged_ID_data_items,
       EX_ALU_input_imm_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_ID_data_items,
-      EX_ctrl_update_unchanged_state_items,EX_ctrl_update_unchanged_ID_data_items,
       ID_data_check_update_unchanged_state_items,ID_data_check_update_unchanged_ID_data_items] >>
   rw [ID_data_update_def]
 QED
@@ -3795,14 +3930,14 @@ Proof
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
       Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
       Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
       MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
       EX_jump_sel_addr_update_unchanged_EX_pipeline_items,
       EX_SHIFT_update_unchanged_EX_pipeline_items,EX_ALU_update_unchanged_EX_pipeline_items,
       EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
-      EX_ctrl_update_unchanged_EX_pipeline_items,ID_data_check_update_unchanged_EX_pipeline_items,
+      ID_data_check_update_unchanged_EX_pipeline_items,
       ID_data_update_unchanged_EX_pipeline_items,ID_imm_update_unchanged_EX_pipeline_items,
       ID_opc_func_update_unchanged_EX_pipeline_items,IF_instr_update_unchanged_EX_pipeline_items]
 QED
@@ -3814,21 +3949,22 @@ Theorem agp32_same_MEM_pipeline_items_after_MEM_pipeline:
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     (s'.MEM.MEM_addrW = (agp32 fext fbits (SUC t)).MEM.MEM_addrW) /\
-    (s'.MEM.MEM_write_reg <=> (agp32 fext fbits (SUC t)).MEM.MEM_write_reg)
+    (s'.MEM.MEM_write_reg <=> (agp32 fext fbits (SUC t)).MEM.MEM_write_reg) /\
+    (s'.MEM.MEM_opc = (agp32 fext fbits (SUC t)).MEM.MEM_opc)
 Proof
   rpt gen_tac >> rpt disch_tac >>
   fs [agp32_def,mk_module_def,mk_circuit_def] >>
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
       Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
       Hazard_ctrl_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_pipeline_items,
       MEM_ctrl_update_unchanged_MEM_pipeline_items,IF_PC_input_update_unchanged_MEM_pipeline_items,
       EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
       EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
       EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
-      EX_ctrl_update_unchanged_MEM_pipeline_items,ID_data_check_update_unchanged_MEM_pipeline_items,
+      ID_data_check_update_unchanged_MEM_pipeline_items,
       ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
       ID_opc_func_update_unchanged_MEM_pipeline_items,IF_instr_update_unchanged_MEM_pipeline_items]
 QED
@@ -3847,14 +3983,14 @@ Proof
   qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
   qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
       Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
       Hazard_ctrl_unchanged_WB_pipeline_items,WB_update_unchanged_WB_pipeline_items,
       MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
       EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
       EX_SHIFT_update_unchanged_WB_pipeline_items,EX_ALU_update_unchanged_WB_pipeline_items,
       EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
-      EX_ctrl_update_unchanged_WB_pipeline_items,ID_data_check_update_unchanged_WB_pipeline_items,
+      ID_data_check_update_unchanged_WB_pipeline_items,
       ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
       ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items]
 QED
@@ -3875,7 +4011,7 @@ Proof
   qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
   Q.ABBREV_TAC `s1 = procs [IF_instr_update;ID_opc_func_update;ID_imm_update] (fext (SUC t)) s0 s0` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
       Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
       Hazard_ctrl_unchanged_ID_pipeline_items,
       WB_update_unchanged_ID_pipeline_items,MEM_ctrl_update_unchanged_ID_pipeline_items,
@@ -3883,7 +4019,6 @@ Proof
       EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
       EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
       EX_ALU_input_imm_update_unchanged_ID_pipeline_items,
-      EX_ctrl_update_unchanged_ID_pipeline_items,
       ID_data_check_update_unchanged_ID_pipeline_items,
       ID_data_update_unchanged_ID_pipeline_items]
 QED
@@ -3902,7 +4037,7 @@ Proof
   qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
   Q.ABBREV_TAC `s1 = procs [IF_instr_update; ID_opc_func_update] (fext (SUC t)) s0 s0` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
       Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,
       Hazard_ctrl_unchanged_ID_pipeline_items,
       WB_update_unchanged_ID_pipeline_items,MEM_ctrl_update_unchanged_ID_pipeline_items,
@@ -3910,7 +4045,6 @@ Proof
       EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
       EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
       EX_ALU_input_imm_update_unchanged_ID_pipeline_items,
-      EX_ctrl_update_unchanged_ID_pipeline_items,
       ID_data_check_update_unchanged_ID_pipeline_items,
       ID_data_update_unchanged_ID_pipeline_items,
       ID_imm_update_unchanged_ID_pipeline_items]
@@ -3930,7 +4064,7 @@ Proof
   qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
   Q.ABBREV_TAC `s1 = procs [ForwardA; ForwardB; ForwardW; IF_instr_update] (fext (SUC t)) s0 s0` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
       Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,
       Hazard_ctrl_unchanged_ID_pipeline_items,
       WB_update_unchanged_ID_pipeline_items,MEM_ctrl_update_unchanged_ID_pipeline_items,
@@ -3938,7 +4072,6 @@ Proof
       EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
       EX_SHIFT_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_pipeline_items,
       EX_ALU_input_imm_update_unchanged_ID_pipeline_items,
-      EX_ctrl_update_unchanged_ID_pipeline_items,
       ID_data_check_update_unchanged_ID_pipeline_items,
       ID_data_update_unchanged_ID_pipeline_items,
       ID_imm_update_unchanged_ID_pipeline_items,
@@ -3962,15 +4095,14 @@ Proof
   qpat_abbrev_tac `s0 = procs _ (fext t) s s` >>
   Q.ABBREV_TAC `s1 = procs [IF_instr_update;ID_opc_func_update;ID_imm_update] (fext (SUC t)) s0 s0` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
       Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,
       Hazard_ctrl_unchanged_state_items,
       WB_update_unchanged_state_items,MEM_ctrl_update_unchanged_state_items,
       IF_PC_input_update_unchanged_state_items,EX_jump_sel_addr_update_unchanged_state_items,
       EX_SHIFT_update_unchanged_state_items,EX_ALU_update_unchanged_state_items,
-      EX_ALU_input_imm_update_unchanged_state_items,EX_ctrl_update_unchanged_state_items,
-      ID_data_check_update_unchanged_state_items,ID_data_update_unchanged_state_items,
-      ID_imm_update_unchanged_state_items]
+      EX_ALU_input_imm_update_unchanged_state_items,ID_data_check_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items]
 QED
 
 
@@ -3999,7 +4131,7 @@ Proof
   Q.ABBREV_TAC `s1 = procs [IF_instr_update; ID_opc_func_update;
                             ID_imm_update; ID_data_update] (fext (SUC t)) s0 s0` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
       Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,
       Hazard_ctrl_unchanged_ID_data_items,Hazard_ctrl_unchanged_EX_pipeline_items,
       Hazard_ctrl_unchanged_MEM_pipeline_items,Hazard_ctrl_unchanged_WB_pipeline_items,
@@ -4021,22 +4153,20 @@ Proof
       EX_ALU_input_imm_update_unchanged_EX_pipeline_items,
       EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
       EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
-      EX_ctrl_update_unchanged_ID_data_items,EX_ctrl_update_unchanged_EX_pipeline_items,
-      EX_ctrl_update_unchanged_MEM_pipeline_items,EX_ctrl_update_unchanged_WB_pipeline_items,
       ID_data_check_update_unchanged_ID_data_items,
       ID_data_check_update_unchanged_EX_pipeline_items,
       ID_data_check_update_unchanged_MEM_pipeline_items,
       ID_data_check_update_unchanged_WB_pipeline_items]
 QED
 
-(** some items are unchanged after the EX_ctrl_update function **)
-Theorem agp32_same_items_after_EX_ctrl_update:
+(** some items are unchanged after the ID_data_check_update function **)
+Theorem agp32_same_items_after_ID_data_check_update:
   !fext fbits t s s' s''.
     s = agp32 fext fbits t ==>
     s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                 REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
     s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update; 
-                 ID_data_update; ID_data_check_update; EX_ctrl_update] (fext (SUC t)) s' s' ==>
+                 ID_data_update; ID_data_check_update] (fext (SUC t)) s' s' ==>
     ((agp32 fext fbits (SUC t)).EX.EX_imm = s''.EX.EX_imm) /\
     ((agp32 fext fbits (SUC t)).EX.EX_dataW = s''.EX.EX_dataW)
 Proof
@@ -4047,7 +4177,7 @@ Proof
   Q.ABBREV_TAC `s1 = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;
                             ID_data_update;ID_data_check_update;EX_ctrl_update] (fext (SUC t)) s0 s0` >>
   clist_update_state_tac >>
-  fs [Abbr `s14`,Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,
       Hazard_ctrl_unchanged_EX_pipeline_items,WB_update_unchanged_EX_pipeline_items,
       MEM_ctrl_update_unchanged_EX_pipeline_items,IF_PC_input_update_unchanged_EX_pipeline_items,
       EX_jump_sel_addr_update_unchanged_EX_pipeline_items,EX_SHIFT_update_unchanged_EX_pipeline_items,

@@ -38,7 +38,7 @@ Proof
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext t) s s` >>
   Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;ID_data_update;
-                             ID_data_check_update;EX_ctrl_update;EX_ALU_input_imm_update] (fext (SUC t)) s' s'` >>
+                             ID_data_check_update;EX_ALU_input_imm_update] (fext (SUC t)) s' s'` >>
   `((agp32 fext fbits (SUC t)).EX.EX_carry_flag =
     (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_carry_flag) /\
   ((agp32 fext fbits (SUC t)).EX.EX_overflow_flag =
@@ -79,7 +79,7 @@ Proof
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext t) s s` >>
   Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;ID_data_update;
-                             ID_data_check_update;EX_ctrl_update;EX_ALU_input_imm_update] (fext (SUC t)) s' s'` >>
+                             ID_data_check_update;EX_ALU_input_imm_update] (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).EX.EX_carry_flag = (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_carry_flag`
     by fs [agp32_EX_ALU_items_updated_by_EX_ALU_update] >>
   `(s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
@@ -308,7 +308,7 @@ Proof
         `(func ai <> 0w) /\ (func ai <> 1w)` by fs [ag32_Decode_Out_func_not_0w_1w] >>
         fs [EX_ALU_update_def,Rel_def] >>
         Cases_on_word_value `(agp32 fext fbits (SUC t)).EX.EX_func` >> fs []) >-
-       (rw [Run_def] >>
+       (rw [Run_def,dfn'ReservedInstr_def,incPC_def] >>
         `opc ai = 15w` by fs [ag32_Decode_ReservedInstr_opc_15w] >>
         `(s''.EX.EX_func = 9w) \/ (s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
         (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)`
@@ -544,7 +544,7 @@ Proof
       `(func ai <> 0w) /\ (func ai <> 1w)` by fs [ag32_Decode_Out_func_not_0w_1w] >>
       fs [EX_ALU_update_def,Rel_def] >>
       Cases_on_word_value `(agp32 fext fbits (SUC t)).EX.EX_func` >> fs []) >-
-     (rw [Run_def] >>
+     (rw [Run_def,dfn'ReservedInstr_def,incPC_def] >>
       `opc ai = 15w` by fs [ag32_Decode_ReservedInstr_opc_15w] >>
       `(s''.EX.EX_func = 9w) \/ (s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
       (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)`
@@ -660,7 +660,7 @@ Proof
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext t) s s` >>
   Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;ID_data_update;
-                             ID_data_check_update;EX_ctrl_update;EX_ALU_input_imm_update] (fext (SUC t)) s' s'` >>
+                             ID_data_check_update;EX_ALU_input_imm_update] (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).EX.EX_overflow_flag = (EX_ALU_update (fext (SUC t)) s' s'').EX.EX_overflow_flag`
     by fs [agp32_EX_ALU_items_updated_by_EX_ALU_update] >>
   `(s''.ID.ID_EX_write_enable = s.ID.ID_EX_write_enable) /\
@@ -932,7 +932,7 @@ Proof
           by fs [ag32_Decode_Out_func_not_0w_1w_2w] >>
         fs [EX_ALU_update_def,Rel_def] >>
         Cases_on_word_value `(agp32 fext fbits (SUC t)).EX.EX_func` >> fs []) >-
-       (rw [Run_def] >>
+       (rw [Run_def,dfn'ReservedInstr_def,incPC_def] >>
         `opc ai = 15w` by fs [ag32_Decode_ReservedInstr_opc_15w] >>
         `(s''.EX.EX_func = 9w) \/ (s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
         (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)`
@@ -1211,7 +1211,7 @@ Proof
         by fs [ag32_Decode_Out_func_not_0w_1w_2w] >>
       fs [EX_ALU_update_def,Rel_def] >>
       Cases_on_word_value `(agp32 fext fbits (SUC t)).EX.EX_func` >> fs []) >-
-     (rw [Run_def] >>
+     (rw [Run_def,dfn'ReservedInstr_def,incPC_def] >>
       `opc ai = 15w` by fs [ag32_Decode_ReservedInstr_opc_15w] >>
       `(s''.EX.EX_func = 9w) \/ (s''.EX.EX_func = 12w) \/ (s''.EX.EX_func = 13w) \/
       (s''.EX.EX_func = 14w) \/ (s''.EX.EX_func = 15w)`

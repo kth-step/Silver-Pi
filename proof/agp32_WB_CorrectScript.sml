@@ -7,6 +7,43 @@ val _ = prefer_num ();
 val _ = guess_lengths ();
 
 
+(** WB_PC **)
+Theorem agp32_Rel_ag32_WB_PC_correct:
+  !fext fbits a t I.
+    is_sch_writeback I (agp32 fext fbits) ==>
+    is_sch_disable I (agp32 fext fbits) ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_PC = (FUNPOW Next (THE (I (5,SUC t)) − 1) a).PC
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).WB.WB_PC = (WB_pipeline (fext t) s s').WB.WB_PC`
+    by cheat >> rw [] >>
+  `(s'.WB.WB_state_flag = s.WB.WB_state_flag) /\ (s'.WB.WB_PC = s.WB.WB_PC)`
+    by cheat >>
+  Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (`I' (5,SUC t) = I' (4,t)` by fs [is_sch_writeback_def] >> fs [] >>
+    `s'.WB.WB_state_flag` by fs [enable_stg_def,Abbr `s`] >>
+    fs [WB_pipeline_def,Rel_def,MEM_Rel_def]) >>
+  `I' (5,SUC t) = I' (5,t)` by fs [is_sch_disable_def] >>
+  `~s'.WB.WB_state_flag` by fs [enable_stg_def,Abbr `s`] >>
+  fs [WB_pipeline_def,Rel_def,WB_Rel_def]
+QED
+
+(* WB_Rel *)
+Theorem agp32_Rel_ag32_WB_Rel_correct:
+  !fext fbits a t I.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5,SUC t) <> NONE ==>
+    WB_Rel (fext (SUC t)) (agp32 fext fbits (SUC t)) a (THE (I (5,SUC t)))
+Proof
+  rw [WB_Rel_def] >>
+  cheat
+QED
+
+
 (* registers R updated by WB stage *)
 Theorem agp32_Rel_ag32_R_correct:
   !fext fbits a t I.

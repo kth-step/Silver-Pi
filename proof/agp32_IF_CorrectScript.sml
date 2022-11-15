@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory pred_setTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory pred_setTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32_EX_CorrectTheory;
 
 (* correctness of IF stage and related items with repsect to the ISA *)
 val _ = new_theory "agp32_IF_Correct";
@@ -28,7 +28,7 @@ Proof
   (s'.IF.IF_PC_input = s.IF.IF_PC_input)`
     by METIS_TAC [agp32_same_IF_items_until_ID_pipeline,Abbr `s`,Abbr `s'`] >>
   rw [IF_PC_update_def] >>
-  `s.EX.EX_jump_sel <=> isJump_isa_op (I' (3,t)) a` by fs [Rel_def,EX_Rel_spec_def] >>
+  `s.EX.EX_jump_sel ==> isJump_isa_op (I' (3,t)) a` by fs [Rel_def,EX_Rel_spec_def] >>
   Cases_on `s.EX.EX_jump_sel` >> fs [Rel_def,IF_PC_Rel_def] >-
    (fs [is_sch_def,is_sch_fetch_def,Abbr `s`,isJump_hw_op_def] >>
     METIS_TAC [isJump_isa_op_not_none]) >>
@@ -854,19 +854,17 @@ QED
 (* IF_PC_input when jump *)
 Theorem agp32_Rel_ag32_IF_PC_input_jump_correct:
   !fext fbits a t I.
-    is_sch_execute I (agp32 fext fbits) a ==>
-    is_sch_disable I (agp32 fext fbits) ==>
+    is_sch I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (3,SUC t) <> NONE ==>
     (agp32 fext fbits (SUC t)).EX.EX_jump_sel ==>
     (agp32 fext fbits (SUC t)).IF.IF_PC_input = (FUNPOW Next (THE (I (3,SUC t))) a).PC
 Proof
-  rw [is_sch_execute_def,is_sch_disable_def] >>
-  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
                             REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext t) s s` >>
   Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update;ID_imm_update; ID_data_update;
-                             ID_data_check_update; EX_ctrl_update; EX_ALU_input_imm_update;
+                             ID_data_check_update; EX_ALU_input_imm_update;
                              EX_ALU_update; EX_SHIFT_update; EX_jump_sel_addr_update]
                             (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).IF.IF_PC_input =
@@ -876,7 +874,7 @@ Proof
   `s''.EX.EX_jump_sel /\ (s''.EX.EX_jump_addr = (agp32 fext fbits (SUC t)).EX.EX_jump_addr)`
     by METIS_TAC [agp32_same_EX_jump_items_after_EX_jump_update,Abbr `s`,Abbr `s'`,Abbr `s''`] >>
   rw [MUX_21_def] >>
-  cheat
+  METIS_TAC [agp32_Rel_ag32_EX_jump_addr_correct]
 QED
 
 
@@ -894,7 +892,7 @@ Proof
                             REG_write;ID_pipeline;IF_PC_update;Acc_compute]
                            (fext t) s s` >>
   Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update;ID_imm_update; ID_data_update;
-                             ID_data_check_update; EX_ctrl_update; EX_ALU_input_imm_update;
+                             ID_data_check_update; EX_ALU_input_imm_update;
                              EX_ALU_update; EX_SHIFT_update; EX_jump_sel_addr_update]
                             (fext (SUC t)) s' s'` >>
   `(agp32 fext fbits (SUC t)).IF.IF_PC_input =

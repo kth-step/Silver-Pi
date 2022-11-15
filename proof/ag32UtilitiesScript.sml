@@ -112,7 +112,7 @@ Proof
                      a1.MEM ((31 >< 2) a1.PC @@ (0w:word2) + 1w) @@
                      a1.MEM ((31 >< 2) a1.PC @@ (0w:word2)))` >>
   rw [Decode_def,boolify32_def] >> CONV_TAC v2w_word_bit_list_cleanup >>
-  rw [Run_def,dfn'LoadUpperConstant_def,dfn'LoadConstant_def,
+  rw [Run_def,dfn'LoadUpperConstant_def,dfn'LoadConstant_def,dfn'ReservedInstr_def,
       dfn'Interrupt_def,incPC_def] >-
    (** JumpIfZero **)
    (rw [dfn'JumpIfZero_def] >>
@@ -526,6 +526,17 @@ Proof
   get_func_from_decode_tac
 QED
 
+(** if Decode got Jump(f,_,_), the func = num2funcT (w2n func _) **)
+Theorem ag32_Decode_Jump_func:
+  !ag f wi a.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (f,wi,a) ==>
+    f = num2funcT (w2n (func ag))
+Proof
+  rw [] >> `opc ag = 9w` by fs [ag32_Decode_Jump_opc_9w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Jump (f,wi,a)`` >>
+  get_func_from_decode_tac
+QED
+
 (** if Decode got JumpIfZero(fAdd,_,_,_), the func is 0w **)
 Theorem ag32_Decode_JumpIfZero_fAdd_func_0w:
   !ag wi a b.
@@ -588,6 +599,17 @@ Proof
   get_func_from_decode_tac
 QED
 
+(** if Decode got JumpIfZero(f,_,_,_), the f = num2funcT w2n func **)
+Theorem ag32_Decode_JumpIfZero_func:
+  !ag f wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (f,wi,a,b) ==>
+    f = num2funcT (w2n (func ag))
+Proof
+  rw [] >> `opc ag = 10w` by fs [ag32_Decode_JumpIfZero_opc_10w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (f,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
 (** if Decode got JumpIfNotZero(fAdd,_,_,_), the func is 0w **)
 Theorem ag32_Decode_JumpIfNotZero_fAdd_func_0w:
   !ag wi a b.
@@ -644,6 +666,17 @@ Theorem ag32_Decode_JumpIfNotZero_func_not_0w_1w_2w:
     f <> fAddWithCarry ==>
     f <> fSub ==>
     (func ag <> 0w) /\ (func ag <> 1w) /\ (func ag <> 2w)
+Proof
+  rw [] >> `opc ag = 11w` by fs [ag32_Decode_JumpIfNotZero_opc_11w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (f,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got JumpIfNotZero(f,_,_,_), the f = num2funcT w2n func **)
+Theorem ag32_Decode_JumpIfNotZero_func:
+  !ag f wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (f,wi,a,b) ==>
+    f = num2funcT (w2n (func ag))
 Proof
   rw [] >> `opc ag = 11w` by fs [ag32_Decode_JumpIfNotZero_opc_11w] >>
   UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (f,wi,a,b)`` >>
@@ -838,6 +871,28 @@ Proof
 QED
 
 
+(** dataW **)
+(** JumpIfNotZero **)
+Theorem ag32_Decode_JumpIfNotZero_dataW:
+  !ag a b f wi.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfNotZero (f,wi,a,b) ==>
+    (dataW ag = ri2word wi ag)
+Proof
+  get_data_simp_tac >>
+  rw [dataW_def,instr_def]
+QED
+
+(** JumpIfZero **)
+Theorem ag32_Decode_JumpIfZero_dataW:
+  !ag a b f wi.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = JumpIfZero (f,wi,a,b) ==>
+    (dataW ag = ri2word wi ag)
+Proof
+  get_data_simp_tac >>
+  rw [dataW_def,instr_def]
+QED
+
+
 (** func **)
 Theorem ag32_func_for_SHIFT:
   !ag.
@@ -897,10 +952,124 @@ Proof
     Cases_on `p0` >> rw []) >-
    (PairCases_on `p` >> rw [Run_def,dfn'Out_def,norm_def,incPC_def,ALU_def] >>
     Cases_on `p0` >> rw []) >-
-   fs [ag32_Decode_ReservedInstr_opc_15w] >-
+   rw [Run_def,dfn'ReservedInstr_def,incPC_def] >-
    (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def]) >-
    (PairCases_on `p` >> rw [Run_def,dfn'StoreMEM_def,incPC_def]) >> 
    PairCases_on `p` >> rw [Run_def,dfn'StoreMEMByte_def,incPC_def]
+QED
+
+(** if there is a Jump, then the next PC is the ALU_res **)
+Theorem ag32_Jump_Next_PC_ALU_res:
+  !ag.
+    opc ag = 9w ==>
+    (Next ag).PC = ALU_res ag
+Proof
+  rw [Next_def,ALU_res_def,ALU_input1_def,ALU_input2_def] >>
+  rw [GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr ag.MEM (align_addr ag.PC))` >-
+   (PairCases_on `p` >> fs [ag32_Decode_Acc_opc_8w]) >-
+   fs [ag32_Decode_In_opc_7w] >-
+   fs [ag32_Decode_Interrupt_opc_12w] >-
+   (PairCases_on `p` >>
+    `p0 = num2funcT (w2n (func ag))` by fs [ag32_Decode_Jump_func] >>
+    `ri2word p2 ag = dataA ag` by fs [ag32_Decode_Jump_dataA] >>
+    rw [Run_def,dfn'Jump_def,ALU_def] >>
+    Cases_on `num2funcT (w2n (func ag))` >> fs []) >-
+   (PairCases_on `p` >> fs [ag32_Decode_JumpIfNotZero_opc_11w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_JumpIfZero_opc_10w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadConstant_opc_13w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEM_opc_4w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEMByte_opc_5w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadUpperConstant_opc_14w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Normal_opc_0w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Out_opc_6w]) >-
+   fs [ag32_Decode_ReservedInstr_opc_15w] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Shift_opc_1w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_StoreMEM_opc_2w]) >>
+  PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
+QED
+
+(** lemma for ri2word **)
+Theorem ri2word_unchanged_under_same_R[local]:
+  !p a s.
+     a.R = s.R ==>
+     ri2word p a = ri2word p s
+Proof
+  rw [ri2word_def]
+QED
+
+(** if there is a JumpIfZero, then the next PC is the dataW + PC **)
+Theorem ag32_JumpIfZero_Next_PC_PC_and_dataW:
+  !ag.
+    opc ag = 10w ==>
+    ALU_res ag = 0w ==>
+    (Next ag).PC = ag.PC + (dataW ag)
+Proof
+  rw [Next_def,ALU_res_def,ALU_input1_def,ALU_input2_def] >>
+  rw [GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr ag.MEM (align_addr ag.PC))` >-
+   (PairCases_on `p` >> fs [ag32_Decode_Acc_opc_8w]) >-
+   fs [ag32_Decode_In_opc_7w] >-
+   fs [ag32_Decode_Interrupt_opc_12w] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Jump_opc_9w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_JumpIfNotZero_opc_11w]) >-
+   (PairCases_on `p` >>
+    `p0 = num2funcT (w2n (func ag))` by fs [ag32_Decode_JumpIfZero_func]>>
+    `ri2word p1 ag = dataW ag` by fs [ag32_Decode_JumpIfZero_dataW] >>
+    `ri2word p2 ag = dataA ag` by fs [ag32_Decode_JumpIfZero_dataA] >>
+    `ri2word p3 ag = dataB ag` by fs [ag32_Decode_JumpIfZero_dataB] >>
+    fs [Run_def,dfn'JumpIfZero_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> fs [] >>
+    `r.R = ag.R /\ ag.PC = r.PC` by METIS_TAC [ALU_state_eq_after] >>
+    `ri2word p1 r = ri2word p1 ag` by METIS_TAC [ri2word_unchanged_under_same_R] >> fs []) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadConstant_opc_13w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEM_opc_4w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEMByte_opc_5w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadUpperConstant_opc_14w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Normal_opc_0w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Out_opc_6w]) >-
+   fs [ag32_Decode_ReservedInstr_opc_15w] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Shift_opc_1w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_StoreMEM_opc_2w]) >>
+  PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
+QED
+
+(** if there is a JumpIfNotZero, then the next PC is the dataW + PC **)
+Theorem ag32_JumpIfNotZero_Next_PC_PC_and_dataW:
+  !ag.
+    opc ag = 11w ==>
+    ALU_res ag <> 0w ==>
+    (Next ag).PC = ag.PC + (dataW ag)
+Proof
+  rw [Next_def,ALU_res_def,ALU_input1_def,ALU_input2_def] >>
+  rw [GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr ag.MEM (align_addr ag.PC))` >-
+   (PairCases_on `p` >> fs [ag32_Decode_Acc_opc_8w]) >-
+   fs [ag32_Decode_In_opc_7w] >-
+   fs [ag32_Decode_Interrupt_opc_12w] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Jump_opc_9w]) >-
+   (PairCases_on `p` >>
+    `p0 = num2funcT (w2n (func ag))` by fs [ag32_Decode_JumpIfNotZero_func]>>
+    `ri2word p1 ag = dataW ag` by fs [ag32_Decode_JumpIfNotZero_dataW] >>
+    `ri2word p2 ag = dataA ag` by fs [ag32_Decode_JumpIfNotZero_dataA] >>
+    `ri2word p3 ag = dataB ag` by fs [ag32_Decode_JumpIfNotZero_dataB] >>
+    fs [Run_def,dfn'JumpIfNotZero_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> fs [] >>
+    `r.R = ag.R /\ ag.PC = r.PC` by METIS_TAC [ALU_state_eq_after] >>
+    `ri2word p1 r = ri2word p1 ag` by METIS_TAC [ri2word_unchanged_under_same_R] >> fs []) >-
+   (PairCases_on `p` >> fs [ag32_Decode_JumpIfZero_opc_10w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadConstant_opc_13w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEM_opc_4w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEMByte_opc_5w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadUpperConstant_opc_14w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Normal_opc_0w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Out_opc_6w]) >-
+   fs [ag32_Decode_ReservedInstr_opc_15w] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Shift_opc_1w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_StoreMEM_opc_2w]) >>
+  PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
 QED
 
 
@@ -999,7 +1168,7 @@ Proof
     qpat_abbrev_tac `alu = ALU _ _` >>
     Cases_on `alu` >> rw [] >>
     METIS_TAC [ALU_state_eq_after]) >-
-   rw [Run_def] >-
+   rw [Run_def,dfn'ReservedInstr_def,incPC_def] >-
    (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def]) >-
    (PairCases_on `p` >> fs [ag32_Decode_StoreMEM_opc_2w]) >>
    PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
@@ -1272,7 +1441,7 @@ Proof
     `addrW a1 = p1` by fs [ag32_Decode_Out_addrW] >>
     EVAL_TAC >> fs [] >>
     METIS_TAC [ALU_state_eq_after]) >-
-   rw [Run_def] >-
+   rw [Run_def,dfn'ReservedInstr_def,incPC_def] >-
    (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def] >>
     Cases_on `addrW a1 = adr` >> fs [] >-
      (fs [reg_iswrite_def,ag32_Decode_Shift_opc_1w]) >>

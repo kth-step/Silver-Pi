@@ -153,6 +153,78 @@ Proof
   fs [agp32_EX_write_reg_unchanged_when_EX_disabled,Rel_def,Inv_Rel_def]
 QED
 
+(** MEM_opc **)
+Theorem MEM_instr_index_NONE_opc_flush:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t − 1)) (agp32 fext fbits t) a t ==>
+    I (4,SUC t) = NONE ==>
+    (agp32 fext fbits (SUC t)).MEM.MEM_opc = 16w \/ (agp32 fext fbits (SUC t)).MEM.MEM_opc = 15w
+Proof
+  rw [] >> Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
+   (Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >-
+     (`(agp32 fext fbits t).MEM.MEM_NOP_flag`
+        by fs [enable_stg_def,agp32_MEM_state_flag_isMemOp_hw_op_MEM_NOP_flag] >>
+      fs [agp32_MEM_opc_flush_when_MEM_NOP_flag]) >>
+    `I' (4,SUC t) = I' (3,t)` by METIS_TAC [is_sch_def,is_sch_memory_def] >>
+    `~(agp32 fext fbits t).MEM.MEM_NOP_flag`
+      by fs [enable_stg_def,agp32_MEM_state_flag_not_isMemOp_hw_op_MEM_NOP_flag_F] >>
+    `(agp32 fext fbits (SUC t)).MEM.MEM_opc = (agp32 fext fbits t).EX.EX_opc`
+      by fs [agp32_MEM_opc_EX_opc_when_not_MEM_NOP_flag] >>
+    fs [Rel_def,Inv_Rel_def]) >>
+  `I' (4,SUC t) = I' (4,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >>
+  fs [agp32_MEM_opc_unchanged_when_MEM_disabled,Rel_def,Inv_Rel_def]
+QED
+
+(** MEM_write_reg **)
+Theorem MEM_instr_index_NONE_MEM_not_write_reg:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (4,SUC t) = NONE ==>
+    ~(agp32 fext fbits (SUC t)).MEM.MEM_write_reg
+Proof
+  rw [] >> Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
+   (Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >-
+     (`(agp32 fext fbits t).MEM.MEM_NOP_flag`
+        by fs [enable_stg_def,agp32_MEM_state_flag_isMemOp_hw_op_MEM_NOP_flag] >>
+      fs [agp32_MEM_write_reg_F_when_MEM_NOP_flag]) >>
+    `I' (4,SUC t) = I' (3,t)` by METIS_TAC [is_sch_def,is_sch_memory_def] >>
+    Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+    Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline] (fext t) s s` >>
+    `(agp32 fext fbits (SUC t)).MEM.MEM_write_reg = (MEM_pipeline (fext t) s s').MEM.MEM_write_reg`
+      by fs [agp32_MEM_write_reg_updated_by_MEM_pipeline] >>
+    `(s'.MEM.MEM_state_flag = s.MEM.MEM_state_flag)`
+      by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_items_before_MEM_pipeline] >>
+    `s'.EX.EX_opc = s.EX.EX_opc`
+      by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_EX_items_before_MEM_pipeline] >>
+    fs [enable_stg_def,MEM_pipeline_def,Rel_def,Inv_Rel_def]) >>
+  `I' (4,SUC t) = I' (4,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >>
+  fs [agp32_MEM_write_reg_unchanged_when_MEM_disabled,Rel_def,Inv_Rel_def]
+QED
+
+(** WB_opc **)
+Theorem WB_instr_index_NONE_opc_flush:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t − 1)) (agp32 fext fbits t) a t ==>
+    I (5,SUC t) = NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 16w \/ (agp32 fext fbits (SUC t)).WB.WB_opc = 15w
+Proof
+  cheat
+QED
+
+(** WB_write_reg **)
+Theorem WB_instr_index_NONE_WB_not_write_reg:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5,SUC t) = NONE ==>
+    ~(agp32 fext fbits (SUC t)).WB.WB_write_reg
+Proof
+  cheat
+QED
+
 (** instr index relation between IF and WB stages when ID, EX and MEM are NONE **)
 Theorem IF_instr_index_with_WB_instr_ID_EX_MEM_NONE:
   !I t fext fbits a.
@@ -220,7 +292,9 @@ Proof
   rw [Inv_Rel_def] >>
   METIS_TAC [IF_instr_index_not_none,ID_NONE_exists_a_jump,EX_NONE_previous_jump_special,
              ID_instr_index_NONE_opc_flush_when_disabled,EX_instr_index_NONE_opc_flush,
-             EX_instr_index_NONE_EX_not_write_reg,IF_instr_index_with_WB_instr_ID_EX_MEM_NONE]
+             EX_instr_index_NONE_EX_not_write_reg,IF_instr_index_with_WB_instr_ID_EX_MEM_NONE,
+             MEM_instr_index_NONE_opc_flush,MEM_instr_index_NONE_MEM_not_write_reg,
+             WB_instr_index_NONE_opc_flush,WB_instr_index_NONE_WB_not_write_reg] 
 QED
 
 val _ = export_theory ();

@@ -526,6 +526,55 @@ Proof
   fs [REG_write_def]
 QED
 
+(** when WB is enabled, WB_opc is the mem_opc in the previous cycle **)
+Theorem agp32_WB_opc_MEM_opc_when_WB_enabled:
+  !fext fbits t.
+    enable_stg 5 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = (agp32 fext fbits t).MEM.MEM_opc
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).WB.WB_opc = (WB_pipeline (fext t) s s').WB.WB_opc`
+    by fs [agp32_WB_opc_updated_by_WB_pipeline] >>
+  `(s'.WB.WB_state_flag = s.WB.WB_state_flag)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_WB_items_before_WB_pipeline] >>
+  fs [WB_pipeline_def]
+QED
+
+(** when WB is disabled, WB_opc is unchanged **)
+Theorem agp32_WB_opc_unchanged_when_WB_disabled:
+  !fext fbits t.
+    ~enable_stg 5 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = (agp32 fext fbits t).WB.WB_opc
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).WB.WB_opc = (WB_pipeline (fext t) s s').WB.WB_opc`
+    by fs [agp32_WB_opc_updated_by_WB_pipeline] >>
+  `(s'.WB.WB_state_flag = s.WB.WB_state_flag) /\ (s'.WB.WB_opc = s.WB.WB_opc)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_WB_items_before_WB_pipeline] >>
+  fs [WB_pipeline_def]
+QED
+
+(** when WB is disabled, WB_write_reg is unchanged **)
+Theorem agp32_WB_write_reg_unchanged_when_WB_disabled:
+  !fext fbits t.
+    ~enable_stg 5 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).WB.WB_write_reg = (agp32 fext fbits t).WB.WB_write_reg
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).WB.WB_write_reg = (WB_pipeline (fext t) s s').WB.WB_write_reg`
+    by fs [agp32_WB_write_reg_updated_by_WB_pipeline] >>
+  `(s'.WB.WB_state_flag = s.WB.WB_state_flag) /\ (s'.WB.WB_write_reg = s.WB.WB_write_reg)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_WB_items_before_WB_pipeline] >>
+  fs [WB_pipeline_def]
+QED
+
+
 (** pipeline control flags **)
 (** IF_PC_write_enable **)
 (** IF_PC_write_enable and ID_ID_write_enable **)
@@ -1331,6 +1380,46 @@ Proof
       ID_data_check_update_unchanged_MEM_pipeline_items,
       ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
       ID_opc_func_update_unchanged_MEM_pipeline_items,IF_instr_update_unchanged_MEM_pipeline_items] >>
+  rw [agp32_init_def]
+QED
+
+(** initial WB_opc **)
+Theorem agp32_init_WB_opc:
+  !fext fbits.
+    (agp32 fext fbits 0).WB.WB_opc = 16w
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_WB_pipeline_items,WB_update_unchanged_WB_pipeline_items,
+      MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
+      EX_SHIFT_update_unchanged_WB_pipeline_items,
+      EX_ALU_update_unchanged_WB_pipeline_items,EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
+      ID_data_check_update_unchanged_WB_pipeline_items,
+      ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
+      ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items] >>
+  rw [agp32_init_def]
+QED
+
+(** initial WB_write_reg is F **)
+Theorem agp32_init_WB_write_reg:
+  !fext fbits.
+    ~(agp32 fext fbits 0).WB.WB_write_reg
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_WB_pipeline_items,WB_update_unchanged_WB_pipeline_items,
+      MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
+      EX_SHIFT_update_unchanged_WB_pipeline_items,
+      EX_ALU_update_unchanged_WB_pipeline_items,EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
+      ID_data_check_update_unchanged_WB_pipeline_items,
+      ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
+      ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items] >>
   rw [agp32_init_def]
 QED
 

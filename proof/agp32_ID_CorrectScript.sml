@@ -458,11 +458,11 @@ Proof
     by fs [agp32_same_WB_pipeline_items_after_WB_pipeline] >>
   rw [reg_adr_update_isa_def] >>
   Cases_on `I' (5,SUC t) = NONE` >> rw [] >-
-   (cheat) >>
+   METIS_TAC [WB_instr_index_NONE_WB_not_write_reg] >>
   `(agp32 fext fbits (SUC t)).WB.WB_write_reg = reg_iswrite (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)`
-    by cheat >>
+    by fs [is_sch_def,agp32_Rel_ag32_WB_write_reg_correct] >>
   `(agp32 fext fbits (SUC t)).WB.WB_addrW = addrW (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)`
-    by cheat >> rw []
+    by fs [is_sch_def,agp32_Rel_ag32_WB_addrW_correct] >> rw []
 QED
 
 (** EX_checkB: ID_addrB is affected by the instruction in the EX stage or not **)
@@ -557,11 +557,11 @@ Proof
     by fs [agp32_same_WB_pipeline_items_after_WB_pipeline] >>
   rw [reg_adr_update_isa_def] >>
   Cases_on `I' (5,SUC t) = NONE` >> rw [] >-
-   (cheat) >>
+   METIS_TAC [WB_instr_index_NONE_WB_not_write_reg] >>
   `(agp32 fext fbits (SUC t)).WB.WB_write_reg = reg_iswrite (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)`
-    by cheat >>
+    by fs [is_sch_def,agp32_Rel_ag32_WB_write_reg_correct] >>
   `(agp32 fext fbits (SUC t)).WB.WB_addrW = addrW (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)`
-    by cheat >> rw []
+    by fs [is_sch_def,agp32_Rel_ag32_WB_addrW_correct] >> rw []
 QED
 
 (** EX_checkW: ID_addrW is affected by the instruction in the EX stage or not **)
@@ -656,11 +656,11 @@ Proof
     by fs [agp32_same_WB_pipeline_items_after_WB_pipeline] >>
   rw [reg_adr_update_isa_def] >>
   Cases_on `I' (5,SUC t) = NONE` >> rw [] >-
-   (cheat) >>
+   METIS_TAC [WB_instr_index_NONE_WB_not_write_reg] >>
   `(agp32 fext fbits (SUC t)).WB.WB_write_reg = reg_iswrite (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)`
-    by cheat >>
+    by fs [is_sch_def,agp32_Rel_ag32_WB_write_reg_correct] >>
   `(agp32 fext fbits (SUC t)).WB.WB_addrW = addrW (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)`
-    by cheat >> rw []
+    by fs [is_sch_def,agp32_Rel_ag32_WB_addrW_correct] >> rw []
 QED
 
 

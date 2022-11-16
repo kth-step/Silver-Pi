@@ -30,7 +30,8 @@ Proof
   fs [agp32_init_IF_PC_input,agp32_init_EX_opc,IF_PC_Rel_def,IF_instr_Rel_def,
       Inv_Rel_def,enable_stg_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs [] >>
   rw [agp32_init_ID_opc,agp32_init_EX_opc,agp32_init_EX_write_reg,
-      agp32_init_MEM_opc,agp32_init_MEM_write_reg] >> cheat
+      agp32_init_MEM_opc,agp32_init_MEM_write_reg,
+      agp32_init_WB_opc,agp32_init_WB_write_reg]
 QED
 
 

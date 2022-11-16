@@ -84,7 +84,13 @@ QED
 Theorem IF_instr_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((IF_instr_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((IF_instr_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((IF_instr_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((IF_instr_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((IF_instr_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((IF_instr_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((IF_instr_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((IF_instr_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((IF_instr_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [IF_instr_update_def]
 QED
@@ -228,7 +234,13 @@ QED
 Theorem IF_PC_input_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((IF_PC_input_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((IF_PC_input_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((IF_PC_input_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((IF_PC_input_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((IF_PC_input_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((IF_PC_input_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((IF_PC_input_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((IF_PC_input_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((IF_PC_input_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [IF_PC_input_update_def]
 QED
@@ -320,7 +332,13 @@ QED
 Theorem ID_opc_func_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((ID_opc_func_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((ID_opc_func_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((ID_opc_func_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((ID_opc_func_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((ID_opc_func_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((ID_opc_func_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((ID_opc_func_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((ID_opc_func_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((ID_opc_func_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [ID_opc_func_update_def]
 QED
@@ -420,7 +438,13 @@ QED
 Theorem ID_imm_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((ID_imm_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((ID_imm_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((ID_imm_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((ID_imm_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((ID_imm_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((ID_imm_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((ID_imm_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((ID_imm_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((ID_imm_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [ID_imm_update_def]
 QED
@@ -520,7 +544,13 @@ QED
 Theorem ID_data_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((ID_data_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((ID_data_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((ID_data_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((ID_data_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((ID_data_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((ID_data_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((ID_data_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((ID_data_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((ID_data_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [ID_data_update_def]
 QED
@@ -635,7 +665,13 @@ QED
 Theorem ID_data_check_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((ID_data_check_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((ID_data_check_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((ID_data_check_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((ID_data_check_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((ID_data_check_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((ID_data_check_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((ID_data_check_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((ID_data_check_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((ID_data_check_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [ID_data_check_update_def]
 QED
@@ -765,7 +801,13 @@ QED
 Theorem EX_ALU_input_imm_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((EX_ALU_input_imm_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((EX_ALU_input_imm_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((EX_ALU_input_imm_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((EX_ALU_input_imm_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((EX_ALU_input_imm_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((EX_ALU_input_imm_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((EX_ALU_input_imm_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((EX_ALU_input_imm_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((EX_ALU_input_imm_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [EX_ALU_input_imm_update_def]
 QED
@@ -911,7 +953,13 @@ QED
 Theorem EX_ALU_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((EX_ALU_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((EX_ALU_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((EX_ALU_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((EX_ALU_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((EX_ALU_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((EX_ALU_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((EX_ALU_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((EX_ALU_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((EX_ALU_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [EX_ALU_update_def] >>
   Cases_on_word_value `s'.EX.EX_func` >> fs []
@@ -1051,7 +1099,13 @@ QED
 Theorem EX_SHIFT_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((EX_SHIFT_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((EX_SHIFT_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((EX_SHIFT_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((EX_SHIFT_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((EX_SHIFT_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((EX_SHIFT_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((EX_SHIFT_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((EX_SHIFT_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((EX_SHIFT_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [EX_SHIFT_update_def] >>
   Cases_on_word_value `(1 >< 0) s'.EX.EX_func` >> fs []
@@ -1183,7 +1237,13 @@ QED
 Theorem EX_jump_sel_addr_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((EX_jump_sel_addr_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((EX_jump_sel_addr_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((EX_jump_sel_addr_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((EX_jump_sel_addr_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [EX_jump_sel_addr_update_def]
 QED
@@ -1321,7 +1381,13 @@ QED
 Theorem MEM_ctrl_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((MEM_ctrl_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((MEM_ctrl_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((MEM_ctrl_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((MEM_ctrl_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((MEM_ctrl_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((MEM_ctrl_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((MEM_ctrl_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((MEM_ctrl_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((MEM_ctrl_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [MEM_ctrl_update_def]
 QED
@@ -1470,7 +1536,13 @@ QED
 Theorem WB_update_unchanged_WB_pipeline_items:
   !fext s s'.
     ((WB_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((WB_update fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((WB_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((WB_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((WB_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((WB_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((WB_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((WB_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((WB_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [WB_update_def]
 QED
@@ -1625,7 +1697,13 @@ QED
 Theorem Hazard_ctrl_unchanged_WB_pipeline_items:
   !fext s s'.
     ((Hazard_ctrl fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
-    ((Hazard_ctrl fext s s').WB.WB_addrW = s'.WB.WB_addrW)
+    ((Hazard_ctrl fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((Hazard_ctrl fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((Hazard_ctrl fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((Hazard_ctrl fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((Hazard_ctrl fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((Hazard_ctrl fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((Hazard_ctrl fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [Hazard_ctrl_def]
 QED
@@ -1712,6 +1790,20 @@ Proof
   rw [Acc_compute_def]
 QED
 
+Theorem Acc_compute_unchanged_WB_pipeline_items:
+  !fext s s'.
+    ((Acc_compute fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
+    ((Acc_compute fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((Acc_compute fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((Acc_compute fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((Acc_compute fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((Acc_compute fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((Acc_compute fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((Acc_compute fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
+Proof
+  rw [Acc_compute_def]
+QED
+
 Theorem Acc_compute_unchanged_WB_ctrl_items:
   !fext s s'.
     ((Acc_compute fext s s').WB.WB_state_flag <=> s'.WB.WB_state_flag)
@@ -1790,6 +1882,20 @@ Theorem IF_PC_update_unchanged_MEM_pipeline_items:
     ((IF_PC_update fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
     ((IF_PC_update fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
     ((IF_PC_update fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
+Proof
+  rw [IF_PC_update_def]
+QED
+
+Theorem IF_PC_update_unchanged_WB_pipeline_items:
+  !fext s s'.
+    ((IF_PC_update fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
+    ((IF_PC_update fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((IF_PC_update fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((IF_PC_update fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((IF_PC_update fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((IF_PC_update fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((IF_PC_update fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((IF_PC_update fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [IF_PC_update_def]
 QED
@@ -1873,6 +1979,20 @@ Theorem ID_pipeline_unchanged_MEM_pipeline_items:
     ((ID_pipeline fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
     ((ID_pipeline fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
     ((ID_pipeline fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
+Proof
+  rw [ID_pipeline_def]
+QED
+
+Theorem ID_pipeline_unchanged_WB_pipeline_items:
+  !fext s s'.
+    ((ID_pipeline fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
+    ((ID_pipeline fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((ID_pipeline fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((ID_pipeline fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((ID_pipeline fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((ID_pipeline fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((ID_pipeline fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((ID_pipeline fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [ID_pipeline_def]
 QED
@@ -1971,6 +2091,20 @@ Proof
   rw [REG_write_def]
 QED
 
+Theorem REG_write_unchanged_WB_pipeline_items:
+  !fext s s'.
+    ((REG_write fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
+    ((REG_write fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((REG_write fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((REG_write fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((REG_write fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((REG_write fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((REG_write fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((REG_write fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
+Proof
+  rw [REG_write_def]
+QED
+
 Theorem REG_write_unchanged_WB_ctrl_items:
   !fext s s'.
     ((REG_write fext s s').WB.WB_state_flag <=> s'.WB.WB_state_flag)
@@ -2051,6 +2185,20 @@ Theorem EX_pipeline_unchanged_MEM_pipeline_items:
     ((EX_pipeline fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
     ((EX_pipeline fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
     ((EX_pipeline fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
+Proof
+  rw [EX_pipeline_def]
+QED
+
+Theorem EX_pipeline_unchanged_WB_pipeline_items:
+  !fext s s'.
+    ((EX_pipeline fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
+    ((EX_pipeline fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((EX_pipeline fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((EX_pipeline fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((EX_pipeline fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((EX_pipeline fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((EX_pipeline fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((EX_pipeline fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [EX_pipeline_def]
 QED
@@ -2143,6 +2291,20 @@ Theorem MEM_pipeline_unchanged_EX_jump:
   !fext s s'.
     ((MEM_pipeline fext s s').EX.EX_jump_sel <=> s'.EX.EX_jump_sel) /\
     ((MEM_pipeline fext s s').EX.EX_jump_addr = s'.EX.EX_jump_addr)
+Proof
+  rw [MEM_pipeline_def]
+QED
+
+Theorem MEM_pipeline_unchanged_WB_pipeline_items:
+  !fext s s'.
+    ((MEM_pipeline fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
+    ((MEM_pipeline fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((MEM_pipeline fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((MEM_pipeline fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((MEM_pipeline fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((MEM_pipeline fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((MEM_pipeline fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((MEM_pipeline fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [MEM_pipeline_def]
 QED
@@ -2381,6 +2543,21 @@ Theorem agp32_next_state_unchanged_MEM_pipeline_items:
     ((agp32_next_state fext s s').MEM.MEM_addrW = s'.MEM.MEM_addrW) /\
     ((agp32_next_state fext s s').MEM.MEM_opc = s'.MEM.MEM_opc) /\
     ((agp32_next_state fext s s').MEM.MEM_write_reg <=> s'.MEM.MEM_write_reg)
+Proof
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
+Theorem agp32_next_state_unchanged_WB_pipeline_items:
+  !fext s s'.
+    ((agp32_next_state fext s s').WB.WB_write_reg <=> s'.WB.WB_write_reg) /\
+    ((agp32_next_state fext s s').WB.WB_addrW = s'.WB.WB_addrW) /\
+    ((agp32_next_state fext s s').WB.WB_PC = s'.WB.WB_PC) /\
+    ((agp32_next_state fext s s').WB.WB_imm = s'.WB.WB_imm) /\
+    ((agp32_next_state fext s s').WB.WB_opc = s'.WB.WB_opc) /\
+    ((agp32_next_state fext s s').WB.WB_dataA = s'.WB.WB_dataA) /\
+    ((agp32_next_state fext s s').WB.WB_ALU_res = s'.WB.WB_ALU_res) /\
+    ((agp32_next_state fext s s').WB.WB_SHIFT_res = s'.WB.WB_SHIFT_res)
 Proof
   rw [agp32_next_state_def] >>
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
@@ -3180,6 +3357,188 @@ Proof
       Hazard_ctrl_unchanged_MEM_ctrl_items,WB_update_unchanged_MEM_ctrl_items]
 QED
 
+(** WB_PC/imm/addrW are only changed by the WB_pipeline function **)
+Theorem agp32_WB_PC_imm_addrW_updated_by_WB_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state] (fext t) s s ==>
+    ((agp32 fext fbits (SUC t)).WB.WB_PC = (WB_pipeline (fext t) s s').WB.WB_PC) /\
+    ((agp32 fext fbits (SUC t)).WB.WB_imm = (WB_pipeline (fext t) s s').WB.WB_imm) /\
+    ((agp32 fext fbits (SUC t)).WB.WB_addrW = (WB_pipeline (fext t) s s').WB.WB_addrW)
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_WB_pipeline_items,WB_update_unchanged_WB_pipeline_items,
+      MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
+      EX_SHIFT_update_unchanged_WB_pipeline_items,EX_ALU_update_unchanged_WB_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
+      ID_data_check_update_unchanged_WB_pipeline_items,
+      ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
+      ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_WB_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_WB_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_WB_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss3`,MEM_pipeline_unchanged_WB_pipeline_items]
+QED
+
+(** WB_dataA is only changed by the WB_pipeline function **)
+Theorem agp32_WB_dataA_updated_by_WB_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).WB.WB_dataA = (WB_pipeline (fext t) s s').WB.WB_dataA
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_WB_pipeline_items,WB_update_unchanged_WB_pipeline_items,
+      MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
+      EX_SHIFT_update_unchanged_WB_pipeline_items,EX_ALU_update_unchanged_WB_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
+      ID_data_check_update_unchanged_WB_pipeline_items,
+      ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
+      ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_WB_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_WB_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_WB_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss3`,MEM_pipeline_unchanged_WB_pipeline_items]
+QED
+
+(** WB_opc is only changed by the WB_pipeline function **)
+Theorem agp32_WB_opc_updated_by_WB_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = (WB_pipeline (fext t) s s').WB.WB_opc
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_WB_pipeline_items,WB_update_unchanged_WB_pipeline_items,
+      MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
+      EX_SHIFT_update_unchanged_WB_pipeline_items,EX_ALU_update_unchanged_WB_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
+      ID_data_check_update_unchanged_WB_pipeline_items,
+      ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
+      ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_WB_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_WB_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_WB_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss3`,MEM_pipeline_unchanged_WB_pipeline_items]
+QED
+
+(** WB_ALU_res is only changed by the WB_pipeline function **)
+Theorem agp32_WB_ALU_res_updated_by_WB_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).WB.WB_ALU_res = (WB_pipeline (fext t) s s').WB.WB_ALU_res
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_WB_pipeline_items,WB_update_unchanged_WB_pipeline_items,
+      MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
+      EX_SHIFT_update_unchanged_WB_pipeline_items,EX_ALU_update_unchanged_WB_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
+      ID_data_check_update_unchanged_WB_pipeline_items,
+      ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
+      ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_WB_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_WB_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_WB_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss3`,MEM_pipeline_unchanged_WB_pipeline_items]
+QED
+
+(** WB_SHIFT_res is only changed by the WB_pipeline function **)
+Theorem agp32_WB_SHIFT_res_updated_by_WB_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).WB.WB_SHIFT_res = (WB_pipeline (fext t) s s').WB.WB_SHIFT_res
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_WB_pipeline_items,WB_update_unchanged_WB_pipeline_items,
+      MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
+      EX_SHIFT_update_unchanged_WB_pipeline_items,EX_ALU_update_unchanged_WB_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
+      ID_data_check_update_unchanged_WB_pipeline_items,
+      ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
+      ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_WB_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_WB_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_WB_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss3`,MEM_pipeline_unchanged_WB_pipeline_items]
+QED
+
+(** WB_write_reg is only changed by the WB_pipeline function **)
+Theorem agp32_WB_write_reg_updated_by_WB_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state] (fext t) s s ==>
+    (agp32 fext fbits (SUC t)).WB.WB_write_reg = (WB_pipeline (fext t) s s').WB.WB_write_reg
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s'' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s''' = procs _ (fext t) s'' s''` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s'''`,
+      Hazard_ctrl_unchanged_WB_pipeline_items,WB_update_unchanged_WB_pipeline_items,
+      MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
+      EX_SHIFT_update_unchanged_WB_pipeline_items,EX_ALU_update_unchanged_WB_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
+      ID_data_check_update_unchanged_WB_pipeline_items,
+      ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
+      ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Acc_compute_unchanged_WB_pipeline_items,
+      Abbr `ss7`,IF_PC_update_unchanged_WB_pipeline_items,
+      Abbr `ss6`,ID_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss5`,REG_write_unchanged_WB_pipeline_items,
+      Abbr `ss4`,EX_pipeline_unchanged_WB_pipeline_items,
+      Abbr `ss3`,MEM_pipeline_unchanged_WB_pipeline_items]
+QED
+
 (** command and state are updated by the agp32_next_state function **)
 Theorem agp32_command_state_updated_by_agp32_next_state:
   !fext fbits t s.
@@ -3612,6 +3971,40 @@ Proof
       WB_pipeline_unchanged_EX_ALU,WB_pipeline_unchanged_EX_ctrl_items,
       Abbr `ss1`,agp32_next_state_unchanged_EX_pipeline_items,
       agp32_next_state_unchanged_EX_ALU,agp32_next_state_unchanged_EX_ctrl_items]
+QED
+
+Theorem agp32_same_WB_items_before_WB_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state] (fext t) s s ==>
+    (s'.WB.WB_state_flag <=> s.WB.WB_state_flag) /\
+    (s'.WB.WB_PC = s.WB.WB_PC) /\
+    (s'.WB.WB_addrW = s.WB.WB_addrW) /\
+    (s'.WB.WB_dataA = s.WB.WB_dataA) /\
+    (s'.WB.WB_opc = s.WB.WB_opc) /\
+    (s'.WB.WB_imm = s.WB.WB_imm) /\
+    (s'.WB.WB_ALU_res = s.WB.WB_ALU_res) /\
+    (s'.WB.WB_SHIFT_res = s.WB.WB_SHIFT_res) /\
+    (s'.WB.WB_write_reg = s.WB.WB_write_reg)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  fs [procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  fs [Abbr `ss1`,agp32_next_state_unchanged_WB_ctrl_items,
+      agp32_next_state_unchanged_WB_pipeline_items]
+QED
+
+Theorem agp32_same_MEM_items_before_WB_pipeline:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state] (fext t) s s ==>
+    (s'.MEM.MEM_opc = s.MEM.MEM_opc) /\
+    (s'.MEM.MEM_imm = s.MEM.MEM_imm)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  fs [procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  fs [Abbr `ss1`,agp32_next_state_unchanged_MEM_pipeline_items]
 QED
 
 

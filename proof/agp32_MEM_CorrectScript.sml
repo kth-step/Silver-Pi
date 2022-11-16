@@ -137,7 +137,7 @@ Theorem agp32_Rel_ag32_MEM_imm_correct_not_LoadUpperConstant:
     (agp32 fext fbits (SUC t)).MEM.MEM_opc <> 14w ==>
     (agp32 fext fbits (SUC t)).MEM.MEM_imm = imm (FUNPOW Next (THE (I (4,SUC t)) − 1) a)
 Proof
-  rw [] >> rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline] (fext t) s s` >>
   `(agp32 fext fbits (SUC t)).MEM.MEM_opc = (MEM_pipeline (fext t) s s').MEM.MEM_opc`
     by fs [agp32_MEM_opc_updated_by_MEM_pipeline] >>
@@ -175,7 +175,7 @@ Theorem agp32_Rel_ag32_MEM_imm_correct_LoadUpperConstant:
     ((8 >< 0) (imm (FUNPOW Next (THE (I (4,SUC t)) − 1) a)) @@
      (22 >< 0) (dataW (FUNPOW Next (THE (I (4,SUC t)) − 1) a)))
 Proof
-  rw [] >> rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline] (fext t) s s` >>
   `(agp32 fext fbits (SUC t)).MEM.MEM_opc = (MEM_pipeline (fext t) s s').MEM.MEM_opc`
     by fs [agp32_MEM_opc_updated_by_MEM_pipeline] >>
@@ -444,6 +444,5 @@ Proof
       agp32_Rel_ag32_MEM_isAcc_correct,agp32_Rel_ag32_MEM_isInterrupt_correct] >>
   cheat
 QED
-
 
 val _ = export_theory ();

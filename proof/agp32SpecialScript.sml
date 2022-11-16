@@ -211,7 +211,13 @@ Theorem WB_instr_index_NONE_opc_flush:
     I (5,SUC t) = NONE ==>
     (agp32 fext fbits (SUC t)).WB.WB_opc = 16w \/ (agp32 fext fbits (SUC t)).WB.WB_opc = 15w
 Proof
-  cheat
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (`I' (5,SUC t) = I' (4,t)` by METIS_TAC [is_sch_def,is_sch_writeback_def] >>
+    `(agp32 fext fbits (SUC t)).WB.WB_opc = (agp32 fext fbits t).MEM.MEM_opc`
+      by fs [agp32_WB_opc_MEM_opc_when_WB_enabled] >>
+    fs [Rel_def,Inv_Rel_def]) >>
+  `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >>
+  fs [agp32_WB_opc_unchanged_when_WB_disabled,Rel_def,Inv_Rel_def]
 QED
 
 (** WB_write_reg **)
@@ -222,7 +228,19 @@ Theorem WB_instr_index_NONE_WB_not_write_reg:
     I (5,SUC t) = NONE ==>
     ~(agp32 fext fbits (SUC t)).WB.WB_write_reg
 Proof
-  cheat
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (`I' (5,SUC t) = I' (4,t)` by METIS_TAC [is_sch_def,is_sch_writeback_def] >>
+    Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+    Q.ABBREV_TAC `s' = procs [agp32_next_state] (fext t) s s` >>
+    `(agp32 fext fbits (SUC t)).WB.WB_write_reg = (WB_pipeline (fext t) s s').WB.WB_write_reg`
+      by fs [agp32_WB_write_reg_updated_by_WB_pipeline] >>
+    `(s'.WB.WB_state_flag = s.WB.WB_state_flag)`
+      by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_WB_items_before_WB_pipeline] >>
+    `s'.MEM.MEM_opc = s.MEM.MEM_opc`
+      by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_MEM_items_before_WB_pipeline] >>
+    fs [enable_stg_def,WB_pipeline_def,Rel_def,Inv_Rel_def]) >>
+  `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >>
+  fs [agp32_WB_write_reg_unchanged_when_WB_disabled,Rel_def,Inv_Rel_def]
 QED
 
 (** instr index relation between IF and WB stages when ID, EX and MEM are NONE **)

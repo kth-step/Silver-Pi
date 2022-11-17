@@ -508,6 +508,263 @@ Proof
   fs [MEM_pipeline_def]
 QED
 
+(** MEM_read_mem and MEM_opc **)
+Theorem agp32_MEM_read_mem_MEM_opc_4w_5w:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_read_mem =
+    ((agp32 fext fbits t).MEM.MEM_opc = 4w \/ (agp32 fext fbits t).MEM.MEM_opc = 5w)
+Proof
+  rw [] >> Cases_on `t` >-
+   (rw [agp32_def,mk_circuit_def,mk_module_def] >>
+    clist_update_state_tac >>
+    fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,
+        Hazard_ctrl_unchanged_MEM_pipeline_items,Hazard_ctrl_unchanged_MEM_ctrl_items,
+        WB_update_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_ctrl_items] >>
+    rw [MEM_ctrl_update_def] >>
+    fs [Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,
+        Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+        IF_PC_input_update_unchanged_MEM_pipeline_items,
+        EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+        EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+        EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+        ID_data_check_update_unchanged_MEM_pipeline_items,
+        ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+        ID_opc_func_update_unchanged_MEM_pipeline_items,
+        IF_instr_update_unchanged_MEM_pipeline_items]) >>
+  Q.ABBREV_TAC `s = agp32 fext fbits n` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext n) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;ID_data_update;
+                             ID_data_check_update;EX_ALU_input_imm_update;
+                             EX_ALU_update;EX_SHIFT_update;EX_jump_sel_addr_update;
+                              IF_PC_input_update] (fext (SUC n)) s' s'` >>
+  `(agp32 fext fbits (SUC n)).MEM.MEM_read_mem =
+  (MEM_ctrl_update (fext (SUC n)) s' s'').MEM.MEM_read_mem`
+    by fs [agp32_MEM_ctrl_items_updated_by_MEM_ctrl_update] >>
+  `s'.MEM.MEM_opc = (agp32 fext fbits (SUC n)).MEM.MEM_opc`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_MEM_pipeline_items_after_MEM_pipeline] >>
+  fs [MEM_ctrl_update_def]
+QED
+
+(** MEM_write_mem and MEM_opc **)
+Theorem agp32_MEM_write_mem_MEM_opc_2w:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_write_mem = ((agp32 fext fbits t).MEM.MEM_opc = 2w)
+Proof
+  rw [] >> Cases_on `t` >-
+   (rw [agp32_def,mk_circuit_def,mk_module_def] >>
+    clist_update_state_tac >>
+    fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,
+        Hazard_ctrl_unchanged_MEM_pipeline_items,Hazard_ctrl_unchanged_MEM_ctrl_items,
+        WB_update_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_ctrl_items] >>
+    rw [MEM_ctrl_update_def] >>
+    fs [Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,
+        Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+        IF_PC_input_update_unchanged_MEM_pipeline_items,
+        EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+        EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+        EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+        ID_data_check_update_unchanged_MEM_pipeline_items,
+        ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+        ID_opc_func_update_unchanged_MEM_pipeline_items,
+        IF_instr_update_unchanged_MEM_pipeline_items]) >>
+  Q.ABBREV_TAC `s = agp32 fext fbits n` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext n) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;ID_data_update;
+                             ID_data_check_update;EX_ALU_input_imm_update;
+                             EX_ALU_update;EX_SHIFT_update;EX_jump_sel_addr_update;
+                              IF_PC_input_update] (fext (SUC n)) s' s'` >>
+  `(agp32 fext fbits (SUC n)).MEM.MEM_write_mem =
+  (MEM_ctrl_update (fext (SUC n)) s' s'').MEM.MEM_write_mem`
+    by fs [agp32_MEM_ctrl_items_updated_by_MEM_ctrl_update] >>
+  `s'.MEM.MEM_opc = (agp32 fext fbits (SUC n)).MEM.MEM_opc`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_MEM_pipeline_items_after_MEM_pipeline] >>
+  fs [MEM_ctrl_update_def]
+QED
+
+(** MEM_write_mem_byte and MEM_opc **)
+Theorem agp32_MEM_write_mem_byte_MEM_opc_3w:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_write_mem_byte = ((agp32 fext fbits t).MEM.MEM_opc = 3w)
+Proof
+  rw [] >> Cases_on `t` >-
+   (rw [agp32_def,mk_circuit_def,mk_module_def] >>
+    clist_update_state_tac >>
+    fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,
+        Hazard_ctrl_unchanged_MEM_pipeline_items,Hazard_ctrl_unchanged_MEM_ctrl_items,
+        WB_update_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_ctrl_items] >>
+    rw [MEM_ctrl_update_def] >>
+    fs [Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,
+        Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+        IF_PC_input_update_unchanged_MEM_pipeline_items,
+        EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+        EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+        EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+        ID_data_check_update_unchanged_MEM_pipeline_items,
+        ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+        ID_opc_func_update_unchanged_MEM_pipeline_items,
+        IF_instr_update_unchanged_MEM_pipeline_items]) >>
+  Q.ABBREV_TAC `s = agp32 fext fbits n` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext n) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;ID_data_update;
+                             ID_data_check_update;EX_ALU_input_imm_update;
+                             EX_ALU_update;EX_SHIFT_update;EX_jump_sel_addr_update;
+                              IF_PC_input_update] (fext (SUC n)) s' s'` >>
+  `(agp32 fext fbits (SUC n)).MEM.MEM_write_mem_byte =
+  (MEM_ctrl_update (fext (SUC n)) s' s'').MEM.MEM_write_mem_byte`
+    by fs [agp32_MEM_ctrl_items_updated_by_MEM_ctrl_update] >>
+  `s'.MEM.MEM_opc = (agp32 fext fbits (SUC n)).MEM.MEM_opc`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_MEM_pipeline_items_after_MEM_pipeline] >>
+  fs [MEM_ctrl_update_def]
+QED
+
+(** MEM_isAcc and MEM_opc **)
+Theorem agp32_MEM_isAcc_MEM_opc_8w:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_isAcc = ((agp32 fext fbits t).MEM.MEM_opc = 8w)
+Proof
+  rw [] >> Cases_on `t` >-
+   (rw [agp32_def,mk_circuit_def,mk_module_def] >>
+    clist_update_state_tac >>
+    fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,
+        Hazard_ctrl_unchanged_MEM_pipeline_items,Hazard_ctrl_unchanged_MEM_ctrl_items,
+        WB_update_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_ctrl_items] >>
+    rw [MEM_ctrl_update_def] >>
+    fs [Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,
+        Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+        IF_PC_input_update_unchanged_MEM_pipeline_items,
+        EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+        EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+        EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+        ID_data_check_update_unchanged_MEM_pipeline_items,
+        ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+        ID_opc_func_update_unchanged_MEM_pipeline_items,
+        IF_instr_update_unchanged_MEM_pipeline_items]) >>
+  Q.ABBREV_TAC `s = agp32 fext fbits n` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext n) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;ID_data_update;
+                             ID_data_check_update;EX_ALU_input_imm_update;
+                             EX_ALU_update;EX_SHIFT_update;EX_jump_sel_addr_update;
+                              IF_PC_input_update] (fext (SUC n)) s' s'` >>
+  `(agp32 fext fbits (SUC n)).MEM.MEM_isAcc =
+  (MEM_ctrl_update (fext (SUC n)) s' s'').MEM.MEM_isAcc`
+    by fs [agp32_MEM_ctrl_items_updated_by_MEM_ctrl_update] >>
+  `s'.MEM.MEM_opc = (agp32 fext fbits (SUC n)).MEM.MEM_opc`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_MEM_pipeline_items_after_MEM_pipeline] >>
+  fs [MEM_ctrl_update_def]
+QED
+
+(** MEM_isInterrupt and MEM_opc **)
+Theorem agp32_MEM_isInterrupt_MEM_opc_12w:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_isInterrupt = ((agp32 fext fbits t).MEM.MEM_opc = 12w)
+Proof
+  rw [] >> Cases_on `t` >-
+   (rw [agp32_def,mk_circuit_def,mk_module_def] >>
+    clist_update_state_tac >>
+    fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,
+        Hazard_ctrl_unchanged_MEM_pipeline_items,Hazard_ctrl_unchanged_MEM_ctrl_items,
+        WB_update_unchanged_MEM_pipeline_items,WB_update_unchanged_MEM_ctrl_items] >>
+    rw [MEM_ctrl_update_def] >>
+    fs [Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,
+        Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+        IF_PC_input_update_unchanged_MEM_pipeline_items,
+        EX_jump_sel_addr_update_unchanged_MEM_pipeline_items,
+        EX_SHIFT_update_unchanged_MEM_pipeline_items,EX_ALU_update_unchanged_MEM_pipeline_items,
+        EX_ALU_input_imm_update_unchanged_MEM_pipeline_items,
+        ID_data_check_update_unchanged_MEM_pipeline_items,
+        ID_data_update_unchanged_MEM_pipeline_items,ID_imm_update_unchanged_MEM_pipeline_items,
+        ID_opc_func_update_unchanged_MEM_pipeline_items,
+        IF_instr_update_unchanged_MEM_pipeline_items]) >>
+  Q.ABBREV_TAC `s = agp32 fext fbits n` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write;ID_pipeline;IF_PC_update;Acc_compute] (fext n) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;ID_data_update;
+                             ID_data_check_update;EX_ALU_input_imm_update;
+                             EX_ALU_update;EX_SHIFT_update;EX_jump_sel_addr_update;
+                              IF_PC_input_update] (fext (SUC n)) s' s'` >>
+  `(agp32 fext fbits (SUC n)).MEM.MEM_isInterrupt =
+  (MEM_ctrl_update (fext (SUC n)) s' s'').MEM.MEM_isInterrupt`
+    by fs [agp32_MEM_ctrl_items_updated_by_MEM_ctrl_update] >>
+  `s'.MEM.MEM_opc = (agp32 fext fbits (SUC n)).MEM.MEM_opc`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_MEM_pipeline_items_after_MEM_pipeline] >>
+  fs [MEM_ctrl_update_def]
+QED
+
+(** MEM_read_mem: other read ctrl items are F **)
+Theorem agp32_MEM_read_mem_others_F:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_read_mem ==>
+    ~(agp32 fext fbits t).MEM.MEM_write_mem /\
+    ~(agp32 fext fbits t).MEM.MEM_write_mem_byte /\
+    ~(agp32 fext fbits t).MEM.MEM_isAcc /\
+    ~(agp32 fext fbits t).MEM.MEM_isInterrupt
+Proof
+  rw [agp32_MEM_read_mem_MEM_opc_4w_5w,agp32_MEM_write_mem_MEM_opc_2w,
+      agp32_MEM_write_mem_byte_MEM_opc_3w,agp32_MEM_isAcc_MEM_opc_8w,
+      agp32_MEM_isInterrupt_MEM_opc_12w] >> fs []
+QED
+
+(** MEM_write_mem: other read ctrl items are F **)
+Theorem agp32_MEM_write_mem_others_F:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_write_mem ==>
+    ~(agp32 fext fbits t).MEM.MEM_read_mem /\
+    ~(agp32 fext fbits t).MEM.MEM_write_mem_byte /\
+    ~(agp32 fext fbits t).MEM.MEM_isAcc /\
+    ~(agp32 fext fbits t).MEM.MEM_isInterrupt
+Proof
+  rw [agp32_MEM_read_mem_MEM_opc_4w_5w,agp32_MEM_write_mem_MEM_opc_2w,
+      agp32_MEM_write_mem_byte_MEM_opc_3w,agp32_MEM_isAcc_MEM_opc_8w,
+      agp32_MEM_isInterrupt_MEM_opc_12w] >> fs []
+QED
+
+(** MEM_write_mem_byte: other read ctrl items are F **)
+Theorem agp32_MEM_write_mem_byte_others_F:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_write_mem_byte ==>
+    ~(agp32 fext fbits t).MEM.MEM_read_mem /\
+    ~(agp32 fext fbits t).MEM.MEM_write_mem /\
+    ~(agp32 fext fbits t).MEM.MEM_isAcc /\
+    ~(agp32 fext fbits t).MEM.MEM_isInterrupt
+Proof
+  rw [agp32_MEM_read_mem_MEM_opc_4w_5w,agp32_MEM_write_mem_MEM_opc_2w,
+      agp32_MEM_write_mem_byte_MEM_opc_3w,agp32_MEM_isAcc_MEM_opc_8w,
+      agp32_MEM_isInterrupt_MEM_opc_12w] >> fs []
+QED
+
+(** MEM_isAcc: other read ctrl items are F **)
+Theorem agp32_MEM_isAcc_others_F:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_isAcc ==>
+    ~(agp32 fext fbits t).MEM.MEM_read_mem /\
+    ~(agp32 fext fbits t).MEM.MEM_write_mem /\
+    ~(agp32 fext fbits t).MEM.MEM_write_mem_byte /\
+    ~(agp32 fext fbits t).MEM.MEM_isInterrupt
+Proof
+  rw [agp32_MEM_read_mem_MEM_opc_4w_5w,agp32_MEM_write_mem_MEM_opc_2w,
+      agp32_MEM_write_mem_byte_MEM_opc_3w,agp32_MEM_isAcc_MEM_opc_8w,
+      agp32_MEM_isInterrupt_MEM_opc_12w] >> fs []
+QED
+
+(** MEM_isInterrupt: other read ctrl items are F **)
+Theorem agp32_MEM_isInterrupt_others_F:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_isInterrupt ==>
+    ~(agp32 fext fbits t).MEM.MEM_read_mem /\
+    ~(agp32 fext fbits t).MEM.MEM_write_mem /\
+    ~(agp32 fext fbits t).MEM.MEM_write_mem_byte /\
+    ~(agp32 fext fbits t).MEM.MEM_isAcc
+Proof
+  rw [agp32_MEM_read_mem_MEM_opc_4w_5w,agp32_MEM_write_mem_MEM_opc_2w,
+      agp32_MEM_write_mem_byte_MEM_opc_3w,agp32_MEM_isAcc_MEM_opc_8w,
+      agp32_MEM_isInterrupt_MEM_opc_12w] >> fs []
+QED
+    
+
 
 (** WB stage **)
 (** when WB is disabled, the R is unchanged **)
@@ -1106,6 +1363,44 @@ Proof
   Cases_on `s12.EX.EX_checkA \/ s12.EX.EX_checkB \/ s12.EX.EX_checkW \/
             s12.MEM.MEM_checkA \/ s12.MEM.MEM_checkB \/ s12.MEM.MEM_checkW \/   
             s12.WB.WB_checkA \/ s12.WB.WB_checkB \/ s12.WB.WB_checkW` >> fs []
+QED
+
+(** MEM_state_flag and fext t.ready **)
+Theorem agp32_MEM_state_flag_and_fext_ready:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_state_flag ==> (fext t).ready
+Proof
+  rw [] >>
+  `?s s'.
+  ((agp32 fext fbits t).MEM.MEM_state_flag <=> (Hazard_ctrl (fext t) s s').MEM.MEM_state_flag)`
+    by METIS_TAC [agp32_ctrl_flags_exists_Hazard_ctrl] >> fs [] >>
+  fs [Hazard_ctrl_def] >>
+  Cases_on `s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/
+            s'.state = 4w \/ s'.state = 5w \/ s'.state = 6w` >> fs [] >>
+  Cases_on `(fext t).ready` >> fs []
+QED
+
+Theorem not_fext_ready_and_agp32_MEM_state_flag_F:
+  !fext fbits t.
+    ~(fext t).ready ==> ~(agp32 fext fbits t).MEM.MEM_state_flag
+Proof
+  rw [] >> METIS_TAC [agp32_MEM_state_flag_and_fext_ready]
+QED
+
+(** MEM_state_flag and state **)
+Theorem agp32_MEM_state_flag_and_state:
+  !fext fbits t.
+    (agp32 fext fbits t).MEM.MEM_state_flag ==>
+    ((agp32 fext fbits t).state <> 1w) /\
+    ((agp32 fext fbits t).state <> 2w) /\
+    ((agp32 fext fbits t).state <> 3w) /\
+    ((agp32 fext fbits t).state <> 4w) /\
+    ((agp32 fext fbits t).state <> 5w)
+Proof
+  rpt gen_tac >> strip_tac >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   rw_hazard_ctrl_checks_init >>
+  rw_hazard_ctrl_checks_regular
 QED
 
 (** ID_EX_write_enable, MEM_state_flag and MEM_opc **)

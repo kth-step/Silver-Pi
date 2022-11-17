@@ -217,7 +217,7 @@ End
 
 (** memory stage **)
 Definition MEM_Rel_def:
-  MEM_Rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
+  MEM_Rel (s:state_circuit) (a:ag32_state) (i:num) <=>
   ((s.MEM.MEM_PC = (FUNPOW Next (i-1) a).PC) /\
    (s.MEM.MEM_addrW = addrW (FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_dataA = dataA (FUNPOW Next (i-1) a)) /\
@@ -233,11 +233,18 @@ Definition MEM_Rel_def:
    (s.MEM.MEM_write_mem = mem_iswrite (FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_write_mem_byte = mem_iswrite_byte (FUNPOW Next (i-1) a)) /\
    (s.MEM.MEM_isAcc = isAcc_isa (FUNPOW Next (i-1) a)) /\
-   (s.MEM.MEM_isInterrupt = isinterrupt (FUNPOW Next (i-1) a)) /\
-   (s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
-   (s.data_wstrb = mem_data_wstrb (FUNPOW Next (i-1) a)) /\
-   (s.data_wdata = mem_data_wdata (FUNPOW Next (i-1) a)) /\
-   (fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a)))
+   (s.MEM.MEM_isInterrupt = isinterrupt (FUNPOW Next (i-1) a)))
+End
+
+(** requests that may cause delays **)
+Definition MEM_req_rel_def:
+  MEM_req_rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
+  ((si.MEM.MEM_opc = 4w ==> ((align_addr s.data_addr) = mem_data_addr (FUNPOW Next (i-1) a))) /\
+   (si.MEM.MEM_opc = 5w ==> s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
+   (si.MEM.MEM_opc = 2w ==> (align_addr s.data_addr) = mem_data_addr (FUNPOW Next (i-1) a)) /\
+   (si.MEM.MEM_opc = 3w ==> s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
+   (si.MEM.MEM_read_mem ==> s.command = 2w) /\
+   (si.MEM.MEM_write_mem \/ si.MEM.MEM_write_mem_byte ==> s.command = 3w))
 End
 
 (** write back stage **)
@@ -318,7 +325,8 @@ Definition Rel_def:
   (I (2,t) <> NONE ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (3,t) <> NONE ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (EX_Rel_spec s a (I (3,t))) /\
-  (I (4,t) <> NONE ==> MEM_Rel fext s a (THE (I (4,t)))) /\
+  (I (4,t) <> NONE ==> MEM_Rel s a (THE (I (4,t)))) /\
+  (I (5,t) <> NONE ==> MEM_req_rel fext si s a (THE (I (5,t)))) /\
   (I (5,t) <> NONE ==> WB_Rel fext s a (THE (I (5,t))))
 End
 

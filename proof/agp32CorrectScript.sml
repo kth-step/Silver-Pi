@@ -104,7 +104,8 @@ Proof
    fs [agp32_Rel_ag32_EX_Rel_correct] >-
    fs [agp32_Rel_ag32_EX_Rel_spec_correct] >-
    (** MEM **)
-   fs [agp32_Rel_ag32_MEM_Rel_correct] >>
+   fs [agp32_Rel_ag32_MEM_Rel_correct] >-
+   fs [agp32_Rel_ag32_MEM_req_rel_correct] >>
   (** WB **)
   fs [agp32_Rel_ag32_WB_Rel_correct]
 QED

@@ -239,12 +239,14 @@ End
 (** requests that may cause delays **)
 Definition MEM_req_rel_def:
   MEM_req_rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
-  ((si.MEM.MEM_opc = 4w ==> ((align_addr s.data_addr) = mem_data_addr (FUNPOW Next (i-1) a))) /\
-   (si.MEM.MEM_opc = 5w ==> s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
-   (si.MEM.MEM_opc = 2w ==> (align_addr s.data_addr) = mem_data_addr (FUNPOW Next (i-1) a)) /\
-   (si.MEM.MEM_opc = 3w ==> s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
-   (si.MEM.MEM_read_mem ==> s.command = 2w) /\
-   (si.MEM.MEM_write_mem \/ si.MEM.MEM_write_mem_byte ==> s.command = 3w))
+  ((s.WB.WB_opc = 4w ==> ((align_addr s.data_addr) = mem_data_addr (FUNPOW Next (i-1) a))) /\
+   (s.WB.WB_opc = 5w ==> s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 2w ==> (align_addr s.data_addr) = mem_data_addr (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 3w ==> s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 4w ==> s.command = 2w) /\
+   (s.WB.WB_opc = 5w ==> s.command = 2w) /\
+   (s.WB.WB_opc = 2w ==> s.command = 3w) /\
+   (s.WB.WB_opc = 3w ==> s.command = 3w))
 End
 
 (** write back stage **)

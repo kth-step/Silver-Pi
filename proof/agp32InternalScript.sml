@@ -1463,6 +1463,37 @@ Proof
       IF_instr_update_unchanged_MEM_pipeline_items]
 QED
 
+(** WB_state_flag **)
+(** WB_state_flag and fext t.ready **)
+Theorem agp32_WB_state_flag_and_fext_ready:
+  !fext fbits t.
+    (agp32 fext fbits t).WB.WB_state_flag ==> (fext t).ready
+Proof
+  rw [GSYM agp32_MEM_state_flag_eq_WB_state_flag] >>
+  METIS_TAC [agp32_MEM_state_flag_and_fext_ready]
+QED
+
+Theorem not_fext_ready_and_agp32_WB_state_flag_F:
+  !fext fbits t.
+    ~(fext t).ready ==> ~(agp32 fext fbits t).WB.WB_state_flag
+Proof
+  rw [] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]
+QED
+
+(** WB_state_flag and state **)
+Theorem agp32_WB_state_flag_and_state:
+  !fext fbits t.
+    (agp32 fext fbits t).WB.WB_state_flag ==>
+    ((agp32 fext fbits t).state <> 1w) /\
+    ((agp32 fext fbits t).state <> 2w) /\
+    ((agp32 fext fbits t).state <> 3w) /\
+    ((agp32 fext fbits t).state <> 4w) /\
+    ((agp32 fext fbits t).state <> 5w)
+Proof
+  rw [GSYM agp32_MEM_state_flag_eq_WB_state_flag] >>
+  METIS_TAC [agp32_MEM_state_flag_and_state]
+QED
+
 
 (** ID_instr is 63 when there is a jump in EX stage at the previous cycle **)
 Theorem EX_isJump_hw_op_next_ID_instr:

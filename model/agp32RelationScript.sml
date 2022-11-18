@@ -243,6 +243,10 @@ Definition MEM_req_rel_def:
    (s.WB.WB_opc = 5w ==> s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 2w ==> (align_addr s.data_addr) = mem_data_addr (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 3w ==> s.data_addr = mem_data_addr (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 2w ==> s.data_wstrb = mem_data_wstrb (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 3w ==> s.data_wstrb = mem_data_wstrb (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 2w ==> s.data_wdata = mem_data_wdata (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 3w ==> s.data_wdata = mem_data_wdata (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 4w ==> s.command = 2w) /\
    (s.WB.WB_opc = 5w ==> s.command = 2w) /\
    (s.WB.WB_opc = 2w ==> s.command = 3w) /\

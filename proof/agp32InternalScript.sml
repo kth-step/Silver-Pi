@@ -1463,6 +1463,7 @@ Proof
       IF_instr_update_unchanged_MEM_pipeline_items]
 QED
 
+
 (** WB_state_flag **)
 (** WB_state_flag and fext t.ready **)
 Theorem agp32_WB_state_flag_and_fext_ready:
@@ -1492,6 +1493,19 @@ Theorem agp32_WB_state_flag_and_state:
 Proof
   rw [GSYM agp32_MEM_state_flag_eq_WB_state_flag] >>
   METIS_TAC [agp32_MEM_state_flag_and_state]
+QED
+
+(** WB_state_flag and state **)
+Theorem agp32_state_fext_ready_and_WB_state_flag:
+  !fext fbits t.
+    (agp32 fext fbits t).state = 0w ==>
+    (fext t).ready ==>
+    (agp32 fext fbits t).WB.WB_state_flag
+Proof
+  rw [] >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   rw_hazard_ctrl_checks_init >>
+  rw_hazard_ctrl_checks_regular
 QED
 
 

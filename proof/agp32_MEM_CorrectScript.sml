@@ -446,6 +446,28 @@ QED
 
 
 (** data_addr **)
+(** lemma for data_addr/wstrb/wdata **)
+Theorem agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled:
+  !fext fbits t.
+    ~enable_stg 5 (agp32 fext fbits t) ==>
+    ((agp32 fext fbits (SUC t)).data_addr = (agp32 fext fbits t).data_addr) /\
+    ((agp32 fext fbits (SUC t)).data_wstrb = (agp32 fext fbits t).data_wstrb) /\
+    ((agp32 fext fbits (SUC t)).data_wdata = (agp32 fext fbits t).data_wdata)
+Proof
+  rpt gen_tac >> disch_tac >>
+  fs [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `((agp32 fext fbits (SUC t)).data_addr = (agp32_next_state (fext t) s s).data_addr) /\
+  ((agp32 fext fbits (SUC t)).data_wstrb = (agp32_next_state (fext t) s s).data_wstrb) /\
+  ((agp32 fext fbits (SUC t)).data_wdata = (agp32_next_state (fext t) s s).data_wdata)`
+    by fs [agp32_data_addr_wstrb_wdata_updated_by_agp32_next_state] >>
+  fs [agp32_next_state_def] >>
+  IF_CASES_TAC >> fs [] >>
+  reverse IF_CASES_TAC >- rw [] >>
+  IF_CASES_TAC >>
+  fs [Abbr `s`] >> METIS_TAC [agp32_state_fext_ready_and_WB_state_flag]
+QED
+
 (** LoadMem **)
 Theorem agp32_Rel_ag32_data_addr_correct_read_mem:
   !fext fbits a t I.
@@ -474,7 +496,8 @@ Proof
     `~s.MEM.MEM_isInterrupt` by fs [Abbr `s`,agp32_MEM_read_mem_others_F] >> fs [] >>
     `opc (FUNPOW Next (THE (I' (4,t)) − 1) a) = 4w` by fs [Rel_def,MEM_Rel_def] >>
     fs [mem_data_addr_def,Rel_def,MEM_Rel_def]) >>
-  `(agp32 fext fbits (SUC t)).data_addr = (agp32 fext fbits t).data_addr` by cheat >>
+  `(agp32 fext fbits (SUC t)).data_addr = (agp32 fext fbits t).data_addr`
+    by fs [agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled] >>
   `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
   `(agp32 fext fbits t).WB.WB_opc = 4w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
   fs [Rel_def,MEM_req_rel_def]
@@ -507,12 +530,268 @@ Proof
     `~s.MEM.MEM_isInterrupt` by fs [Abbr `s`,agp32_MEM_read_mem_others_F] >> fs [] >>
     `opc (FUNPOW Next (THE (I' (4,t)) − 1) a) = 5w` by fs [Rel_def,MEM_Rel_def] >>
     fs [mem_data_addr_def,Rel_def,MEM_Rel_def]) >>
-  `(agp32 fext fbits (SUC t)).data_addr = (agp32 fext fbits t).data_addr` by cheat >>
+  `(agp32 fext fbits (SUC t)).data_addr = (agp32 fext fbits t).data_addr`
+    by fs [agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled] >>
   `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
   `(agp32 fext fbits t).WB.WB_opc = 5w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
   fs [Rel_def,MEM_req_rel_def]
 QED
-    
+
+(** StoreMem **)
+Theorem agp32_Rel_ag32_data_addr_correct_write_mem:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5, SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 2w ==>
+    align_addr (agp32 fext fbits (SUC t)).data_addr =
+    mem_data_addr (FUNPOW Next (THE (I (5,SUC t)) − 1) a)
+Proof
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>              
+    `(agp32 fext fbits (SUC t)).data_addr = (agp32_next_state (fext t) s s).data_addr`
+      by fs [agp32_data_addr_wstrb_wdata_updated_by_agp32_next_state] >>
+    `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+    `s.MEM.MEM_opc = 2w` by fs [agp32_WB_opc_MEM_opc_when_WB_enabled,Abbr `s`] >>
+    `s.MEM.MEM_write_mem` by METIS_TAC [Abbr `s`,agp32_MEM_write_mem_MEM_opc_2w] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `s.state = 0w`
+      by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+          METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+    `(fext t).ready`
+      by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+    fs [agp32_next_state_def] >>
+    `~s.MEM.MEM_isInterrupt /\ ~s.MEM.MEM_read_mem`
+      by fs [Abbr `s`,agp32_MEM_write_mem_others_F] >> fs [] >>
+    `opc (FUNPOW Next (THE (I' (4,t)) − 1) a) = 2w` by fs [Rel_def,MEM_Rel_def] >>
+    fs [mem_data_addr_def,Rel_def,MEM_Rel_def]) >>
+  `(agp32 fext fbits (SUC t)).data_addr = (agp32 fext fbits t).data_addr`
+    by fs [agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled] >>
+  `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `(agp32 fext fbits t).WB.WB_opc = 2w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+  fs [Rel_def,MEM_req_rel_def]
+QED
+
+(** StoreMem **)
+Theorem agp32_Rel_ag32_data_addr_correct_write_mem:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5, SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 2w ==>
+    align_addr (agp32 fext fbits (SUC t)).data_addr =
+    mem_data_addr (FUNPOW Next (THE (I (5,SUC t)) − 1) a)
+Proof
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>              
+    `(agp32 fext fbits (SUC t)).data_addr = (agp32_next_state (fext t) s s).data_addr`
+      by fs [agp32_data_addr_wstrb_wdata_updated_by_agp32_next_state] >>
+    `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+    `s.MEM.MEM_opc = 2w` by fs [agp32_WB_opc_MEM_opc_when_WB_enabled,Abbr `s`] >>
+    `s.MEM.MEM_write_mem` by METIS_TAC [Abbr `s`,agp32_MEM_write_mem_MEM_opc_2w] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `s.state = 0w`
+      by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+          METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+    `(fext t).ready`
+      by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+    fs [agp32_next_state_def] >>
+    `~s.MEM.MEM_isInterrupt /\ ~s.MEM.MEM_read_mem`
+      by fs [Abbr `s`,agp32_MEM_write_mem_others_F] >> fs [] >>
+    `opc (FUNPOW Next (THE (I' (4,t)) − 1) a) = 2w` by fs [Rel_def,MEM_Rel_def] >>
+    fs [mem_data_addr_def,Rel_def,MEM_Rel_def]) >>
+  `(agp32 fext fbits (SUC t)).data_addr = (agp32 fext fbits t).data_addr`
+    by fs [agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled] >>
+  `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `(agp32 fext fbits t).WB.WB_opc = 2w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+  fs [Rel_def,MEM_req_rel_def]
+QED
+
+(** StoreMemByte **)
+Theorem agp32_Rel_ag32_data_addr_correct_write_mem_byte:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5, SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 3w ==>
+    (agp32 fext fbits (SUC t)).data_addr = mem_data_addr (FUNPOW Next (THE (I (5,SUC t)) − 1) a)
+Proof
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>              
+    `(agp32 fext fbits (SUC t)).data_addr = (agp32_next_state (fext t) s s).data_addr`
+      by fs [agp32_data_addr_wstrb_wdata_updated_by_agp32_next_state] >>
+    `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+    `s.MEM.MEM_opc = 3w` by fs [agp32_WB_opc_MEM_opc_when_WB_enabled,Abbr `s`] >>
+    `s.MEM.MEM_write_mem_byte` by METIS_TAC [Abbr `s`,agp32_MEM_write_mem_byte_MEM_opc_3w] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `s.state = 0w`
+      by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+          METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+    `(fext t).ready`
+      by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+    fs [agp32_next_state_def] >>
+    `~s.MEM.MEM_isInterrupt /\ ~s.MEM.MEM_read_mem /\ ~s.MEM.MEM_write_mem`
+      by fs [Abbr `s`,agp32_MEM_write_mem_byte_others_F] >> fs [] >>
+    `opc (FUNPOW Next (THE (I' (4,t)) − 1) a) = 3w` by fs [Rel_def,MEM_Rel_def] >>
+    Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >>
+    fs [mem_data_addr_def,Rel_def,MEM_Rel_def]) >>
+  `(agp32 fext fbits (SUC t)).data_addr = (agp32 fext fbits t).data_addr`
+    by fs [agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled] >>
+  `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `(agp32 fext fbits t).WB.WB_opc = 3w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+  fs [Rel_def,MEM_req_rel_def]
+QED
+
+
+(** data_wstrb **)
+(** StoreMem **)
+Theorem agp32_Rel_ag32_data_wstrb_correct_write_mem:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5, SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 2w ==>
+    (agp32 fext fbits (SUC t)).data_wstrb = mem_data_wstrb (FUNPOW Next (THE (I (5,SUC t)) − 1) a)
+Proof
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>              
+    `(agp32 fext fbits (SUC t)).data_wstrb = (agp32_next_state (fext t) s s).data_wstrb`
+      by fs [agp32_data_addr_wstrb_wdata_updated_by_agp32_next_state] >>
+    `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+    `s.MEM.MEM_opc = 2w` by fs [agp32_WB_opc_MEM_opc_when_WB_enabled,Abbr `s`] >>
+    `s.MEM.MEM_write_mem` by METIS_TAC [Abbr `s`,agp32_MEM_write_mem_MEM_opc_2w] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `s.state = 0w`
+      by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+          METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+    `(fext t).ready`
+      by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+    fs [agp32_next_state_def] >>
+    `~s.MEM.MEM_isInterrupt /\ ~s.MEM.MEM_read_mem`
+      by fs [Abbr `s`,agp32_MEM_write_mem_others_F] >> fs [] >>
+    `opc (FUNPOW Next (THE (I' (4,t)) − 1) a) = 2w` by fs [Rel_def,MEM_Rel_def] >>
+    fs [mem_data_wstrb_def,Rel_def,MEM_Rel_def]) >>
+  `(agp32 fext fbits (SUC t)).data_wstrb = (agp32 fext fbits t).data_wstrb`
+    by fs [agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled] >>
+  `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `(agp32 fext fbits t).WB.WB_opc = 2w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+  fs [Rel_def,MEM_req_rel_def]
+QED
+
+(** StoreMemByte **)
+Theorem agp32_Rel_ag32_data_wstrb_correct_write_mem_byte:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5, SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 3w ==>
+    (agp32 fext fbits (SUC t)).data_wstrb = mem_data_wstrb (FUNPOW Next (THE (I (5,SUC t)) − 1) a)
+Proof
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>              
+    `(agp32 fext fbits (SUC t)).data_wstrb = (agp32_next_state (fext t) s s).data_wstrb`
+      by fs [agp32_data_addr_wstrb_wdata_updated_by_agp32_next_state] >>
+    `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+    `s.MEM.MEM_opc = 3w` by fs [agp32_WB_opc_MEM_opc_when_WB_enabled,Abbr `s`] >>
+    `s.MEM.MEM_write_mem_byte` by METIS_TAC [Abbr `s`,agp32_MEM_write_mem_byte_MEM_opc_3w] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `s.state = 0w`
+      by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+          METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+    `(fext t).ready`
+      by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+    fs [agp32_next_state_def] >>
+    `~s.MEM.MEM_isInterrupt /\ ~s.MEM.MEM_read_mem /\ ~s.MEM.MEM_write_mem`
+      by fs [Abbr `s`,agp32_MEM_write_mem_byte_others_F] >> fs [] >>
+    `opc (FUNPOW Next (THE (I' (4,t)) − 1) a) = 3w` by fs [Rel_def,MEM_Rel_def] >>
+    `dataB (FUNPOW Next (THE (I' (4,t)) − 1) a) = s.MEM.MEM_dataB` by fs [Rel_def,MEM_Rel_def] >>
+    Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >>
+    fs [mem_data_wstrb_def]) >>
+  `(agp32 fext fbits (SUC t)).data_wstrb = (agp32 fext fbits t).data_wstrb`
+    by fs [agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled] >>
+  `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `(agp32 fext fbits t).WB.WB_opc = 3w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+  fs [Rel_def,MEM_req_rel_def]
+QED
+
+
+(** data_wdata **)
+(** StoreMem **)
+Theorem agp32_Rel_ag32_data_wdata_correct_write_mem:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5, SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 2w ==>
+    (agp32 fext fbits (SUC t)).data_wdata = mem_data_wdata (FUNPOW Next (THE (I (5,SUC t)) − 1) a)
+Proof
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>              
+    `(agp32 fext fbits (SUC t)).data_wdata = (agp32_next_state (fext t) s s).data_wdata`
+      by fs [agp32_data_addr_wstrb_wdata_updated_by_agp32_next_state] >>
+    `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+    `s.MEM.MEM_opc = 2w` by fs [agp32_WB_opc_MEM_opc_when_WB_enabled,Abbr `s`] >>
+    `s.MEM.MEM_write_mem` by METIS_TAC [Abbr `s`,agp32_MEM_write_mem_MEM_opc_2w] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `s.state = 0w`
+      by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+          METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+    `(fext t).ready`
+      by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+    fs [agp32_next_state_def] >>
+    `~s.MEM.MEM_isInterrupt /\ ~s.MEM.MEM_read_mem`
+      by fs [Abbr `s`,agp32_MEM_write_mem_others_F] >> fs [] >>
+    `opc (FUNPOW Next (THE (I' (4,t)) − 1) a) = 2w` by fs [Rel_def,MEM_Rel_def] >>
+    fs [mem_data_wdata_def,Rel_def,MEM_Rel_def]) >>
+  `(agp32 fext fbits (SUC t)).data_wdata = (agp32 fext fbits t).data_wdata`
+    by fs [agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled] >>
+  `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `(agp32 fext fbits t).WB.WB_opc = 2w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+  fs [Rel_def,MEM_req_rel_def]
+QED
+
+(** StoreMemByte **)
+Theorem agp32_Rel_ag32_data_wdata_correct_write_mem_byte:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5, SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 3w ==>
+    (agp32 fext fbits (SUC t)).data_wdata = mem_data_wdata (FUNPOW Next (THE (I (5,SUC t)) − 1) a)
+Proof
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>              
+    `(agp32 fext fbits (SUC t)).data_wdata = (agp32_next_state (fext t) s s).data_wdata`
+      by fs [agp32_data_addr_wstrb_wdata_updated_by_agp32_next_state] >>
+    `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+    `s.MEM.MEM_opc = 3w` by fs [agp32_WB_opc_MEM_opc_when_WB_enabled,Abbr `s`] >>
+    `s.MEM.MEM_write_mem_byte` by METIS_TAC [Abbr `s`,agp32_MEM_write_mem_byte_MEM_opc_3w] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `s.state = 0w`
+      by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+          METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+    `(fext t).ready`
+      by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+    fs [agp32_next_state_def] >>
+    `~s.MEM.MEM_isInterrupt /\ ~s.MEM.MEM_read_mem /\ ~s.MEM.MEM_write_mem`
+      by fs [Abbr `s`,agp32_MEM_write_mem_byte_others_F] >> fs [] >>
+    `opc (FUNPOW Next (THE (I' (4,t)) − 1) a) = 3w` by fs [Rel_def,MEM_Rel_def] >>
+    Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >>
+    cheat) >>
+  `(agp32 fext fbits (SUC t)).data_wdata = (agp32 fext fbits t).data_wdata`
+    by fs [agp32_data_addr_wstrb_wdata_unchanged_when_WB_disabled] >>
+  `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `(agp32 fext fbits t).WB.WB_opc = 3w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+  fs [Rel_def,MEM_req_rel_def]
+QED
+
 
 (** data_rdata **)
 Theorem agp32_Rel_ag32_read_mem_data_rdata_correct_WB_enable:
@@ -529,7 +808,8 @@ Proof
   cheat
 QED
 
-(* MEM_reg_rel *)
+
+(* MEM_req_rel *)
 Theorem agp32_Rel_ag32_MEM_req_rel_correct:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
@@ -539,7 +819,10 @@ Theorem agp32_Rel_ag32_MEM_req_rel_correct:
     MEM_req_rel (fext (SUC t)) (agp32 fext fbits t) (agp32 fext fbits (SUC t)) a (THE (I (5,SUC t)))
 Proof
   rw [MEM_req_rel_def] >>
-  fs [agp32_Rel_ag32_data_addr_correct_read_mem,agp32_Rel_ag32_data_addr_correct_read_mem_byte] >>
+  fs [agp32_Rel_ag32_data_addr_correct_read_mem,agp32_Rel_ag32_data_addr_correct_read_mem_byte,
+      agp32_Rel_ag32_data_addr_correct_write_mem,agp32_Rel_ag32_data_addr_correct_write_mem_byte,
+      agp32_Rel_ag32_data_wstrb_correct_write_mem,agp32_Rel_ag32_data_wstrb_correct_write_mem_byte,
+      agp32_Rel_ag32_data_wdata_correct_write_mem,agp32_Rel_ag32_data_wdata_correct_write_mem_byte] >>
   cheat
 QED
 

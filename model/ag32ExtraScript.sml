@@ -206,7 +206,14 @@ Definition mem_data_wdata_def:
   let opc = opc a;
       dataA = dataA a in
     if opc = 2w then dataA
-    else if opc = 3w then w2w ((7 >< 0) dataA)
+    else 0w
+End
+
+Definition mem_data_wdata_byte_def:
+  mem_data_wdata_byte a =
+  let opc = opc a;
+      dataA = dataA a in
+    if opc = 3w then (7 >< 0) dataA
     else 0w
 End
 

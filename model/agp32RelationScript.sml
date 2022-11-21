@@ -246,11 +246,15 @@ Definition MEM_req_rel_def:
    (s.WB.WB_opc = 2w ==> s.data_wstrb = mem_data_wstrb (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 3w ==> s.data_wstrb = mem_data_wstrb (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 2w ==> s.data_wdata = mem_data_wdata (FUNPOW Next (i-1) a)) /\
-   (s.WB.WB_opc = 3w ==> s.data_wdata = mem_data_wdata (FUNPOW Next (i-1) a)) /\
-   (s.WB.WB_opc = 4w ==> s.command = 2w) /\
-   (s.WB.WB_opc = 5w ==> s.command = 2w) /\
-   (s.WB.WB_opc = 2w ==> s.command = 3w) /\
-   (s.WB.WB_opc = 3w ==> s.command = 3w))
+   (s.WB.WB_opc = 3w ==> word_bit 0 s.data_wstrb ==> (7 >< 0) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 3w ==> word_bit 1 s.data_wstrb ==> (15 >< 8) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 3w ==> word_bit 2 s.data_wstrb ==> (23 >< 16) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 3w ==> word_bit 3 s.data_wstrb ==> (31 >< 24) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
+   (enable_stg 5 si ==> s.WB.WB_opc = 4w ==> s.command = 2w) /\
+   (enable_stg 5 si ==> s.WB.WB_opc = 5w ==> s.command = 2w) /\
+   (enable_stg 5 si ==> s.WB.WB_opc = 2w ==> s.command = 3w) /\
+   (enable_stg 5 si ==> s.WB.WB_opc = 3w ==> s.command = 3w) /\
+   (fext.ready ==> s.WB.WB_opc = 4w ==> fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a)))
 End
 
 (** write back stage **)

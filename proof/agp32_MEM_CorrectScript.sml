@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory wordsExtraTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory pred_setTheory wordsExtraTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib;
 
 (* correctness of MEM stage items with respect to the ISA *)
 val _ = new_theory "agp32_MEM_Correct";
@@ -1021,11 +1021,42 @@ Proof
     by METIS_TAC [agp32_Rel_ag32_command_correct_read_mem_WB_enable] >>
   last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
   Cases_on `m` >> fs [] >-
-   (fs [Rel_def] >> cheat) >>
+   (fs [Rel_def] >>
+    Cases_on `I' (5,t) = NONE` >> fs [] >>
+    `THE (I' (4,t)) = THE (I' (5,t)) + 1`
+      by METIS_TAC [MEM_instr_index_with_WB_instr_plus_1] >> fs []) >>
   `~(fext (0 + SUC t)).ready` by fs [] >> fs []
 QED
 
-(** WB disabled **)
+(** WB is disabled and fext is not ready at the previous cycle **)
+(** lemma **)
+Theorem FINITE_max_enable_WB[local]:
+  !t fext fbits.
+    FINITE {t0 | t0 < t /\ enable_stg 5 (agp32 fext fbits t0)}
+Proof
+  rw [] >>
+  `{t0 | t0 < t /\ enable_stg 5 (agp32 fext fbits t0)} SUBSET (count t)`
+    by rw [count_def,SUBSET_DEF] >>
+  `FINITE (count t)` by fs [FINITE_COUNT] >>
+  METIS_TAC [SUBSET_FINITE_I]
+QED
+
+Theorem agp32_Rel_ag32_read_mem_data_rdata_correct_WB_disable_fext_not_ready:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5,SUC t) <> NONE ==>
+    (fext (SUC t)).ready ==>
+    ~(fext t).ready ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 4w ==>
+    ~enable_stg 5 (agp32 fext fbits t) ==>
+    (fext (SUC t)).data_rdata = mem_data_rdata (FUNPOW Next (THE (I (5,SUC t)) - 1) a)
+Proof
+  rw [] >> cheat
+QED
+
+(** WB disabled **) 
 Theorem agp32_Rel_ag32_read_mem_data_rdata_correct_WB_disable:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
@@ -1037,8 +1068,39 @@ Theorem agp32_Rel_ag32_read_mem_data_rdata_correct_WB_disable:
     ~enable_stg 5 (agp32 fext fbits t) ==>
     (fext (SUC t)).data_rdata = mem_data_rdata (FUNPOW Next (THE (I (5,SUC t)) - 1) a)
 Proof
-  rw [] >>
-  cheat
+  rw [] >> Cases_on `(fext t).ready` >-
+   (`I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
+    `(agp32 fext fbits (SUC t)).WB.WB_opc = (agp32 fext fbits t).WB.WB_opc`
+      by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+    last_assum (assume_tac o is_mem_def_mem_no_errors) >>
+    Cases_on_word_value `(agp32 fext fbits (SUC t)).command` >>
+    fs [agp32_command_impossible_values] >-
+     (last_assum (mp_tac o is_mem_data_flush `SUC t`) >> rw [] >>
+      Cases_on `m` >> fs [] >-
+       fs [Rel_def,MEM_req_rel_def] >>
+      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
+     (last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
+      Cases_on `m` >> fs [] >-
+       fs [Rel_def,MEM_req_rel_def] >>
+      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
+     (last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
+      Cases_on `m` >> fs [] >-
+       (`opc (FUNPOW Next (THE (I' (5,t)) - 1) a) = 4w` by fs [Rel_def,WB_Rel_def] >>
+        rw [mem_data_rdata_def] >>
+        `align_addr (agp32 fext fbits (SUC t)).data_addr =
+        mem_data_addr (FUNPOW Next (THE (I' (5,SUC t)) - 1) a)`
+          by METIS_TAC [agp32_Rel_ag32_data_addr_correct_read_mem] >>
+        fs [Rel_def] >>
+        `~is_wrMEM_isa (FUNPOW Next (THE (I' (5,t)) - 1) a)` by fs [is_wrMEM_isa_def] >>
+        METIS_TAC [word_at_addr_not_changed_after_normal_instrs]) >>
+      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
+     (last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
+      Cases_on `m` >> fs [] >-
+       fs [Rel_def,MEM_req_rel_def] >>
+      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
+    last_assum (mp_tac o is_mem_do_nothing `SUC t`) >> rw [] >>
+    fs [Rel_def,MEM_req_rel_def]) >>
+  METIS_TAC [agp32_Rel_ag32_read_mem_data_rdata_correct_WB_disable_fext_not_ready]
 QED
 
 Theorem agp32_Rel_ag32_read_mem_data_rdata_correct:
@@ -1080,6 +1142,20 @@ Proof
              agp32_Rel_ag32_command_correct_read_mem_WB_enable,
              agp32_Rel_ag32_command_correct_read_mem_byte_WB_enable,
              agp32_Rel_ag32_read_mem_data_rdata_correct]
+QED
+
+
+(** memory **)
+Theorem agp32_Rel_ag32_fext_MEM_correct_MEM_not_NONE:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5,SUC t) <> NONE ==>
+    (fext (SUC t)).ready ==>
+    (fext (SUC t)).mem = (FUNPOW Next (THE (I (5,SUC t))) a).MEM
+Proof
+  cheat
 QED
 
 val _ = export_theory ();

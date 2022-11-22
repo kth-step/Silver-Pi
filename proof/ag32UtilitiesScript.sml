@@ -1132,12 +1132,11 @@ Proof
   simp [addr_add] >> METIS_TAC [addr_concat]
 QED
 
-(* if the instr is a not write operation, then fetched value is not affected *)
-Theorem word_at_addr_not_changed_after_normal_instrs:
-  !adr n a.
+(* if the instr is a not write operation, then MEM and fetched value are not affected *)
+Theorem MEM_not_changed_after_normal_instrs:
+  !n a.
     ~is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
-    word_at_addr (FUNPOW Next (n-1) a).MEM adr =
-    word_at_addr (FUNPOW Next n a).MEM adr
+    (FUNPOW Next (n-1) a).MEM = (FUNPOW Next n a).MEM
 Proof
   Cases_on `n` >> rw [FUNPOW_SUC] >>
   Q.ABBREV_TAC `a0 = FUNPOW Next n' a` >>
@@ -1172,6 +1171,15 @@ Proof
    (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def]) >-
    (PairCases_on `p` >> fs [ag32_Decode_StoreMEM_opc_2w]) >>
    PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
+QED
+
+Theorem word_at_addr_not_changed_after_normal_instrs:
+  !adr n a.
+    ~is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
+    word_at_addr (FUNPOW Next (n-1) a).MEM adr =
+    word_at_addr (FUNPOW Next n a).MEM adr
+Proof
+  rw [] >> METIS_TAC [MEM_not_changed_after_normal_instrs]
 QED
 
 

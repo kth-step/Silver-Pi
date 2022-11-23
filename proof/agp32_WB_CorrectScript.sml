@@ -124,7 +124,7 @@ Proof
   (s'.WB.WB_opc = s.WB.WB_opc)`
     by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_WB_items_before_WB_pipeline] >>
   `s'.MEM.MEM_imm = s.MEM.MEM_imm`
-    by cheat >>
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_MEM_items_before_WB_pipeline] >>
   Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
    (`I' (5,SUC t) = I' (4,t)` by fs [is_sch_writeback_def] >> fs [] >>
     `s'.WB.WB_state_flag` by fs [enable_stg_def,Abbr `s`] >>

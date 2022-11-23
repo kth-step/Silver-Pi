@@ -230,16 +230,6 @@ QED
 
 (** IF_instr updated when IF is disabled **)
 (** lemma **)
-Theorem FINITE_max_ready_cycle[local]:
-  !t fext.
-    FINITE {t0 | t0 < t /\ (fext t0).ready}
-Proof
-  rw [] >>
-  `{t0 | t0 < t /\ (fext t0).ready} SUBSET (count t)` by rw [count_def,SUBSET_DEF] >>
-  `FINITE (count t)` by fs [FINITE_COUNT] >>
-  METIS_TAC [SUBSET_FINITE_I]
-QED
-
 Theorem same_t_and_m_under_MAX_SET_0[local]:
   !fext t m.
     MAX_SET {t0 | t0 < t /\ (fext t0).ready} = 0 ==>

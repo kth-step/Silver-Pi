@@ -892,7 +892,6 @@ Theorem agp32_Rel_ag32_command_correct_write_mem_WB_enable:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5, SUC t) <> NONE ==>
     enable_stg 5 (agp32 fext fbits t) ==>
     (agp32 fext fbits (SUC t)).WB.WB_opc = 2w ==>
@@ -918,7 +917,6 @@ Theorem agp32_Rel_ag32_command_correct_write_mem_byte_WB_enable:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5, SUC t) <> NONE ==>
     enable_stg 5 (agp32 fext fbits t) ==>
     (agp32 fext fbits (SUC t)).WB.WB_opc = 3w ==>
@@ -945,7 +943,6 @@ Theorem agp32_Rel_ag32_command_correct_read_mem_WB_enable:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5, SUC t) <> NONE ==>
     enable_stg 5 (agp32 fext fbits t) ==>
     (agp32 fext fbits (SUC t)).WB.WB_opc = 4w ==>
@@ -971,7 +968,6 @@ Theorem agp32_Rel_ag32_command_correct_read_mem_byte_WB_enable:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5, SUC t) <> NONE ==>
     enable_stg 5 (agp32 fext fbits t) ==>
     (agp32 fext fbits (SUC t)).WB.WB_opc = 5w ==>
@@ -1030,15 +1026,54 @@ QED
 
 (** WB is disabled and fext is not ready at the previous cycle **)
 (** lemma **)
-Theorem FINITE_max_enable_WB[local]:
-  !t fext fbits.
-    FINITE {t0 | t0 < t /\ enable_stg 5 (agp32 fext fbits t0)}
+Theorem WB_opc_unchanged_after_disabled_cycles[local]:
+  !fext fbits m n.
+    (!p. p < m ==> ~(fext (p + n)).ready) ==>
+    (agp32 fext fbits (m + n)).WB.WB_opc = (agp32 fext fbits n).WB.WB_opc
+Proof
+  rw [] >> Induct_on `m` >> rw [] >>
+  `!p. p < m ==> ~(fext (n + p)).ready` by fs [] >> fs [] >>
+  `m < SUC m` by rw [] >>
+  `~(fext (n + m)).ready` by fs [] >>
+  `~(agp32 fext fbits (n + m)).WB.WB_state_flag`
+    by METIS_TAC [agp32_WB_state_flag_and_fext_ready] >>
+  `(agp32 fext fbits (SUC (n + m))).WB.WB_opc = (agp32 fext fbits (n + m)).WB.WB_opc`
+    by fs [agp32_WB_opc_unchanged_when_WB_disabled,enable_stg_def] >>
+  `n + SUC m = SUC (n + m)` by rw [] >> rw [] >> fs []
+QED
+
+Theorem WB_opc_unchanged_after_disabled_cycles_0[local]:
+  !fext fbits m.
+    (!p. p < m ==> ~(fext p).ready) ==>
+    (agp32 fext fbits m).WB.WB_opc = (agp32 fext fbits 0).WB.WB_opc
+Proof
+  rw [] >> `!p. p < m ==> ~(fext (p + 0)).ready` by fs [] >>
+  `(agp32 fext fbits (m + 0)).WB.WB_opc = (agp32 fext fbits 0).WB.WB_opc`
+    by fs [WB_opc_unchanged_after_disabled_cycles] >> fs []
+QED
+
+Theorem EMPTY_no_fext_ready_cycle[local]:
+  !t fext.
+    {t0 | t0 < t /\ (fext t0).ready} = {} ==>
+    (!t0. t0 < t ==> ~(fext t0).ready)
+Proof
+  rw [] >> Cases_on `(fext t0).ready` >> rw [] >>
+  `t0 IN {t0 | t0 < t /\ (fext t0).ready}` by fs [] >>
+  METIS_TAC [MEMBER_NOT_EMPTY]
+QED
+
+Theorem MAX_SET_0_no_fext_ready_cycle[local]:
+  !t fext.
+    {t0 | t0 < t /\ (fext t0).ready} <> {} ==>
+    MAX_SET {t0 | t0 < t /\ (fext t0).ready} = 0 ==>
+    (!t0. t0 < t - 1 ==> ~(fext (t0 + 1)).ready)
 Proof
   rw [] >>
-  `{t0 | t0 < t /\ enable_stg 5 (agp32 fext fbits t0)} SUBSET (count t)`
-    by rw [count_def,SUBSET_DEF] >>
-  `FINITE (count t)` by fs [FINITE_COUNT] >>
-  METIS_TAC [SUBSET_FINITE_I]
+  `FINITE {t0 | t0 < t /\ (fext t0).ready}` by rw [FINITE_max_ready_cycle] >>
+  Cases_on `(fext (t0 + 1)).ready` >> rw [] >>
+  `t0 + 1  < t` by fs [] >>
+  `t0 + 1 IN {t0 | t0 < t /\ (fext t0).ready}` by fs [] >>
+  `t0 + 1 <= 0` by METIS_TAC [MAX_SET_DEF] >> rw []
 QED
 
 Theorem agp32_Rel_ag32_read_mem_data_rdata_correct_WB_disable_fext_not_ready:
@@ -1053,7 +1088,33 @@ Theorem agp32_Rel_ag32_read_mem_data_rdata_correct_WB_disable_fext_not_ready:
     ~enable_stg 5 (agp32 fext fbits t) ==>
     (fext (SUC t)).data_rdata = mem_data_rdata (FUNPOW Next (THE (I (5,SUC t)) - 1) a)
 Proof
-  rw [] >> cheat
+  rw [] >> Cases_on `MAX_SET {t0 | t0 < t /\ (fext t0).ready}` >-
+   (Cases_on `{t0 | t0 < t /\ (fext t0).ready} = {}` >-
+     (`!t0. t0 < t ==> ~(fext t0).ready` by METIS_TAC [EMPTY_no_fext_ready_cycle] >>
+      `(agp32 fext fbits t).WB.WB_opc = (agp32 fext fbits 0).WB.WB_opc`
+        by fs [WB_opc_unchanged_after_disabled_cycles_0] >>
+      fs [agp32_WB_opc_unchanged_when_WB_disabled,agp32_init_WB_opc]) >>
+    `!t0. t0 < t - 1 ==> ~(fext (t0 + 1)).ready`
+      by METIS_TAC [MAX_SET_0_no_fext_ready_cycle] >>
+    `(agp32 fext fbits (t - 1 + 1)).WB.WB_opc = (agp32 fext fbits 1).WB.WB_opc`
+      by fs [WB_opc_unchanged_after_disabled_cycles] >>
+    `t - 1 + 1 = t` by (Cases_on `t` >> fs []) >> fs [] >>
+    `(agp32 fext fbits t).WB.WB_opc = 4w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+    `~enable_stg 5 (agp32 fext fbits 0)` by fs [agp32_init_ctrl_flags,enable_stg_def] >>
+    `(agp32 fext fbits (SUC 0)).WB.WB_opc = 16w`
+      by fs [agp32_WB_opc_unchanged_when_WB_disabled,agp32_init_WB_opc] >>
+    fs [SUC_ONE_ADD]) >>
+  Q.ABBREV_TAC `i = SUC n` >> `i <> 0` by fs [Abbr `i`] >>
+  `FINITE {t0 | t0 < t /\ (fext t0).ready}` by fs [FINITE_max_ready_cycle] >>
+  Cases_on `{t0 | t0 < t /\ (fext t0).ready} = {}` >> fs [MAX_SET_DEF] >>
+  `i IN {t0 | t0 < t /\ (fext t0).ready}` by METIS_TAC [MAX_SET_DEF] >> fs [MAX_SET_DEF] >>
+  last_assum (assume_tac o is_mem_def_mem_no_errors) >>
+  Cases_on_word_value `(agp32 fext fbits (SUC i)).command` >>
+  fs [agp32_command_impossible_values] >-
+   (last_assum (mp_tac o is_mem_data_flush `SUC i`) >> simp [] >> strip_tac >>
+    `m + SUC i = SUC t` by cheat >> fs [] >>
+    cheat) >>
+  cheat
 QED
 
 (** WB disabled **) 
@@ -1155,7 +1216,7 @@ Theorem agp32_Rel_ag32_fext_MEM_correct_MEM_not_NONE:
     (fext (SUC t)).ready ==>
     (fext (SUC t)).mem = (FUNPOW Next (THE (I (5,SUC t))) a).MEM
 Proof
-  cheat
+  rw [] >> cheat
 QED
 
 val _ = export_theory ();

@@ -1,10 +1,21 @@
-open hardwarePreamble translatorTheory arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory agp32UpdateLib;
+open hardwarePreamble translatorTheory arithmeticTheory pred_setTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory agp32UpdateLib;
 
 (* Theorems about the pipelined circuit's state update functions *)
 val _ = new_theory "agp32Update";
 
 val _ = prefer_num ();
 val _ = guess_lengths ();
+
+(** a general lemma **)
+Theorem FINITE_max_ready_cycle:
+  !t fext.
+    FINITE {t0 | t0 < t /\ (fext t0).ready}
+Proof
+  rw [] >>
+  `{t0 | t0 < t /\ (fext t0).ready} SUBSET (count t)` by rw [count_def,SUBSET_DEF] >>
+  `FINITE (count t)` by fs [FINITE_COUNT] >>
+  METIS_TAC [SUBSET_FINITE_I]
+QED
 
 (* show the unchanged part of different circuit functions in the pipelined Silver *)
 (** unchanged items by IF_instr_update **)

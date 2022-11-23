@@ -1,4 +1,4 @@
-open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32SpecialTheory agp32_IF_CorrectTheory agp32_ID_CorrectTheory agp32_EX_CorrectTheory agp32_EX_Flags_CorrectTheory agp32_MEM_CorrectTheory agp32_WB_CorrectTheory;
+open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32SpecialTheory agp32_IF_CorrectTheory agp32_ID_CorrectTheory agp32_EX_CorrectTheory agp32_EX_Flags_CorrectTheory agp32_MEM_CorrectTheory agp32_MEM_Data_CorrectTheory agp32_WB_CorrectTheory;
 
 (* correctness of the pipelined Silver circuit against the ISA *)
 val _ = new_theory "agp32Correct";
@@ -106,7 +106,8 @@ Proof
    fs [agp32_Rel_ag32_EX_Rel_spec_correct] >-
    (** MEM **)
    fs [agp32_Rel_ag32_MEM_Rel_correct] >-
-   fs [agp32_Rel_ag32_MEM_req_rel_correct] >>
+   fs [agp32_Rel_ag32_MEM_req_rel_correct] >-
+   fs [agp32_Rel_ag32_MEM_data_rel_correct] >>
   (** WB **)
   fs [agp32_Rel_ag32_WB_Rel_correct]
 QED

@@ -253,33 +253,6 @@ Proof
   `m + 1 <= 0` by METIS_TAC [MAX_SET_DEF] >> rw []
 QED
 
-Theorem same_t_and_m_under_MAX_SET_SUC[local]:
-  !fext t m n.
-    MAX_SET {t0 | t0 < t /\ (fext t0).ready} = n ==>
-    (!p. p < m ==> ~(fext (p + (SUC n))).ready) ==>
-    (fext (m + SUC n)).ready ==>
-    ~(fext t).ready ==>
-    (fext (SUC t)).ready ==>
-    n <> 0 ==>
-    m + SUC n = SUC t
-Proof
-  rpt strip_tac >>
-  `FINITE {t0 | t0 < t /\ (fext t0).ready}` by fs [FINITE_max_ready_cycle] >>
-  Cases_on `{t0 | t0 < t /\ (fext t0).ready} = {}` >> fs [MAX_SET_DEF] >>
-  `n IN {t0 | t0 < t /\ (fext t0).ready}` by METIS_TAC [MAX_SET_DEF] >>
-  fs [MAX_SET_DEF] >>
-  Cases_on `m + SUC n = SUC t` >> fs [] >>
-  Cases_on `SUC t < m + SUC n` >-
-   (`SUC t -SUC n < m` by rw [] >>
-    `~(fext (SUC t -SUC n + SUC n)).ready` by fs [] >>
-    `SUC t -SUC n + SUC n = SUC t` by rw [] >> fs []) >>
-  `SUC t > m + SUC n` by fs [] >> fs [] >>
-  Cases_on `t = m + SUC n` >> fs [] >>
-  `t > m + SUC n` by fs [] >>
-  `(m + SUC n) IN {t0 | t0 < t /\ (fext t0).ready}` by fs [] >>
-  `(m + SUC n) <= n` by METIS_TAC [MAX_SET_DEF] >> fs []
-QED
-
 Theorem PC_unchanged_after_disabled_cycles[local]:
   !fext fbits m n.
     (!p. p < m ==> ~(fext (p + n)).ready) ==>

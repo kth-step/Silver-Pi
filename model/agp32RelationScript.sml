@@ -236,7 +236,7 @@ Definition MEM_Rel_def:
    (s.MEM.MEM_isInterrupt = isinterrupt (FUNPOW Next (i-1) a)))
 End
 
-(** requests that may cause delays **)
+(** requests with the external environment **)
 Definition MEM_req_rel_def:
   MEM_req_rel (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (i:num) <=>
   ((s.WB.WB_opc = 4w ==> ((align_addr s.data_addr) = mem_data_addr (FUNPOW Next (i-1) a))) /\
@@ -253,8 +253,14 @@ Definition MEM_req_rel_def:
    (enable_stg 5 si ==> s.WB.WB_opc = 4w ==> s.command = 2w) /\
    (enable_stg 5 si ==> s.WB.WB_opc = 5w ==> s.command = 2w) /\
    (enable_stg 5 si ==> s.WB.WB_opc = 2w ==> s.command = 3w) /\
-   (enable_stg 5 si ==> s.WB.WB_opc = 3w ==> s.command = 3w) /\
-   (fext.ready ==> s.WB.WB_opc = 4w ==> fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a)))
+   (enable_stg 5 si ==> s.WB.WB_opc = 3w ==> s.command = 3w))
+End
+
+(** data for load instructions **)
+Definition MEM_data_rel_def:
+  MEM_data_rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
+  ((fext.ready ==> s.WB.WB_opc = 4w ==> fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a)) /\
+   (fext.ready ==> s.WB.WB_opc = 5w ==> fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a)))
 End
 
 (** write back stage **)
@@ -339,6 +345,7 @@ Definition Rel_def:
   (EX_Rel_spec s a (I (3,t))) /\
   (I (4,t) <> NONE ==> MEM_Rel s a (THE (I (4,t)))) /\
   (I (5,t) <> NONE ==> MEM_req_rel fext si s a (THE (I (5,t)))) /\
+  (I (5,t) <> NONE ==> MEM_data_rel fext s a (THE (I (5,t)))) /\
   (I (5,t) <> NONE ==> WB_Rel fext s a (THE (I (5,t))))
 End
 

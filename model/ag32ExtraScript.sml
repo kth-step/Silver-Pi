@@ -226,6 +226,14 @@ Definition mem_data_rdata_def:
     else 0w
 End
 
+Definition mem_data_rdata_extra_def:
+  mem_data_rdata_extra a =
+  let opc = opc a;
+      mem_data_addr = mem_data_addr a in
+    if opc = 5w then word_at_addr a.MEM (align_addr mem_data_addr)
+    else 0w
+End
+
 (* singals related to update Silver register R *)
 Definition reg_iswrite_def:
   reg_iswrite a =

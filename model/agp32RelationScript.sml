@@ -260,7 +260,7 @@ End
 Definition MEM_data_rel_def:
   MEM_data_rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
   ((fext.ready ==> s.WB.WB_opc = 4w ==> fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a)) /\
-   (fext.ready ==> s.WB.WB_opc = 5w ==> fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a)))
+   (fext.ready ==> s.WB.WB_opc = 5w ==> fext.data_rdata = mem_data_rdata_extra (FUNPOW Next (i-1) a)))
 End
 
 (** write back stage **)

@@ -20,6 +20,7 @@ Proof
   rw [] >> cheat
 QED
 
+
 (** data_rdata **)
 (** LoadMem **)
 (** WB enabled **)
@@ -160,10 +161,20 @@ Proof
   fs [agp32_command_impossible_values] >-
    (last_assum (mp_tac o is_mem_data_flush `SUC i`) >> simp [] >> strip_tac >>
     `m + SUC i = SUC t` by METIS_TAC [same_t_and_m_under_MAX_SET_SUC] >> fs [] >>
-    cheat) >-
+    `(agp32 fext fbits (SUC i)).WB.WB_opc = 4w`
+      by METIS_TAC [WB_opc_unchanged_after_disabled_cycles] >>
+    Cases_on `enable_stg 5 (agp32 fext fbits i)` >-
+     gs [agp32_Rel_ag32_command_correct_read_mem_WB_enable] >>
+    `(agp32 fext fbits (SUC i)).WB.WB_opc <> 16w` by fs [] >>
+    gs [agp32_Rel_ag32_command_correct_WB_disable_fext_ready]) >-
    (last_assum (mp_tac o is_mem_data_write `SUC i`) >> simp [] >> strip_tac >>
     `m + SUC i = SUC t` by METIS_TAC [same_t_and_m_under_MAX_SET_SUC] >> fs [] >>
-    cheat) >-
+    `(agp32 fext fbits (SUC i)).WB.WB_opc = 4w`
+      by METIS_TAC [WB_opc_unchanged_after_disabled_cycles] >>
+    Cases_on `enable_stg 5 (agp32 fext fbits i)` >-
+     gs [agp32_Rel_ag32_command_correct_read_mem_WB_enable] >>
+    `(agp32 fext fbits (SUC i)).WB.WB_opc <> 16w` by fs [] >>
+    gs [agp32_Rel_ag32_command_correct_WB_disable_fext_ready]) >-
    (last_assum (mp_tac o is_mem_data_read `SUC i`) >> simp [] >> strip_tac >>
     `m + SUC i = SUC t` by METIS_TAC [same_t_and_m_under_MAX_SET_SUC] >> fs [] >>
     `(fext (SUC t)).mem = (FUNPOW Next (THE (I' (5,SUC t))) a).MEM`
@@ -188,7 +199,12 @@ Proof
     METIS_TAC [word_at_addr_not_changed_after_normal_instrs]) >-
    (last_assum (mp_tac o is_mem_inst_read `SUC i`) >> simp [] >> strip_tac >>
     `m + SUC i = SUC t` by METIS_TAC [same_t_and_m_under_MAX_SET_SUC] >> fs [] >>
-    cheat) >>
+    `(agp32 fext fbits (SUC i)).WB.WB_opc = 4w`
+      by METIS_TAC [WB_opc_unchanged_after_disabled_cycles] >>
+    Cases_on `enable_stg 5 (agp32 fext fbits i)` >-
+     gs [agp32_Rel_ag32_command_correct_read_mem_WB_enable] >>
+    `(agp32 fext fbits (SUC i)).WB.WB_opc <> 16w` by fs [] >>
+    gs [agp32_Rel_ag32_command_correct_WB_disable_fext_ready]) >>
   last_assum (mp_tac o is_mem_do_nothing `SUC i`) >> simp [] >> strip_tac >>
   Cases_on `SUC i = t` >> fs [] >>
   Cases_on `SUC i > t` >> fs [] >>
@@ -214,31 +230,8 @@ Proof
     `(agp32 fext fbits (SUC t)).WB.WB_opc = (agp32 fext fbits t).WB.WB_opc`
       by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
     last_assum (assume_tac o is_mem_def_mem_no_errors) >>
-    Cases_on_word_value `(agp32 fext fbits (SUC t)).command` >>
-    fs [agp32_command_impossible_values] >-
-     (last_assum (mp_tac o is_mem_data_flush `SUC t`) >> rw [] >>
-      Cases_on `m` >> fs [] >-
-       fs [Rel_def,MEM_data_rel_def] >>
-      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
-     (last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
-      Cases_on `m` >> fs [] >-
-       fs [Rel_def,MEM_data_rel_def] >>
-      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
-     (last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
-      Cases_on `m` >> fs [] >-
-       (`opc (FUNPOW Next (THE (I' (5,t)) - 1) a) = 4w` by fs [Rel_def,WB_Rel_def] >>
-        rw [mem_data_rdata_def] >>
-        `align_addr (agp32 fext fbits (SUC t)).data_addr =
-        mem_data_addr (FUNPOW Next (THE (I' (5,SUC t)) - 1) a)`
-          by METIS_TAC [agp32_Rel_ag32_data_addr_correct_read_mem] >>
-        fs [Rel_def] >>
-        `~is_wrMEM_isa (FUNPOW Next (THE (I' (5,t)) - 1) a)` by fs [is_wrMEM_isa_def] >>
-        METIS_TAC [word_at_addr_not_changed_after_normal_instrs]) >>
-      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
-     (last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
-      Cases_on `m` >> fs [] >-
-       fs [Rel_def,MEM_data_rel_def] >>
-      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
+    `(agp32 fext fbits (SUC t)).command = 0w`
+      by gs [agp32_Rel_ag32_command_correct_WB_disable_fext_ready] >>
     last_assum (mp_tac o is_mem_do_nothing `SUC t`) >> rw [] >>
     fs [Rel_def,MEM_data_rel_def]) >>
   METIS_TAC [agp32_Rel_ag32_read_mem_data_rdata_correct_WB_disable_fext_not_ready]

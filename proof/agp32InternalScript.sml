@@ -1495,7 +1495,15 @@ Proof
   METIS_TAC [agp32_MEM_state_flag_and_state]
 QED
 
-(** WB_state_flag and state **)
+Theorem agp32_state_3_and_not_WB_state_flag:
+  !fext fbits t.
+    (agp32 fext fbits t).state = 3w ==>
+    ~(agp32 fext fbits t).WB.WB_state_flag
+Proof
+  rw [] >> METIS_TAC [agp32_WB_state_flag_and_state]
+QED
+
+(** WB_state_flag, ready and state **)
 Theorem agp32_state_fext_ready_and_WB_state_flag:
   !fext fbits t.
     (agp32 fext fbits t).state = 0w ==>
@@ -1506,6 +1514,15 @@ Proof
   fs [agp32_def,mk_module_def,mk_circuit_def] >-
    rw_hazard_ctrl_checks_init >>
   rw_hazard_ctrl_checks_regular
+QED
+
+Theorem agp32_ready_not_WB_state_flag_state_not_0:
+  !fext fbits t.
+    (fext t).ready ==>
+    ~(agp32 fext fbits t).WB.WB_state_flag ==>
+    (agp32 fext fbits t).state <> 0w
+Proof
+  rw [] >> METIS_TAC [agp32_state_fext_ready_and_WB_state_flag]
 QED
 
 
@@ -1884,6 +1901,98 @@ Proof
   rw [agp32_next_state_def] >>
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
 QED
+
+(** state is not 5 when there is no fext.error **)
+Theorem agp32_state_impossible_5_no_fext_error:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).state <> 5w
+Proof
+  rw [] >> Induct_on `t` >-
+   rw [agp32_init_state_3w] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
+(** state is 4 then there command is 0 **)
+Theorem agp32_state_4_command_0:
+  !fext fbits t.
+    (agp32 fext fbits t).state = 4w ==>
+    (agp32 fext fbits t).command = 0w
+Proof
+  rw [] >> Induct_on `t` >-
+   fs [agp32_init_state_3w] >>
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state /\
+  (agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s s).command`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  fs [agp32_next_state_def] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >-
+   (IF_CASES_TAC >> fs [] >>
+    IF_CASES_TAC >> fs [] >>
+    IF_CASES_TAC >> fs [] >>
+    IF_CASES_TAC >> fs [] >>
+    IF_CASES_TAC >> fs [] >-
+     (Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []) >>
+    IF_CASES_TAC >> fs []) >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs []
+QED
+
+(** state is 3 then state is 3 at the previous cycle **)
+Theorem agp32_state_3_previous_state_3:
+  !fext fbits t.
+    (agp32 fext fbits (SUC t)).state = 3w ==>
+    (agp32 fext fbits t).state = 3w
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  fs [agp32_next_state_def] >>
+  Cases_on `(fext t).error = 0w` >> fs [] >>
+  Cases_on `s.state = 0w` >> fs [] >-
+   (Cases_on `~(fext t).ready` >> fs [] >>
+    Cases_on `s.MEM.MEM_isInterrupt` >> fs [] >>
+    Cases_on `s.MEM.MEM_read_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem_byte` >> fs [] >-
+     (Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []) >>
+    Cases_on `s.MEM.MEM_isAcc` >> fs []) >>
+  Cases_on `s.state = 1w` >> fs [] >-
+   (Cases_on `(fext t).ready /\ s.command = 0w` >-
+     (Cases_on `s.do_interrupt` >> fs []) >> gs []) >>
+  Cases_on `s.state = 2w` >> fs [] >-
+   (Cases_on `s.acc_res_ready /\ ~s.acc_arg_ready` >> fs [] >> fs []) >>
+  Cases_on `s.state = 3w` >> fs [] >>
+  Cases_on `s.state = 4w` >> fs [] >>
+  Cases_on `(fext t).interrupt_ack` >> fs []
+QED
+            
+(** state is 3 then there WB_opc is 16w **)
+Theorem agp32_state_3_WB_opc_16:
+  !fext fbits t.
+    (agp32 fext fbits t).state = 3w ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 16w
+Proof
+  rw [] >> Induct_on `t` >-
+   (strip_tac >>
+    `~enable_stg 5 (agp32 fext fbits 0)` by rw [agp32_init_ctrl_flags,enable_stg_def] >>
+    fs [agp32_WB_opc_unchanged_when_WB_disabled,agp32_init_WB_opc]) >>
+  rw [] >> `(agp32 fext fbits t).state = 3w` by fs [agp32_state_3_previous_state_3] >> fs [] >>
+  Q.ABBREV_TAC `t' = SUC t` >>
+  `~enable_stg 5 (agp32 fext fbits t')`
+    by fs [agp32_state_3_and_not_WB_state_flag,enable_stg_def] >>    
+  METIS_TAC [agp32_WB_opc_unchanged_when_WB_disabled]
+QED
+             
 
 
 (* lemmas about the scheduling function I *)

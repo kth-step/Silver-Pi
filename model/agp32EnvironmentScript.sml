@@ -92,7 +92,6 @@ val is_mem_def = Define `
    ?m. (!p. p < m ==> (fext (n + p)).mem = (fext (n-1)).mem /\ ~(fext (n + p)).ready) /\
        (fext (n + m)).mem = (fext (n-1)).mem /\
        (fext (n + m)).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n))) /\
-       (fext (n + m)).data_rdata = (fext (n + m - 1)).data_rdata /\
        (fext (n + m)).ready) /\
 
   (* Read instruction + read data *)
@@ -110,7 +109,6 @@ val is_mem_def = Define `
         (let newmem = mem_update (fext (n-1)).mem (align_addr (accessors.get_data_addr (step n))) (accessors.get_data_wdata (step n)) (accessors.get_data_wstrb (step n)) in
          (fext (n + m)).mem = newmem /\
          (fext (n + m)).inst_rdata = word_at_addr newmem (align_addr (accessors.get_PC (step n))) /\
-         (fext (n + m)).data_rdata = (fext (n + m - 1)).data_rdata /\
          (fext (n + m)).ready)) /\
 
  (* Clear cache block used for printing ... exactly the same semantics as "read instruction" *)
@@ -118,7 +116,6 @@ val is_mem_def = Define `
    ?m. (!p. p < m ==> (fext (n + p)).mem = (fext (n-1)).mem /\ ~(fext (n + p)).ready) /\
        (fext (n + m)).mem = (fext (n-1)).mem /\
        (fext (n + m)).inst_rdata = word_at_addr (fext n).mem (align_addr (accessors.get_PC (step n))) /\
-       (fext (n + m)).data_rdata = (fext (n + m - 1)).data_rdata /\
        (fext (n + m)).ready) /\
  
  (* Nothing in the beginning, exists a request internally *)

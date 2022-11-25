@@ -20,7 +20,75 @@ Theorem agp32_Rel_ag32_fext_MEM_correct_WB_not_NONE_WB_enable:
     enable_stg 5 (agp32 fext fbits t) ==>
     (fext (SUC t)).mem = (FUNPOW Next (THE (I (5,SUC t))) a).MEM
 Proof
-  rw [] >> `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >> fs [] >>
+  rw [] >> `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+  `(fext t).ready` by (fs [enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+  Cases_on `I' (5,t) <> NONE` >> fs [] >-
+   (Cases_on `~is_wrMEM_isa (FUNPOW Next (THE (I' (4,t)) - 1) a)` >-
+     (fs [GSYM MEM_not_changed_after_normal_instrs] >>
+      last_assum (assume_tac o is_mem_def_mem_no_errors) >>
+      Cases_on_word_value `(agp32 fext fbits (SUC t)).command` >>
+      fs [agp32_command_impossible_values] >-
+       (last_assum (mp_tac o is_mem_data_flush `SUC t`) >> rw [] >>
+        Cases_on `m` >> fs [] >-
+         (`THE (I' (4,t)) = THE (I' (5,t)) + 1`
+            by METIS_TAC [MEM_instr_index_with_WB_instr_plus_1] >> fs [Rel_def]) >>
+        `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
+       (fs [is_wrMEM_isa_def] >>
+        `(agp32 fext fbits t).MEM.MEM_opc <> 2w /\
+        (agp32 fext fbits t).MEM.MEM_opc <> 3w` by fs [Rel_def,MEM_Rel_def] >>
+        METIS_TAC [agp32_Rel_ag32_command_not_3_not_write_mem_and_byte_WB_enable]) >-
+       (last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
+        Cases_on `m` >> fs [] >-
+         (`THE (I' (4,t)) = THE (I' (5,t)) + 1`
+            by METIS_TAC [MEM_instr_index_with_WB_instr_plus_1] >> fs [Rel_def]) >>
+        `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
+       (last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
+        Cases_on `m` >> fs [] >-
+         (`THE (I' (4,t)) = THE (I' (5,t)) + 1`
+            by METIS_TAC [MEM_instr_index_with_WB_instr_plus_1] >> fs [Rel_def]) >>
+        `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
+      last_assum (mp_tac o is_mem_do_nothing `SUC t`) >> rw [] >>
+      `THE (I' (4,t)) = THE (I' (5,t)) + 1`
+        by METIS_TAC [MEM_instr_index_with_WB_instr_plus_1] >> fs [Rel_def]) >> fs [] >>
+    fs [is_wrMEM_isa_def] >-
+     (`(agp32 fext fbits t).MEM.MEM_opc = 2w` by fs [is_wrMEM_isa_def,Rel_def,MEM_Rel_def] >>
+      `(agp32 fext fbits (SUC t)).command = 3w`
+        by fs [agp32_Rel_ag32_command_correct_write_mem_WB_enable,
+               agp32_WB_opc_MEM_opc_when_WB_enabled] >>
+      last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
+      Cases_on `m` >> fs [] >-
+       (cheat) >>
+      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
+    `(agp32 fext fbits t).MEM.MEM_opc = 3w` by fs [is_wrMEM_isa_def,Rel_def,MEM_Rel_def] >>
+    `(agp32 fext fbits (SUC t)).command = 3w`
+      by fs [agp32_Rel_ag32_command_correct_write_mem_byte_WB_enable,
+             agp32_WB_opc_MEM_opc_when_WB_enabled] >>
+    last_assum (mp_tac o is_mem_data_write `SUC t`) >> rw [] >>
+    Cases_on `m` >> fs [] >-
+     (cheat) >>
+    `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
+  Cases_on `~is_wrMEM_isa (FUNPOW Next (THE (I' (4,t)) - 1) a)` >-
+   (fs [GSYM MEM_not_changed_after_normal_instrs] >>
+    last_assum (assume_tac o is_mem_def_mem_no_errors) >>
+    Cases_on_word_value `(agp32 fext fbits (SUC t)).command` >>
+    fs [agp32_command_impossible_values] >-
+     (last_assum (mp_tac o is_mem_data_flush `SUC t`) >> rw [] >>
+      Cases_on `m` >> fs [] >-
+       fs [Rel_def] >>
+      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >- 
+     (fs [is_wrMEM_isa_def] >>
+      `(agp32 fext fbits t).MEM.MEM_opc <> 2w /\
+      (agp32 fext fbits t).MEM.MEM_opc <> 3w` by fs [Rel_def,MEM_Rel_def] >>
+      METIS_TAC [agp32_Rel_ag32_command_not_3_not_write_mem_and_byte_WB_enable]) >- 
+     (last_assum (mp_tac o is_mem_data_read `SUC t`) >> rw [] >>
+      Cases_on `m` >> fs [] >-
+       fs [Rel_def] >>
+      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >-
+     (last_assum (mp_tac o is_mem_inst_read `SUC t`) >> rw [] >>
+      Cases_on `m` >> fs [] >-
+       fs [Rel_def] >>
+      `~(fext (0 + SUC t)).ready` by fs [] >> fs []) >>
+    last_assum (mp_tac o is_mem_do_nothing `SUC t`) >> rw [] >> fs [Rel_def]) >> fs [] >>
   cheat
 QED
 

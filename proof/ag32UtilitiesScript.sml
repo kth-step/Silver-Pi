@@ -89,6 +89,13 @@ Proof
   BBLAST_TAC
 QED
 
+Theorem addr_split:
+ !(w1:word32).
+   w1 = (31 >< 2) w1 @@ (1 >< 0) w1
+Proof
+  BBLAST_TAC
+QED
+
 
 (* unchanged items in ISA state after ALU updating *)
 Theorem ALU_state_eq_after[local]:
@@ -1180,6 +1187,39 @@ Theorem word_at_addr_not_changed_after_normal_instrs:
     word_at_addr (FUNPOW Next n a).MEM adr
 Proof
   rw [] >> METIS_TAC [MEM_not_changed_after_normal_instrs]
+QED
+
+
+(* StoreMEM with mem_update *)
+Theorem ag32_StoreMEM_mem_update:
+  !a.
+    opc a = 2w ==>
+    (Next a).MEM = mem_update a.MEM (mem_data_addr a) (mem_data_wdata a) (mem_data_wstrb a)
+Proof
+  rw [mem_data_addr_def,mem_data_wdata_def,mem_data_wstrb_def] >>
+  rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  fs [ag32_opc_2w_Decode_StoreMEM] >>
+  rw [Run_def,dfn'StoreMEM_def,incPC_def] >>
+  rw [mem_update_def,dataA_def,dataB_def,align_addr_def]
+QED
+
+(* StoreMEMByte with mem_update *)
+Theorem ag32_StoreMEMByte_mem_update:
+  !a wdata.
+    opc a = 3w ==>
+    (word_bit 0 (mem_data_wstrb a) ==> (7 >< 0) wdata = mem_data_wdata_byte a) ==>
+    (word_bit 1 (mem_data_wstrb a) ==> (15 >< 8) wdata = mem_data_wdata_byte a) ==>
+    (word_bit 2 (mem_data_wstrb a) ==> (23 >< 16) wdata = mem_data_wdata_byte a) ==>
+    (word_bit 3 (mem_data_wstrb a) ==> (31 >< 24) wdata = mem_data_wdata_byte a) ==>
+    (Next a).MEM = mem_update a.MEM (align_addr (mem_data_addr a)) wdata (mem_data_wstrb a)
+Proof
+  rw [mem_data_addr_def,mem_data_wdata_byte_def,mem_data_wstrb_def] >>
+  rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  fs [ag32_opc_3w_Decode_StoreMEMByte] >>
+  rw [Run_def,dfn'StoreMEMByte_def,incPC_def] >>
+  Cases_on_word_value `(1 >< 0) (dataB a)` >>
+  rw [mem_update_def,GSYM dataA_def,GSYM dataB_def,align_addr_def] >>
+  rw [addr_add] >> METIS_TAC [addr_split]
 QED
 
 

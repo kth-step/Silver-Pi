@@ -886,7 +886,28 @@ Proof
 QED
 
 
-(** command **)
+(* MEM_req_rel *)
+Theorem agp32_Rel_ag32_MEM_req_rel_correct:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5,SUC t) <> NONE ==>
+    MEM_req_rel (fext (SUC t)) (agp32 fext fbits t) (agp32 fext fbits (SUC t)) a (THE (I (5,SUC t)))
+Proof
+  rw [MEM_req_rel_def] >>
+  fs [agp32_Rel_ag32_data_addr_correct_read_mem,agp32_Rel_ag32_data_addr_correct_read_mem_byte,
+      agp32_Rel_ag32_data_addr_correct_write_mem,agp32_Rel_ag32_data_addr_correct_write_mem_byte,
+      agp32_Rel_ag32_data_wstrb_correct_write_mem,agp32_Rel_ag32_data_wstrb_correct_write_mem_byte,
+      agp32_Rel_ag32_data_wdata_correct_write_mem,
+      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_0,
+      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_1,
+      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_2,
+      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_3]
+QED
+
+
+(** command: memory command **)
 (** StoreMem **)
 Theorem agp32_Rel_ag32_command_correct_write_mem_WB_enable:
   !fext fbits a t.
@@ -1003,29 +1024,30 @@ Proof
   METIS_TAC [agp32_ready_not_WB_state_flag_state_not_0]
 QED
 
-
-(* MEM_req_rel *)
-Theorem agp32_Rel_ag32_MEM_req_rel_correct:
-  !fext fbits a t I.
-    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
-    is_sch I (agp32 fext fbits) a ==>
-    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
-    I (5,SUC t) <> NONE ==>
-    MEM_req_rel (fext (SUC t)) (agp32 fext fbits t) (agp32 fext fbits (SUC t)) a (THE (I (5,SUC t)))
+(** if MEM_opc is not 2 or 3 then the command is not 3 **)
+Theorem agp32_Rel_ag32_command_not_3_not_write_mem_and_byte_WB_enable:
+  !fext fbits a t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>   
+    enable_stg 5 (agp32 fext fbits t) ==>
+    (agp32 fext fbits t).MEM.MEM_opc <> 2w ==>
+    (agp32 fext fbits t).MEM.MEM_opc <> 3w ==>
+    (agp32 fext fbits (SUC t)).command <> 3w
 Proof
-  rw [MEM_req_rel_def] >>
-  fs [agp32_Rel_ag32_data_addr_correct_read_mem,agp32_Rel_ag32_data_addr_correct_read_mem_byte,
-      agp32_Rel_ag32_data_addr_correct_write_mem,agp32_Rel_ag32_data_addr_correct_write_mem_byte,
-      agp32_Rel_ag32_data_wstrb_correct_write_mem,agp32_Rel_ag32_data_wstrb_correct_write_mem_byte,
-      agp32_Rel_ag32_data_wdata_correct_write_mem,
-      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_0,
-      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_1,
-      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_2,
-      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_3] >>
-  METIS_TAC [agp32_Rel_ag32_command_correct_write_mem_WB_enable,
-             agp32_Rel_ag32_command_correct_write_mem_byte_WB_enable,
-             agp32_Rel_ag32_command_correct_read_mem_WB_enable,
-             agp32_Rel_ag32_command_correct_read_mem_byte_WB_enable]
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s s).command`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+  `~s.MEM.MEM_write_mem` by METIS_TAC [Abbr `s`,agp32_MEM_write_mem_MEM_opc_2w] >>
+  `~s.MEM.MEM_write_mem_byte` by METIS_TAC [Abbr `s`,agp32_MEM_write_mem_byte_MEM_opc_3w] >>
+  `s.state = 0w`
+    by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+        METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+  `(fext t).ready`
+    by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+  fs [agp32_next_state_def,Abbr `s`] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs []
 QED
 
 val _ = export_theory ();

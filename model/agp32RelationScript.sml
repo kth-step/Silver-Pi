@@ -293,6 +293,9 @@ Definition Inv_Rel_def:
    (I (4,t) = NONE ==> ~s.MEM.MEM_write_reg) /\
    (I (5,t) = NONE ==> (s.WB.WB_opc = 16w \/ s.WB.WB_opc = 15w)) /\
    (I (5,t) = NONE ==> ~s.WB.WB_write_reg) /\
+   (I (3,t) <> NONE ==> s.EX.EX_opc <> 16w) /\
+   (I (4,t) <> NONE ==> s.MEM.MEM_opc <> 16w) /\
+   (I (5,t) <> NONE ==> s.WB.WB_opc <> 16w) /\
    (I (1,t) <> NONE ==> I (2,t) = NONE ==> I (3,t) = NONE ==> I (4,t) = NONE ==> I (5,t) <> NONE ==>
     (THE (I (1,t)) > THE (I (5,t))) /\ (THE (I (1,t)) < THE (I (5,t)) + 2)))
 End
@@ -313,6 +316,7 @@ Definition Rel_def:
   (I (3,t) <> NONE ==> (s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (3,t))) a).PC)) /\                 
   (I (1,t) <> NONE ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (1,t)) - 1) a).PC + 4w)) /\
   (I (5,t) <> NONE ==> fext.ready ==> fext.mem = (FUNPOW Next (THE (I (5,t))) a).MEM) /\
+  (I (5,t) <> NONE ==> ~fext.ready ==> fext.mem = (FUNPOW Next (THE (I (5,t)) - 1) a).MEM) /\
   (I (5,t) = NONE ==> I (4,t) <> NONE ==> fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t)) - 1) a).MEM) /\
   (I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) <> NONE ==> fext.ready ==> fext.mem = (FUNPOW Next (THE (I (3,t)) - 1) a).MEM) /\
   (I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) <> NONE ==> fext.ready ==> 

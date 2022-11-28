@@ -70,6 +70,7 @@ Proof
    (** PC_input when no jump **)
    fs [agp32_Rel_ag32_IF_PC_input_not_jump_correct] >-
    (** memory under different conditions **)
+   METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_WB_not_NONE] >-
    cheat >-
    cheat >-
    cheat >-

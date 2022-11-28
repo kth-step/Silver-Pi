@@ -99,6 +99,33 @@ Proof
   fs [ID_opc_func_update_def]
 QED
 
+(** ID_opc is not 16 **)
+Theorem agp32_ID_opc_not_16:
+  !fext fbits t.
+    (agp32 fext fbits t).ID.ID_opc <> 16w
+Proof
+  rw [] >>
+  `?s s'. (agp32 fext fbits t).ID.ID_opc = (ID_opc_func_update (fext t) s s').ID.ID_opc`
+    by METIS_TAC [agp32_ID_opc_func_exists_ID_opc_func_update] >> fs [] >>
+  Cases_on `word_bit 24 s'.ID.ID_instr` >-
+   (Cases_on `word_bit 31 s'.ID.ID_instr` >-
+     fs [ID_opc_func_update_def] >>
+    Cases_on `(23 >< 9) s'.ID.ID_instr = 0w` >>
+    fs [ID_opc_func_update_def]) >>
+  Cases_on `(5 >< 0) s'.ID.ID_instr = 10w` >-
+   fs  [ID_opc_func_update_def] >>
+  Cases_on `(5 >< 0) s'.ID.ID_instr = 11w` >-
+   fs  [ID_opc_func_update_def] >>
+  Cases_on `(5 >< 0) s'.ID.ID_instr = 12w` >-
+   fs  [ID_opc_func_update_def] >>
+  Cases_on `word_bit 31 s'.ID.ID_instr` >-
+   fs [ID_opc_func_update_def] >>
+  Cases_on `(5 >< 0) s'.ID.ID_instr <+ 10w` >-
+   (fs [ID_opc_func_update_def] >>
+    Cases_on_word_value `(5 >< 0) s'.ID.ID_instr` >> fs []) >>
+  fs [ID_opc_func_update_def]
+QED
+
 (** relation between ID addr_disable imm and data singals **)
 Theorem agp32_ID_addrA_disable_dataA_immA:
   !fext fbits t.
@@ -2045,6 +2072,38 @@ Proof
      (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
     `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >> fs [] >>
     METIS_TAC [ID_instr_index_not_0]) >>
+  fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
+QED
+
+(** I (4,t) is not 0 **)
+Theorem MEM_instr_index_not_0:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (4,t) <> NONE ==>
+    THE (I (4,t)) <> 0
+Proof
+  rw [] >> Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def] >>
+  rw [] >> Cases_on `enable_stg 4 (agp32 fext fbits t)` >-
+   (Cases_on `isMemOp_hw_op (agp32 fext fbits t)` >-
+     (fs [is_sch_def,is_sch_memory_def] >> METIS_TAC []) >>
+    `I' (4,SUC t) = I' (3,t)` by fs [is_sch_def,is_sch_memory_def] >> fs [] >>
+    METIS_TAC [EX_instr_index_not_0]) >>
+  fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
+QED
+
+(** I (5,t) is not 0 **)
+Theorem WB_instr_index_not_0:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    I (5,t) <> NONE ==>
+    THE (I (5,t)) <> 0
+Proof
+  rw [] >> Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def] >>
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (`I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >> fs [] >>
+    METIS_TAC [MEM_instr_index_not_0]) >>
   fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
 QED
 

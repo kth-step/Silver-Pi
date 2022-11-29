@@ -997,7 +997,33 @@ Proof
   fs [agp32_next_state_def,Abbr `s`,agp32_MEM_read_mem_others_F]
 QED
 
-(** command when the WB is disabled and fext is ready at the previous cycle **)
+(** NONE instr **)
+Theorem agp32_Rel_ag32_command_correct_none_instr_WB_enable:
+  !fext fbits a t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    enable_stg 5 (agp32 fext fbits t) ==>
+    ((agp32 fext fbits (SUC t)).WB.WB_opc = 16w \/ (agp32 fext fbits (SUC t)).WB.WB_opc = 15w) ==>
+    (agp32 fext fbits (SUC t)).command = 1w
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s s).command`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+  `s.MEM.MEM_opc = 16w \/ s.MEM.MEM_opc = 15w` by METIS_TAC [agp32_WB_opc_MEM_opc_when_WB_enabled,Abbr `s`] >>
+  `~s.MEM.MEM_read_mem` by fs [Abbr `s`,agp32_MEM_read_mem_MEM_opc_4w_5w] >>
+  `~s.MEM.MEM_write_mem_byte` by fs [Abbr `s`,agp32_MEM_write_mem_byte_MEM_opc_3w] >>
+  `~s.MEM.MEM_write_mem` by fs [Abbr `s`,agp32_MEM_write_mem_MEM_opc_2w] >>
+  `~s.MEM.MEM_isInterrupt` by fs [Abbr `s`,agp32_MEM_isInterrupt_MEM_opc_12w] >>
+  `s.state = 0w`
+    by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+        METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+  `(fext t).ready`
+    by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+  fs [agp32_next_state_def,Abbr `s`] >> rw []
+QED
+
+(** command when the WB is disabled, WB_opc is not 16, and fext is ready at the previous cycle **)
 Theorem agp32_Rel_ag32_command_correct_WB_disable_fext_ready:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
@@ -1018,6 +1044,33 @@ Proof
     fs [agp32_next_state_def] >>
     IF_CASES_TAC >> fs []) >-
    METIS_TAC [agp32_state_3_WB_opc_16,Abbr `s`] >-
+   fs [agp32_next_state_def] >-
+   fs [agp32_next_state_def] >>
+  fs [enable_stg_def,Abbr `s`] >>
+  METIS_TAC [agp32_ready_not_WB_state_flag_state_not_0]
+QED
+
+(** command when the WB is disabled and fext is ready at the previous cycle **)
+Theorem agp32_Rel_ag32_command_correct_WB_disable_fext_ready_extra:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    ~enable_stg 5 (agp32 fext fbits t) ==>
+    (fext t).ready ==>
+    (agp32 fext fbits (SUC t)).command = 0w \/ (agp32 fext fbits (SUC t)).command = 1w
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s s).command`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+  Cases_on_word_value `s.state` >-
+   fs [Abbr `s`,agp32_state_impossible_values] >-
+   fs [Abbr `s`,agp32_state_impossible_values] >-
+   METIS_TAC [Abbr `s`,agp32_state_impossible_5_no_fext_error] >-
+   (`s.command = 0w` by fs [agp32_state_4_command_0,Abbr `s`] >>
+    fs [agp32_next_state_def] >>
+    IF_CASES_TAC >> fs []) >-
+   (fs [agp32_next_state_def] >>
+    IF_CASES_TAC >> fs [agp32_state_3_command_0,Abbr `s`]) >-
    fs [agp32_next_state_def] >-
    fs [agp32_next_state_def] >>
   fs [enable_stg_def,Abbr `s`] >>

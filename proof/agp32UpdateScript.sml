@@ -44,6 +44,68 @@ Proof
   `(m + SUC n) <= n` by METIS_TAC [MAX_SET_DEF] >> fs []
 QED
 
+Theorem same_t_and_m_under_MAX_SET_0:
+  !fext t m.
+    MAX_SET {t0 | t0 < t /\ (fext t0).ready} = 0 ==>
+    (!p. p < m ==> ~(fext (p + 1)).ready) ==>
+    (fext (m + 1)).ready ==>
+    ~(fext t).ready ==>
+    (fext (t + 1)).ready ==>
+    m = t
+Proof
+  rw [] >> Cases_on `m = t` >> rw [] >>
+  Cases_on `t < m` >-
+   METIS_TAC [] >>
+  `t > m` by fs [] >> fs [] >>
+  Cases_on `t = m + 1` >> fs [] >>
+  `t > m + 1` by fs [] >>
+  `{t0 | t0 < t /\ (fext t0).ready} (m + 1)` by fs [] >>
+  Cases_on `{t0 | t0 < t /\ (fext t0).ready} = {}` >-
+   METIS_TAC [EMPTY_applied] >>
+  `FINITE {t0 | t0 < t /\ (fext t0).ready}` by rw [FINITE_max_ready_cycle] >>
+  `(m + 1) IN {t0 | t0 < t /\ (fext t0).ready}` by fs [] >>
+  `m + 1 <= 0` by METIS_TAC [MAX_SET_DEF] >> rw []
+QED
+
+Theorem not_ready_m_plus_n:
+  !fext m n.
+    (!p. p < n ==> ~(fext (p + 1)).ready) ==>
+    (!p. p < m ==> ~(fext (n + (p + 1))).ready) ==>
+    (!p. p < m + n ==> ~(fext (p + 1)).ready)
+Proof
+  rw [] >>
+  Cases_on `p < n` >> fs [] >>
+  Cases_on `p = n` >> fs [] >-
+   (`~(fext (n + (0 + 1))).ready` by fs [] >>
+    `n + (0 + 1) = n + 1` by rw [] >> fs []) >>
+  `p > n` by fs [] >> fs [] >>
+  `p - n < m` by rw [] >>
+  `~(fext (n + (p - n + 1))).ready` by fs [] >>
+  `n + (p - n + 1) = p + 1` by rw [] >> fs []
+QED
+
+Theorem not_ready_m_plus_n_mem_0:
+  !fext m n.
+    (!p. p < n ==> (fext (p + 1)).mem = (fext 0).mem) ==>
+    (!p. p < m ==> (fext (n + (p + 1))).mem = (fext n).mem) ==>
+    (!p. p < m + n ==> (fext (p + 1)).mem = (fext 0).mem)
+Proof
+  rw [] >>
+  Cases_on `p < n` >> fs [] >>
+  Cases_on `p = n` >> fs [] >-
+   (`(fext (n + (0 + 1))).mem = (fext n).mem` by fs [] >>
+    `n + (0 + 1) = n + 1` by rw [] >> fs [] >>
+    Cases_on `n` >> fs [] >>
+    `(fext (n' + 1)).mem = (fext 0).mem` by fs [] >> fs [ADD1]) >>
+  `p > n` by fs [] >> fs [] >>
+  `p - n < m` by rw [] >>
+  `(fext (n + (p - n + 1))).mem = (fext n).mem` by fs [] >>
+  `n + (p - n + 1) = p + 1` by rw [] >> fs [] >>
+  Cases_on `n` >> fs [] >>
+  `(fext (n' + 1)).mem = (fext 0).mem` by fs [] >> fs [ADD1]                        
+QED
+
+
 (* show the unchanged part of different circuit functions in the pipelined Silver *)
 (** unchanged items by IF_instr_update **)
 Theorem IF_instr_update_unchanged_enable_flags:

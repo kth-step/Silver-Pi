@@ -317,11 +317,11 @@ Definition Rel_def:
   (I (1,t) <> NONE ==> (~s.EX.EX_jump_sel ==> s.IF.IF_PC_input = (FUNPOW Next (THE (I (1,t)) - 1) a).PC + 4w)) /\
   (I (5,t) <> NONE ==> fext.ready ==> fext.mem = (FUNPOW Next (THE (I (5,t))) a).MEM) /\
   (I (5,t) <> NONE ==> ~fext.ready ==> fext.mem = (FUNPOW Next (THE (I (5,t)) - 1) a).MEM) /\
-  (I (5,t) = NONE ==> I (4,t) <> NONE ==> fext.ready ==> fext.mem = (FUNPOW Next (THE (I (4,t)) - 1) a).MEM) /\
-  (I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) <> NONE ==> fext.ready ==> fext.mem = (FUNPOW Next (THE (I (3,t)) - 1) a).MEM) /\
-  (I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) <> NONE ==> fext.ready ==> 
+  (I (5,t) = NONE ==> I (4,t) <> NONE ==> fext.mem = (FUNPOW Next (THE (I (4,t)) - 1) a).MEM) /\
+  (I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) <> NONE ==> fext.mem = (FUNPOW Next (THE (I (3,t)) - 1) a).MEM) /\
+  (I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) <> NONE ==> 
    fext.mem = (FUNPOW Next (THE (I (2,t)) - 1) a).MEM) /\
-  (I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) = NONE ==> I (1,t) <> NONE ==> fext.ready ==> 
+  (I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) = NONE ==> I (1,t) <> NONE ==> 
    fext.mem = (FUNPOW Next (THE (I (1,t)) - 1) a).MEM) /\
   (~fext.ready ==> ~enable_stg 1 s) /\
   (~fext.ready ==> ~enable_stg 2 s) /\

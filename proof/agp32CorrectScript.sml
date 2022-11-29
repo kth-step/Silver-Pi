@@ -71,11 +71,11 @@ Proof
    fs [agp32_Rel_ag32_IF_PC_input_not_jump_correct] >-
    (** memory under different conditions **)
    METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_WB_not_NONE] >-
-   cheat >-
-   cheat >-
-   cheat >-
-   cheat >-
-   cheat >-
+   METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_WB_not_NONE_extra] >-
+   METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_MEM_not_NONE] >-
+   METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_EX_not_NONE] >-
+   METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_ID_not_NONE] >-
+   METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_IF_not_NONE] >-
    (** fext not ready, fetch disabled **)
    fs [enable_stg_def,not_fext_ready_and_agp32_IF_PC_write_disable] >-
    (** fext not ready, decode disabled **)

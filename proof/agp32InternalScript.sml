@@ -1974,6 +1974,48 @@ Proof
   IF_CASES_TAC >> fs []
 QED
 
+(** state is 3 then there command is 0 **)
+Theorem agp32_state_3_command_0:
+  !fext fbits t.
+    (agp32 fext fbits t).state = 3w ==>
+    (agp32 fext fbits t).command = 0w
+Proof
+  rw [] >> Induct_on `t` >-
+   fs [agp32_init_command_0w] >>
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state /\
+  (agp32 fext fbits (SUC t)).command = (agp32_next_state (fext t) s s).command`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  fs [agp32_next_state_def] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >-
+   (IF_CASES_TAC >> fs [] >>
+    IF_CASES_TAC >> fs [] >>
+    IF_CASES_TAC >> fs [] >>
+    IF_CASES_TAC >> fs [] >>
+    IF_CASES_TAC >> fs [] >-
+     (Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []) >>
+    IF_CASES_TAC >> fs []) >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs []
+QED
+
+(** command is 0 or 1 in the cycle 1 **)
+Theorem agp32_command_cycle_1:
+  !fext fbits.
+    (agp32 fext fbits (SUC 0)).command = 0w \/ (agp32 fext fbits (SUC 0)).command = 1w
+Proof
+  rpt gen_tac >> Q.ABBREV_TAC `s = agp32 fext fbits 0` >>
+  `(agp32 fext fbits (SUC 0)).command = (agp32_next_state (fext 0) s s).command`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `s.state = 3w` by fs [agp32_init_state_3w,Abbr `s`] >>
+  fs [agp32_next_state_def] >> rw [] >>
+  fs [agp32_init_command_0w,Abbr `s`]
+QED
+
 (** state is 3 then state is 3 at the previous cycle **)
 Theorem agp32_state_3_previous_state_3:
   !fext fbits t.

@@ -302,6 +302,42 @@ Proof
   fs [agp32_WB_write_reg_unchanged_when_WB_disabled,Rel_def,Inv_Rel_def]
 QED
 
+(** instr index relation between IF and WB stages **)
+Theorem IF_instr_index_with_WB_instr:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (1,SUC t) <> NONE ==>
+    I (5,SUC t) <> NONE ==>
+    (THE (I (1,SUC t)) > THE (I (5,SUC t))) /\ (THE (I (1,SUC t)) < THE (I (5,SUC t)) + 5)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     (`I' (1,SUC t) = SOME (THE (I' (3,t)) + 1)` by fs [is_sch_def,is_sch_fetch_def] >>
+      `isJump_isa_op (I' (3,t)) a` by fs [Rel_def,EX_Rel_spec_def,isJump_hw_op_def] >>
+      `I' (3,t) <> NONE` by METIS_TAC [isJump_isa_op_not_none] >>
+      `enable_stg 5 (agp32 fext fbits t)`
+        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_WB_flag] >>
+      `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >> fs [] >>
+      `(THE (I' (3,t)) > THE (I' (4,t))) /\ (THE (I' (3,t)) < THE (I' (4,t)) + 2)`
+        by METIS_TAC [EX_instr_index_with_MEM_instr] >> fs []) >>
+    Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a \/ I' (1,t) = NONE` >-
+     gs [is_sch_def,is_sch_fetch_def] >> fs [] >>
+    `enable_stg 5 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_WB_flag] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >> fs [] >>
+    `(THE (I' (1,t)) > THE (I' (4,t))) /\ (THE (I' (1,t)) < THE (I' (4,t)) + 4)`
+      by METIS_TAC [IF_instr_index_with_MEM_instr] >> fs [is_sch_def,is_sch_fetch_def]) >>
+  Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (`I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `I' (1,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_disable_def] >> fs [] >>
+    `(THE (I' (1,t)) > THE (I' (4,t))) /\ (THE (I' (1,t)) < THE (I' (4,t)) + 4)`
+      by METIS_TAC [IF_instr_index_with_MEM_instr] >> fs []) >>
+  `I' (5,SUC t) = I' (5,t) /\ I' (1,SUC t) = I' (1,t)`
+    by fs [is_sch_def,is_sch_disable_def] >> fs [Rel_def,Inv_Rel_def]
+QED
+
 (** instr index relation between IF and WB stages when ID, EX and MEM are NONE **)
 Theorem IF_instr_index_with_WB_instr_ID_EX_MEM_NONE:
   !I t fext fbits a.
@@ -369,7 +405,8 @@ Proof
   rw [Inv_Rel_def] >>
   METIS_TAC [IF_instr_index_not_none,ID_NONE_exists_a_jump,EX_NONE_previous_jump_special,
              ID_instr_index_NONE_opc_flush_when_disabled,EX_instr_index_NONE_opc_flush,
-             EX_instr_index_NONE_EX_not_write_reg,IF_instr_index_with_WB_instr_ID_EX_MEM_NONE,
+             EX_instr_index_NONE_EX_not_write_reg,IF_instr_index_with_WB_instr,
+             IF_instr_index_with_WB_instr_ID_EX_MEM_NONE,
              MEM_instr_index_NONE_opc_flush,MEM_instr_index_NONE_MEM_not_write_reg,
              WB_instr_index_NONE_opc_flush,WB_instr_index_NONE_WB_not_write_reg,
              EX_instr_index_not_NONE_opc_not_16,MEM_instr_index_not_NONE_opc_not_16,

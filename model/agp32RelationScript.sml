@@ -77,7 +77,7 @@ End
 Definition SC_self_mod_isa_def:
   SC_self_mod_isa (a:ag32_state) <=>
   !n i. is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
-        i > n ==> i < n + 4 ==>
+        i > n ==> i < n + 5 ==>
         align_addr (FUNPOW Next (i-1) a).PC <> align_addr (dataB (FUNPOW Next (n-1) a))
 End
 
@@ -296,6 +296,7 @@ Definition Inv_Rel_def:
    (I (3,t) <> NONE ==> s.EX.EX_opc <> 16w) /\
    (I (4,t) <> NONE ==> s.MEM.MEM_opc <> 16w) /\
    (I (5,t) <> NONE ==> s.WB.WB_opc <> 16w) /\
+   (I (1,t) <> NONE ==> I (5,t) <> NONE ==> (THE (I (1,t)) > THE (I (5,t))) /\ (THE (I (1,t)) < THE (I (5,t)) + 5)) /\
    (I (1,t) <> NONE ==> I (2,t) = NONE ==> I (3,t) = NONE ==> I (4,t) = NONE ==> I (5,t) <> NONE ==>
     (THE (I (1,t)) > THE (I (5,t))) /\ (THE (I (1,t)) < THE (I (5,t)) + 2)))
 End

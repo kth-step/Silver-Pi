@@ -1223,58 +1223,85 @@ Proof
 QED
 
 
-(* Given the self-modified condition, 3 instrs' fetched values after an instr are not affected. *)
-Theorem SC_self_mod_isa_not_affect_fetched_instr:
-  !a i j.
+(** lemmas for SC_self_mod_isa **)
+Theorem SC_self_mod_isa_not_affect_fetched_instr_j_plus_1[local]:
+  !a j.
     SC_self_mod_isa a ==>
-    i > j ==>
-    i < j + 4 ==>
-    word_at_addr (FUNPOW Next (i-1) a).MEM (align_addr (FUNPOW Next (i-1) a).PC)  =
-    word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (i-1) a).PC)
+    word_at_addr (FUNPOW Next (j+1) a).MEM (align_addr (FUNPOW Next (j+1) a).PC)  =
+    word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j+1) a).PC)
 Proof
   rw [SC_self_mod_isa_def] >>
-  `i = j + 1 \/ i = j + 2 \/ i = j + 3` by fs [] >> rw [] >-
-   (Q.ABBREV_TAC `n' = j + 1` >>
-    `j = n' - 1` by fs [Abbr `n'`] >> fs [] >>
-    Cases_on `is_wrMEM_isa (FUNPOW Next (n'-1) a)` >-
-     (`n'+1 > n' /\ n'+1 < n'+4` by rw [] >>
-      `align_addr (FUNPOW Next (n'+1-1) a).PC <>
-       align_addr (dataB (FUNPOW Next (n'−1) a))` by fs [] >>
-      fs [word_at_addr_not_changed_after_write_mem]) >>
-    fs [word_at_addr_not_changed_after_normal_instrs]) >>
+  Q.ABBREV_TAC `n' = j + 1` >>
+  `j = n' - 1` by fs [Abbr `n'`] >> fs [] >>
+  Cases_on `is_wrMEM_isa (FUNPOW Next (n'-1) a)` >-
+   (`n'+1 > n' /\ n'+1 < n'+5` by rw [] >>
+    `align_addr (FUNPOW Next (n'+1-1) a).PC <> align_addr (dataB (FUNPOW Next (n'−1) a))` by fs [] >>
+    fs [word_at_addr_not_changed_after_write_mem]) >>
+  fs [word_at_addr_not_changed_after_normal_instrs]
+QED
+
+Theorem SC_self_mod_isa_not_affect_fetched_instr_j_plus_2[local]:
+  !a j.
+    SC_self_mod_isa a ==>
+    word_at_addr (FUNPOW Next (j+2) a).MEM (align_addr (FUNPOW Next (j+2) a).PC)  =
+    word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j+2) a).PC)
+Proof
+  rw [SC_self_mod_isa_def] >>
   Q.ABBREV_TAC `n' = j + 1` >>
   `n' <> 0` by fs [Abbr `n'`] >>
   `j = n' - 1` by fs [Abbr `n'`] >> fs [] >>
   Cases_on `is_wrMEM_isa (FUNPOW Next (n'-1) a)` >-
-   (`n'+2 > n' /\ n'+2 < n'+4` by rw [] >>
+   (`n'+2 > n' /\ n'+2 < n'+5` by rw [] >>
     `align_addr (FUNPOW Next (n'+2-1) a).PC <>
      align_addr (dataB (FUNPOW Next (n'−1) a))` by fs [] >>
-    `word_at_addr (FUNPOW Next (n' − 1) a).MEM
-     (align_addr (FUNPOW Next (n' + 1) a).PC) =
-    word_at_addr (FUNPOW Next n' a).MEM
-     (align_addr (FUNPOW Next (n' + 1) a).PC)`                        
+    `word_at_addr (FUNPOW Next (n' − 1) a).MEM (align_addr (FUNPOW Next (n' + 1) a).PC) =
+    word_at_addr (FUNPOW Next n' a).MEM (align_addr (FUNPOW Next (n' + 1) a).PC)`
       by fs [word_at_addr_not_changed_after_write_mem] >> fs [] >>
-    Q.ABBREV_TAC `n'' = n' + 1` >>
-    `n' = n'' - 1` by fs [Abbr `n''`] >> fs [] >>
-    Cases_on `is_wrMEM_isa (FUNPOW Next (n''-1) a)` >-
-     (`n''+1 > n'' /\ n''+1 < n''+4` by rw [] >>
-      `align_addr (FUNPOW Next (n''+1-1) a).PC <>
-       align_addr (dataB (FUNPOW Next (n''−1) a))` by fs [] >>
-      fs [word_at_addr_not_changed_after_write_mem]) >>
-    fs [word_at_addr_not_changed_after_normal_instrs]) >>
-  `word_at_addr (FUNPOW Next (n' − 1) a).MEM
-   (align_addr (FUNPOW Next (n' + 1) a).PC) =
-  word_at_addr (FUNPOW Next n' a).MEM
-  (align_addr (FUNPOW Next (n' + 1) a).PC)`                        
-   by fs [word_at_addr_not_changed_after_normal_instrs] >> fs [] >>
-  Q.ABBREV_TAC `n'' = n' + 1` >>          
-  `n' = n'' - 1` by fs [Abbr `n''`] >> fs [] >>
-  Cases_on `is_wrMEM_isa (FUNPOW Next (n''-1) a)` >-
-    (`n''+1 > n'' /\ n''+1 < n''+4` by rw [] >>
-     `align_addr (FUNPOW Next (n''+1-1) a).PC <>
-     align_addr (dataB (FUNPOW Next (n''−1) a))` by fs [] >>
-    fs [word_at_addr_not_changed_after_write_mem]) >>
-  fs [word_at_addr_not_changed_after_normal_instrs]          
+    gs [SC_self_mod_isa_def,SC_self_mod_isa_not_affect_fetched_instr_j_plus_1]) >>
+  `word_at_addr (FUNPOW Next (n' − 1) a).MEM (align_addr (FUNPOW Next (n' + 1) a).PC) =
+  word_at_addr (FUNPOW Next n' a).MEM (align_addr (FUNPOW Next (n' + 1) a).PC)`
+    by fs [word_at_addr_not_changed_after_normal_instrs] >> fs [] >>
+  gs [SC_self_mod_isa_def,SC_self_mod_isa_not_affect_fetched_instr_j_plus_1]
+QED
+
+Theorem SC_self_mod_isa_not_affect_fetched_instr_j_plus_3[local]:
+  !a j.
+    SC_self_mod_isa a ==>
+    word_at_addr (FUNPOW Next (j+3) a).MEM (align_addr (FUNPOW Next (j+3) a).PC)  =
+    word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j+3) a).PC)
+Proof
+  rw [SC_self_mod_isa_def] >>
+  Q.ABBREV_TAC `n' = j + 1` >>
+  `n' <> 0` by fs [Abbr `n'`] >>
+  `j = n' - 1` by fs [Abbr `n'`] >> fs [] >>
+  Cases_on `is_wrMEM_isa (FUNPOW Next (n'-1) a)` >-
+   (`n'+3 > n' /\ n'+3 < n'+5` by rw [] >>     
+    `align_addr (FUNPOW Next (n'+3-1) a).PC <>
+    align_addr (dataB (FUNPOW Next (n'−1) a))` by fs [] >>
+    `word_at_addr (FUNPOW Next (n' − 1) a).MEM (align_addr (FUNPOW Next (n' + 2) a).PC) =
+    word_at_addr (FUNPOW Next n' a).MEM (align_addr (FUNPOW Next (n' + 2) a).PC)`
+      by fs [word_at_addr_not_changed_after_write_mem] >> fs [] >>  
+    gs [SC_self_mod_isa_not_affect_fetched_instr_j_plus_2,SC_self_mod_isa_def]) >>
+  `word_at_addr (FUNPOW Next (n' − 1) a).MEM (align_addr (FUNPOW Next (n' + 2) a).PC) =
+  word_at_addr (FUNPOW Next n' a).MEM (align_addr (FUNPOW Next (n' + 2) a).PC)`
+    by fs [word_at_addr_not_changed_after_normal_instrs] >> fs [] >>
+  gs [SC_self_mod_isa_not_affect_fetched_instr_j_plus_2,SC_self_mod_isa_def]
+QED
+
+        
+(* Given the self-modified condition, 4 instrs' fetched values after an instr are not affected. *)
+Theorem SC_self_mod_isa_not_affect_fetched_instr:
+  !a i j.
+    SC_self_mod_isa a ==>
+    i > j ==>
+    i < j + 5 ==>
+    word_at_addr (FUNPOW Next (i-1) a).MEM (align_addr (FUNPOW Next (i-1) a).PC)  =
+    word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (i-1) a).PC)
+Proof
+  rw [] >> `i = j + 1 \/ i = j + 2 \/ i = j + 3 \/ i = j + 4` by fs [] >> rw [] >>
+  fs [SC_self_mod_isa_not_affect_fetched_instr_j_plus_1,
+      SC_self_mod_isa_not_affect_fetched_instr_j_plus_2,
+      SC_self_mod_isa_not_affect_fetched_instr_j_plus_3]
 QED
 
 (** similiar theorem as above but for j-1 **)
@@ -1282,108 +1309,49 @@ Theorem SC_self_mod_isa_not_affect_fetched_instr_extra:
   !a i j.
     SC_self_mod_isa a ==>
     i > j ==>
-    i < j + 4 ==>
+    i < j + 5 ==>
     word_at_addr (FUNPOW Next (i-1) a).MEM (align_addr (FUNPOW Next (i-1) a).PC) =
     word_at_addr (FUNPOW Next (j-1) a).MEM (align_addr (FUNPOW Next (i-1) a).PC)
 Proof
   rw [SC_self_mod_isa_def] >>
-  `i = j + 1 \/ i = j + 2 \/ i = j + 3` by fs [] >> rw [] >-
+  `i = j + 1 \/ i = j + 2 \/ i = j + 3 \/ i = j + 4` by fs [] >> rw [] >-
    (Cases_on `is_wrMEM_isa (FUNPOW Next (j-1) a)` >-
-     (`align_addr (FUNPOW Next (j+1-1) a).PC <>
-       align_addr (dataB (FUNPOW Next (j−1) a))` by fs [] >>
+     (`align_addr (FUNPOW Next (j+1-1) a).PC <> align_addr (dataB (FUNPOW Next (j−1) a))` by fs [] >>
       fs [word_at_addr_not_changed_after_write_mem]) >>
     fs [word_at_addr_not_changed_after_normal_instrs]) >-
    (Cases_on `is_wrMEM_isa (FUNPOW Next (j-1) a)` >-
-     (`j+2 > j /\ j+2 < j+4` by rw [] >>
-      `align_addr (FUNPOW Next (j+2-1) a).PC <>
-       align_addr (dataB (FUNPOW Next (j−1) a))` by fs [] >>
+     (`j+2 > j /\ j+2 < j+5` by rw [] >>
+      `align_addr (FUNPOW Next (j+2-1) a).PC <> align_addr (dataB (FUNPOW Next (j−1) a))` by fs [] >>
       `word_at_addr (FUNPOW Next (j − 1) a).MEM (align_addr (FUNPOW Next (j + 1) a).PC) =
       word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j + 1) a).PC)`
         by fs [word_at_addr_not_changed_after_write_mem] >> fs [] >>
-      Q.ABBREV_TAC `j' = j + 1` >>
-      `j = j' - 1` by fs [Abbr `j'`] >> fs [] >>
-      Cases_on `is_wrMEM_isa (FUNPOW Next (j'-1) a)` >-
-       (`j'+1 > j /\ j'+1 < j+4` by rw [] >>
-        `align_addr (FUNPOW Next (j'+1-1) a).PC <>
-         align_addr (dataB (FUNPOW Next (j'−1) a))` by fs [] >>
-        fs [word_at_addr_not_changed_after_write_mem]) >>
-      fs [word_at_addr_not_changed_after_normal_instrs]) >>
+      fs [SC_self_mod_isa_def,SC_self_mod_isa_not_affect_fetched_instr_j_plus_1]) >>
     `word_at_addr (FUNPOW Next (j − 1) a).MEM (align_addr (FUNPOW Next (j + 1) a).PC) =
-    word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j + 1) a).PC)`                        
+    word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j + 1) a).PC)`                
       by fs [word_at_addr_not_changed_after_normal_instrs] >> fs [] >>
-    Q.ABBREV_TAC `j' = j + 1` >>
-    `j = j' - 1` by fs [Abbr `j'`] >> fs [] >>
-    Cases_on `is_wrMEM_isa (FUNPOW Next (j'-1) a)` >-
-     (`j'+1 > j' /\ j'+1 < j'+4` by rw [] >>
-      `align_addr (FUNPOW Next (j'+1-1) a).PC <>
-       align_addr (dataB (FUNPOW Next (j'−1) a))` by fs [] >>
-      fs [word_at_addr_not_changed_after_write_mem]) >>
-    fs [word_at_addr_not_changed_after_normal_instrs]) >>
-  Cases_on `is_wrMEM_isa (FUNPOW Next (j-1) a)` >-
-   (`j+3 > j /\ j+3 < j+4` by rw [] >>
-    `align_addr (FUNPOW Next (j+3-1) a).PC <> align_addr (dataB (FUNPOW Next (j−1) a))` by fs [] >>
+    fs [SC_self_mod_isa_def,SC_self_mod_isa_not_affect_fetched_instr_j_plus_1]) >-
+   (Cases_on `is_wrMEM_isa (FUNPOW Next (j-1) a)` >-
+     (`j+3 > j /\ j+3 < j+5` by rw [] >>
+      `align_addr (FUNPOW Next (j+3-1) a).PC <> align_addr (dataB (FUNPOW Next (j−1) a))` by fs [] >>
+      `word_at_addr (FUNPOW Next (j − 1) a).MEM (align_addr (FUNPOW Next (j + 2) a).PC) =
+      word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j + 2) a).PC)`
+        by fs [word_at_addr_not_changed_after_write_mem] >> fs [] >>
+      fs [SC_self_mod_isa_def,SC_self_mod_isa_not_affect_fetched_instr_j_plus_2]) >>
     `word_at_addr (FUNPOW Next (j − 1) a).MEM (align_addr (FUNPOW Next (j + 2) a).PC) =
     word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j + 2) a).PC)`
-      by fs [word_at_addr_not_changed_after_write_mem] >> fs [] >>
-    Q.ABBREV_TAC `j' = j + 1` >>
-    `j' <> 0` by fs [Abbr `j'`] >>
-    `j = j' - 1` by fs [Abbr `j'`] >> fs [] >>
-    Cases_on `is_wrMEM_isa (FUNPOW Next (j'-1) a)` >-
-     (`j'+2 > j' /\ j'+2 < j'+4` by rw [] >>
-      `align_addr (FUNPOW Next (j'+2-1) a).PC <> align_addr (dataB (FUNPOW Next (j'−1) a))` by fs [] >>
-      `word_at_addr (FUNPOW Next (j' − 1) a).MEM (align_addr (FUNPOW Next (j' + 1) a).PC) =
-      word_at_addr (FUNPOW Next j' a).MEM (align_addr (FUNPOW Next (j' + 1) a).PC)`
-        by fs [word_at_addr_not_changed_after_write_mem] >> fs [] >>
-      Q.ABBREV_TAC `j'' = j' + 1` >>
-      `j' = j'' - 1` by fs [Abbr `j''`] >> fs [] >>
-      Cases_on `is_wrMEM_isa (FUNPOW Next (j''-1) a)` >-
-       (`j''+1 > j'' /\ j''+1 < j''+4` by rw [] >>
-        `align_addr (FUNPOW Next (j''+1-1) a).PC <>
-         align_addr (dataB (FUNPOW Next (j''−1) a))` by fs [] >>
-        fs [word_at_addr_not_changed_after_write_mem]) >>
-      fs [word_at_addr_not_changed_after_normal_instrs]) >>
-    `word_at_addr (FUNPOW Next (j' − 1) a).MEM (align_addr (FUNPOW Next (j' + 1) a).PC) =
-    word_at_addr (FUNPOW Next j' a).MEM (align_addr (FUNPOW Next (j' + 1) a).PC)`
       by fs [word_at_addr_not_changed_after_normal_instrs] >> fs [] >>
-    Q.ABBREV_TAC `j'' = j' + 1` >>
-    `j' = j'' - 1` by fs [Abbr `j''`] >> fs [] >>
-    Cases_on `is_wrMEM_isa (FUNPOW Next (j''-1) a)` >-
-     (`j''+1 > j'' /\ j''+1 < j''+4` by rw [] >>
-      `align_addr (FUNPOW Next (j''+1-1) a).PC <>
-       align_addr (dataB (FUNPOW Next (j''−1) a))` by fs [] >>
-      fs [word_at_addr_not_changed_after_write_mem]) >>
-    fs [word_at_addr_not_changed_after_normal_instrs]) >>
-  `word_at_addr (FUNPOW Next (j − 1) a).MEM (align_addr (FUNPOW Next (j + 2) a).PC) =
-  word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j + 2) a).PC)`
-    by fs [word_at_addr_not_changed_after_normal_instrs] >> fs [] >>
-  Q.ABBREV_TAC `j' = j + 1` >>
-  `j' <> 0` by fs [Abbr `j'`] >>
-  `j = j' - 1` by fs [Abbr `j'`] >> fs [] >>
-  Cases_on `is_wrMEM_isa (FUNPOW Next (j'-1) a)` >-
-   (`j'+2 > j' /\ j'+2 < j'+4` by rw [] >>
-    `align_addr (FUNPOW Next (j'+2-1) a).PC <> align_addr (dataB (FUNPOW Next (j'−1) a))` by fs [] >>
-    `word_at_addr (FUNPOW Next (j' − 1) a).MEM (align_addr (FUNPOW Next (j' + 1) a).PC) =
-    word_at_addr (FUNPOW Next j' a).MEM (align_addr (FUNPOW Next (j' + 1) a).PC)`
+    fs [SC_self_mod_isa_def,SC_self_mod_isa_not_affect_fetched_instr_j_plus_2]) >>
+  Cases_on `is_wrMEM_isa (FUNPOW Next (j-1) a)` >-
+   (`j+4 > j /\ j+4 < j+5` by rw [] >>
+    `align_addr (FUNPOW Next (j+4-1) a).PC <> align_addr (dataB (FUNPOW Next (j−1) a))` by fs [] >>
+    `word_at_addr (FUNPOW Next (j − 1) a).MEM (align_addr (FUNPOW Next (j + 3) a).PC) =
+    word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j + 3) a).PC)`
       by fs [word_at_addr_not_changed_after_write_mem] >> fs [] >>
-    Q.ABBREV_TAC `j'' = j' + 1` >>
-    `j' = j'' - 1` by fs [Abbr `j''`] >> fs [] >>
-    Cases_on `is_wrMEM_isa (FUNPOW Next (j''-1) a)` >-
-     (`j''+1 > j'' /\ j''+1 < j''+4` by rw [] >>
-      `align_addr (FUNPOW Next (j''+1-1) a).PC <>
-       align_addr (dataB (FUNPOW Next (j''−1) a))` by fs [] >>
-      fs [word_at_addr_not_changed_after_write_mem]) >>
-    fs [word_at_addr_not_changed_after_normal_instrs]) >>
-    `word_at_addr (FUNPOW Next (j' − 1) a).MEM (align_addr (FUNPOW Next (j' + 1) a).PC) =
-    word_at_addr (FUNPOW Next j' a).MEM (align_addr (FUNPOW Next (j' + 1) a).PC)`
-      by fs [word_at_addr_not_changed_after_normal_instrs] >> fs [] >>
-    Q.ABBREV_TAC `j'' = j' + 1` >>
-    `j' = j'' - 1` by fs [Abbr `j''`] >> fs [] >>
-    Cases_on `is_wrMEM_isa (FUNPOW Next (j''-1) a)` >-
-     (`j''+1 > j'' /\ j''+1 < j''+4` by rw [] >>
-      `align_addr (FUNPOW Next (j''+1-1) a).PC <>
-       align_addr (dataB (FUNPOW Next (j''−1) a))` by fs [] >>
-      fs [word_at_addr_not_changed_after_write_mem]) >>
-  fs [word_at_addr_not_changed_after_normal_instrs]
+    fs [SC_self_mod_isa_def,SC_self_mod_isa_not_affect_fetched_instr_j_plus_3]) >>
+  `word_at_addr (FUNPOW Next (j − 1) a).MEM (align_addr (FUNPOW Next (j + 3) a).PC) =
+  word_at_addr (FUNPOW Next j a).MEM (align_addr (FUNPOW Next (j + 3) a).PC)`
+    by fs [word_at_addr_not_changed_after_normal_instrs] >> fs [] >>                                   
+  fs [SC_self_mod_isa_def,SC_self_mod_isa_not_affect_fetched_instr_j_plus_3]
 QED
 
 

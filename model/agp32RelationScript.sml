@@ -249,7 +249,8 @@ Definition MEM_req_rel_def:
    (s.WB.WB_opc = 3w ==> word_bit 0 s.data_wstrb ==> (7 >< 0) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 3w ==> word_bit 1 s.data_wstrb ==> (15 >< 8) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 3w ==> word_bit 2 s.data_wstrb ==> (23 >< 16) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
-   (s.WB.WB_opc = 3w ==> word_bit 3 s.data_wstrb ==> (31 >< 24) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)))
+   (s.WB.WB_opc = 3w ==> word_bit 3 s.data_wstrb ==> (31 >< 24) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_opc = 8w ==> s.acc_arg = dataA (FUNPOW Next (i-1) a)))
 End
 
 (** data for load instructions **)
@@ -271,9 +272,9 @@ Definition WB_Rel_def:
    (s.WB.WB_opc <> 14w ==> s.WB.WB_imm = imm (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_ALU_res = ALU_res (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 1w ==> s.WB.WB_SHIFT_res = shift_res (FUNPOW Next (i-1) a)) /\
-   (s.WB.WB_read_data = mem_data_rdata (FUNPOW Next (i-1) a)) /\
-   (s.WB.WB_read_data_byte = mem_data_rdata (FUNPOW Next (i-1) a)) /\
-   (s.WB.WB_isOut = (s.WB.WB_opc = 6w)) /\ 
+   (fext.ready ==> s.WB.WB_opc = 4w ==> s.WB.WB_read_data = mem_data_rdata (FUNPOW Next (i-1) a)) /\
+   (fext.ready ==> s.WB.WB_opc = 5w ==> s.WB.WB_read_data_byte = mem_data_rdata (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_isOut = isOut_isa (FUNPOW Next (i-1) a)) /\ 
    (s.WB.WB_write_reg = reg_iswrite (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_data_sel = reg_wdata_sel (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_write_data = reg_wdata (FUNPOW Next (i-1) a)))

@@ -111,6 +111,14 @@ Definition imm_def:
     else 0w
 End
 
+Definition imm_updated_def:
+  imm_updated a:word32 =
+  let opc = opc a in
+    if opc = 13w then imm a
+    else if opc = 14w then ((8 >< 0) (imm a)) @@ ((22 >< 0) (dataW a))
+    else 0w
+End
+
 (* compute the ALU result *)
 Definition ALU_input1_def:
   ALU_input1 a =
@@ -153,6 +161,10 @@ End
 
 Definition isAcc_isa_def:
   isAcc_isa a = (opc a = 8w)
+End
+
+Definition isOut_isa_def:
+  isOut_isa a = (opc a = 6w)
 End
 
 Definition isinterrupt_def:
@@ -243,30 +255,30 @@ Definition reg_iswrite_def:
 End
 
 Definition reg_wdata_sel_def:
-  reg_wdata_sel a =
+  reg_wdata_sel a:word3 =
   let opc = opc a in
     if (opc = 0w) \/ (opc = 6w) then 0w
-    else if opc = 1w  then 1w
-    else if (opc = 4w) \/ (opc = 5w) then 2w
-    else if opc = 7w then 3w
-    else if opc = 8w then 4w
-    else if opc = 9w then 5w
-    else if opc = 13w then 6w
-    else if opc = 14w then 7w
+    else if opc = 1w then 1w
+    else if opc = 7w then 2w
+    else if opc = 9w then 3w
+    else if opc = 13w \/ opc = 14w then 4w
+    else if opc = 4w then 5w
+    else if opc = 5w then 6w
+    else if opc = 8w then 7w
     else 0w
 End
 
 Definition reg_wdata_def:
   reg_wdata a =
-  let opc = opc a in
-    if (opc = 0w) \/ (opc = 6w) then ALU_res a
-    else if opc = 1w  then shift_res a
-    else if (opc = 4w) \/ (opc = 5w) then mem_data_rdata a
-    else if opc = 7w then w2w a.data_in
-    else if opc = 8w then acc_res a
-    else if opc = 9w then a.PC + 4w
-    else if opc = 13w then imm a
-    else if opc = 14w then ((8 >< 0) (imm a)) @@ ((22 >< 0) (dataW a))
+  let sel = reg_wdata_sel a in
+    if sel = 0w then ALU_res a
+    else if sel = 1w then shift_res a
+    else if sel = 2w then w2w a.data_in
+    else if sel = 3w then a.PC + 4w
+    else if sel = 4w then imm_updated a
+    else if sel = 5w then mem_data_rdata a
+    else if sel = 6w then mem_data_rdata a
+    else if sel = 7w then acc_res a
     else 0w
 End
 
@@ -275,7 +287,7 @@ Definition isJump_isa_def:
   isJump_isa a =
   let opc = opc a;
       ALU_res = ALU_res a in
-  ((opc = 9w) \/ (opc = 10w /\ ALU_res = 0w) \/ (opc = 11w /\ ALU_res <> 0w))
+    ((opc = 9w) \/ (opc = 10w /\ ALU_res = 0w) \/ (opc = 11w /\ ALU_res <> 0w))
 End
 
 val _ = export_theory ();

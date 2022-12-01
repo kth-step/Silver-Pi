@@ -885,6 +885,58 @@ Proof
   fs [Rel_def,MEM_req_rel_def]
 QED
 
+(** lemma for acc_arg **)
+Theorem agp32_acc_arg_unchanged_when_WB_disabled:
+  !fext fbits t.
+    ~enable_stg 5 (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).acc_arg = (agp32 fext fbits t).acc_arg
+Proof
+  rw [enable_stg_def] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).acc_arg = (agp32_next_state (fext t) s s).acc_arg`
+    by fs [agp32_acc_arg_and_ready_updated_by_agp32_next_state] >>
+  fs [agp32_next_state_def] >>
+  IF_CASES_TAC >> fs [] >>
+  reverse IF_CASES_TAC >- rw [] >>
+  IF_CASES_TAC >>
+  fs [Abbr `s`] >> METIS_TAC [agp32_state_fext_ready_and_WB_state_flag]
+QED
+
+(** acc_arg **)
+Theorem agp32_Rel_ag32_acc_arg_correct:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5, SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_opc = 8w ==>
+    (agp32 fext fbits (SUC t)).acc_arg = dataA (FUNPOW Next (THE (I (5,SUC t)) − 1) a)
+Proof
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+    `(agp32 fext fbits (SUC t)).acc_arg = (agp32_next_state (fext t) s s).acc_arg`
+      by fs [agp32_acc_arg_and_ready_updated_by_agp32_next_state] >>
+    `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+    `s.MEM.MEM_opc = 8w` by fs [agp32_WB_opc_MEM_opc_when_WB_enabled,Abbr `s`] >>
+    `s.MEM.MEM_isAcc` by METIS_TAC [Abbr `s`,agp32_MEM_isAcc_MEM_opc_8w] >>
+    `I' (5,SUC t) = I' (4,t)` by fs [is_sch_def,is_sch_writeback_def] >>
+    `s.state = 0w`
+      by (fs [Abbr `s`,enable_stg_def] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
+          METIS_TAC [agp32_WB_state_flag_and_state,agp32_state_impossible_values]) >>
+    `(fext t).ready`
+      by (fs [Abbr `s`,enable_stg_def] >> METIS_TAC [agp32_WB_state_flag_and_fext_ready]) >>
+    fs [agp32_next_state_def] >>
+    `~s.MEM.MEM_isInterrupt /\ ~s.MEM.MEM_read_mem /\
+    ~s.MEM.MEM_write_mem /\ ~s.MEM.MEM_write_mem_byte`
+      by fs [Abbr `s`,agp32_MEM_isAcc_others_F] >> fs [] >>
+    fs [Rel_def,MEM_Rel_def]) >>
+  `(agp32 fext fbits (SUC t)).acc_arg = (agp32 fext fbits t).acc_arg`
+    by fs [agp32_acc_arg_unchanged_when_WB_disabled] >>
+  `I' (5,SUC t) = I' (5,t)` by fs [is_sch_def,is_sch_disable_def] >>
+  `(agp32 fext fbits t).WB.WB_opc = 8w` by fs [agp32_WB_opc_unchanged_when_WB_disabled] >>
+  fs [Rel_def,MEM_req_rel_def]
+QED
+
 
 (* MEM_req_rel *)
 Theorem agp32_Rel_ag32_MEM_req_rel_correct:
@@ -903,7 +955,8 @@ Proof
       agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_0,
       agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_1,
       agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_2,
-      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_3]
+      agp32_Rel_ag32_data_wdata_correct_write_mem_byte_word_bit_3,
+      agp32_Rel_ag32_acc_arg_correct]
 QED
 
 

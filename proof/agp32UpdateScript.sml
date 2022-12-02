@@ -4158,7 +4158,7 @@ Proof
       WB_pipeline_unchanged_state_items]
 QED
 
-(** acc_arg and acc_arg_ready is updated by the agp32_next_state function **)
+(** acc_arg and acc_arg_ready are updated by the agp32_next_state function **)
 Theorem agp32_acc_arg_and_ready_updated_by_agp32_next_state:
   !fext fbits t s.
     s = agp32 fext fbits t ==>
@@ -4184,6 +4184,31 @@ Proof
       ID_pipeline_unchanged_acc_items,REG_write_unchanged_acc_items,
       EX_pipeline_unchanged_acc_items,MEM_pipeline_unchanged_acc_items,
       WB_pipeline_unchanged_acc_items]
+QED
+
+(** acc_state, acc_res_ready and acc_res are updated by the Acc_compute function **)
+Theorem agp32_acc_state_res_and_ready_updated_by_Acc_compute:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update] (fext t) s s ==>
+    ((agp32 fext fbits (SUC t)).acc_state = (Acc_compute (fext t) s s').acc_state) /\
+    ((agp32 fext fbits (SUC t)).acc_res = (Acc_compute (fext t) s s').acc_res) /\
+    ((agp32 fext fbits (SUC t)).acc_res_ready = (Acc_compute (fext t) s s').acc_res_ready)
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''`,
+      Hazard_ctrl_unchanged_acc_items,WB_update_unchanged_acc_items,
+      MEM_ctrl_update_unchanged_acc_items,IF_PC_input_update_unchanged_acc_items,
+      EX_jump_sel_addr_update_unchanged_acc_items,EX_SHIFT_update_unchanged_acc_items,
+      EX_ALU_update_unchanged_acc_items,EX_ALU_input_imm_update_unchanged_acc_items,
+      ID_data_check_update_unchanged_acc_items,
+      ID_data_update_unchanged_acc_items,ID_imm_update_unchanged_acc_items,
+      ID_opc_func_update_unchanged_acc_items,IF_instr_update_unchanged_acc_items]
 QED
 
 (** R is updated by the REG_write function **)

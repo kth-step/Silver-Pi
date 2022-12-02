@@ -379,12 +379,13 @@ Theorem agp32_Rel_ag32_WB_Rel_correct:
     I (5,SUC t) <> NONE ==>
     WB_Rel (fext (SUC t)) (agp32 fext fbits (SUC t)) a (THE (I (5,SUC t)))
 Proof
-  rw [WB_Rel_def,is_sch_def] >>
-  fs [agp32_Rel_ag32_WB_PC_correct,agp32_Rel_ag32_WB_addrW_correct,agp32_Rel_ag32_WB_opc_correct,
+  rw [WB_Rel_def] >>
+  fs [is_sch_def,agp32_Rel_ag32_WB_PC_correct,
+      agp32_Rel_ag32_WB_addrW_correct,agp32_Rel_ag32_WB_opc_correct,
       agp32_Rel_ag32_WB_dataA_correct,agp32_Rel_ag32_WB_imm_correct_not_LoadUpperConstant,
       agp32_Rel_ag32_WB_imm_correct_LoadUpperConstant,agp32_Rel_ag32_WB_ALU_res_correct,
       agp32_Rel_ag32_WB_SHIFT_res_correct,agp32_Rel_ag32_WB_write_reg_correct,
-      is_sch_def,agp32_Rel_ag32_WB_read_data_correct,agp32_Rel_ag32_WB_read_data_byte_correct,
+      agp32_Rel_ag32_WB_read_data_correct,agp32_Rel_ag32_WB_read_data_byte_correct,
       agp32_Rel_ag32_WB_isOut_correct,agp32_Rel_ag32_WB_data_sel_correct] >>
   cheat
 QED

@@ -250,7 +250,9 @@ Definition MEM_req_rel_def:
    (s.WB.WB_opc = 3w ==> word_bit 1 s.data_wstrb ==> (15 >< 8) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 3w ==> word_bit 2 s.data_wstrb ==> (23 >< 16) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 3w ==> word_bit 3 s.data_wstrb ==> (31 >< 24) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
-   (s.WB.WB_opc = 8w ==> s.acc_arg = dataA (FUNPOW Next (i-1) a)))
+   (s.WB.WB_opc = 8w ==> s.acc_arg = dataA (FUNPOW Next (i-1) a)) /\
+   (enable_stg 5 si ==> s.WB.WB_opc = 8w ==> s.acc_arg_ready) /\
+   (s.WB.WB_state_flag ==> s.WB.WB_opc = 8w ==> s.acc_res = acc_res (FUNPOW Next (i-1) a)))
 End
 
 (** data for load instructions **)

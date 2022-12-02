@@ -790,7 +790,6 @@ Proof
       agp32_MEM_write_mem_byte_MEM_opc_3w,agp32_MEM_isAcc_MEM_opc_8w,
       agp32_MEM_isInterrupt_MEM_opc_12w] >> fs []
 QED
-    
 
 
 (** WB stage **)
@@ -1867,6 +1866,25 @@ Proof
   rw [agp32_init_def]
 QED
 
+(** initial acc_arg_ready is F **)
+Theorem agp32_init_acc_arg_ready:
+  !fext fbits.
+    ~(agp32 fext fbits 0).acc_arg_ready
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_acc_items,WB_update_unchanged_acc_items,
+      MEM_ctrl_update_unchanged_acc_items,IF_PC_input_update_unchanged_acc_items,
+      EX_jump_sel_addr_update_unchanged_acc_items,EX_SHIFT_update_unchanged_acc_items,
+      EX_ALU_update_unchanged_acc_items,EX_ALU_input_imm_update_unchanged_acc_items,
+      ID_data_check_update_unchanged_acc_items,
+      ID_data_update_unchanged_acc_items,ID_imm_update_unchanged_acc_items,
+      ID_opc_func_update_unchanged_acc_items,IF_instr_update_unchanged_acc_items] >>
+  rw [agp32_init_def]
+QED
+
 (** initial ctrl flags are false **)
 Theorem agp32_init_ctrl_flags:
   !fext fbits.
@@ -2061,7 +2079,77 @@ Proof
     by fs [agp32_state_3_and_not_WB_state_flag,enable_stg_def] >>    
   METIS_TAC [agp32_WB_opc_unchanged_when_WB_disabled]
 QED
-             
+
+
+(** Accelerator **)
+(** acc_arg_ready and state **)
+Theorem agp32_acc_arg_ready_then_state_2w:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).acc_arg_ready ==>
+    (agp32 fext fbits t).state = 2w
+Proof
+  rw [] >> Induct_on `t` >> rw [] >-
+   fs [agp32_init_acc_arg_ready] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `(agp32 fext fbits (SUC t)).acc_arg_ready = (agp32_next_state (fext t) s s).acc_arg_ready`
+    by fs [agp32_acc_arg_and_ready_updated_by_agp32_next_state] >>
+  fs [agp32_next_state_def] >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >> fs [] >>
+  Cases_on `s.state = 0w` >> fs [] >-
+   (Cases_on `~(fext t).ready` >> fs [] >>
+    Cases_on `s.MEM.MEM_isInterrupt` >> fs [] >>
+    Cases_on `s.MEM.MEM_read_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem_byte` >> fs [] >-
+     (Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []) >>
+    Cases_on `s.MEM.MEM_isAcc` >> fs []) >>
+  Cases_on `s.state = 1w` >> fs [] >-
+   (Cases_on `(fext t).ready /\ s.command = 0w` >-
+     (Cases_on `s.do_interrupt` >> fs []) >> gs []) >>
+  Cases_on `s.state = 2w` >> fs [] >>
+  Cases_on `s.state = 3w` >> fs [] >-
+   (Cases_on `(fext t).mem_start_ready` >> fs []) >>
+  Cases_on `s.state = 4w` >> fs [] >>
+  Cases_on `(fext t).interrupt_ack` >> fs []
+QED
+
+(** acc_arg_ready and state is 2 at t, then next cycle state is 2 **)
+Theorem agp32_acc_arg_ready_then_next_state_2w:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).acc_arg_ready ==>
+    (agp32 fext fbits (SUC t)).state = 2w    
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+  `s.state = 2w` by gs [agp32_acc_arg_ready_then_state_2w,Abbr `s`] >>
+  fs [agp32_next_state_def]
+QED
+
+(** acc_res_ready and acc_state **)
+Theorem agp32_acc_state_0w_then_acc_res_not_ready:
+  !fext fbits t.
+    t <> 0 ==>
+    (agp32 fext fbits t).acc_state = 0w ==>
+    ~(agp32 fext fbits t).acc_res_ready
+Proof
+  rw [] >> Induct_on `t` >> rw [] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update] (fext t) s s` >>
+  `((agp32 fext fbits (SUC t)).acc_state = (Acc_compute (fext t) s s').acc_state) /\
+  ((agp32 fext fbits (SUC t)).acc_res_ready = (Acc_compute (fext t) s s').acc_res_ready)`
+    by fs [agp32_acc_state_res_and_ready_updated_by_Acc_compute] >>
+  fs [Acc_compute_def] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs []
+QED
 
 
 (* lemmas about the scheduling function I *)

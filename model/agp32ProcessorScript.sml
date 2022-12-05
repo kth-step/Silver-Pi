@@ -501,6 +501,7 @@ val init_tm = add_x_inits ``<| R := K 0w;
                                PC := 0w;
                                state := 3w;     
                                acc_arg_ready := F;
+                               acc_state := 0w;
                                command := 0w;
                                data_addr := 0xffffffffw;         
                                do_interrupt := F;           

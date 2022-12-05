@@ -7,17 +7,6 @@ val _ = prefer_num ();
 val _ = guess_lengths ();
 
 
-(* lemma *)
-Theorem agp32_data_in_unchanged_all:
-  !fext t.
-    is_data_in fext ==>
-    (fext t).data_in = (fext 0).data_in
-Proof
-  rw [is_data_in_def] >>
-  Induct_on `t` >> fs []
-QED
-
-
 (* Init relation implies Rel at cycle 0 *)
 Theorem agp32_Init_implies_Rel:
   !fext fbits s a I.
@@ -31,7 +20,9 @@ Proof
       Inv_Rel_def,enable_stg_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs [] >>
   rw [agp32_init_ID_opc,agp32_init_EX_opc,agp32_init_EX_write_reg,
       agp32_init_MEM_opc,agp32_init_MEM_write_reg,
-      agp32_init_WB_opc,agp32_init_WB_write_reg]
+      agp32_init_WB_opc,agp32_init_WB_write_reg] >>
+  `a.data_in = (FUNPOW Next 0 a).data_in` by rw [] >>
+  METIS_TAC [ag32_data_in_unchanged_all]
 QED
 
 
@@ -54,9 +45,7 @@ Proof
   `Rel I' (fext t) (s (t-1)) (s t) a t` by METIS_TAC [] >>
   rw [Rel_def] >-
    (** data_in **)
-   (fs [agp32_data_in_unchanged_all,Init_def] >>
-    `a.data_in = (FUNPOW Next 0 a).data_in` by rw [] >>
-    METIS_TAC [ag32_data_in_unchanged_all]) >-
+   METIS_TAC [agp32_Rel_ag32_data_in_correct] >-
    (** carryflag **)
    fs [agp32_Rel_ag32_EX_ALU_carry_flag_correct] >-
    fs [agp32_Rel_ag32_EX_ALU_flags_correct_ID_not_NONE] >-
@@ -87,7 +76,7 @@ Proof
    (** data_out **)
    cheat >-
    (** registers **)
-   fs [agp32_Rel_ag32_R_correct] >-
+   fs [agp32_Rel_ag32_R_correct_WB_t] >-
    cheat >-
    cheat >-
    cheat >-

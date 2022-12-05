@@ -6,6 +6,39 @@ val _ = new_theory "agp32_WB_Correct";
 val _ = prefer_num ();
 val _ = guess_lengths ();
 
+(* lemmas for data_in *)
+Theorem agp32_data_in_unchanged_init:
+  !fext t.
+    is_data_in fext ==>
+    (fext t).data_in = (fext 0).data_in
+Proof
+  rw [is_data_in_def] >>
+  Induct_on `t` >> fs []
+QED
+
+Theorem agp32_Rel_ag32_data_in_correct:
+  !fext fbits t a.
+    is_data_in fext ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
+    (!n. (fext (SUC t)).data_in = (FUNPOW Next n a).data_in)
+Proof
+  rw [agp32_data_in_unchanged_init,Init_def] >>
+  `a.data_in = (FUNPOW Next 0 a).data_in` by rw [] >>
+  METIS_TAC [ag32_data_in_unchanged_all]
+QED
+
+Theorem agp32_Rel_ag32_data_in_WB:
+  !fext fbits t a I.
+    is_data_in fext ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    (fext (SUC t)).data_in = (FUNPOW Next (THE (I (5,SUC t)) - 1) a).data_in
+Proof
+  rw [is_data_in_def,Rel_def] >>
+  METIS_TAC [ag32_data_in_unchanged_all]
+QED
+
+
+
 
 (** WB_PC **)
 Theorem agp32_Rel_ag32_WB_PC_correct:
@@ -369,12 +402,73 @@ Proof
   fs [Rel_def,WB_Rel_def]
 QED
 
+(** WB_write_data **)
+Theorem agp32_Rel_ag32_WB_write_data_correct:
+  !fext fbits a t I.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    is_sch I (agp32 fext fbits) a ==>
+    is_data_in fext ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5,SUC t) <> NONE ==>
+    (agp32 fext fbits (SUC t)).WB.WB_state_flag ==>
+    (agp32 fext fbits (SUC t)).WB.WB_write_data = reg_wdata (FUNPOW Next (THE (I (5,SUC t)) − 1) a)
+Proof
+  rw [agp32_WB_write_data_rewrite_SUC_t] >>
+  `(agp32 fext fbits (SUC t)).WB.WB_data_sel = reg_wdata_sel (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)`
+    by gs [is_sch_def,agp32_Rel_ag32_WB_data_sel_correct] >> fs [] >>
+  fs [MUX_81_def,reg_wdata_def] >>
+  IF_CASES_TAC >> fs [] >-
+   gs [is_sch_def,agp32_Rel_ag32_WB_ALU_res_correct] >>
+  IF_CASES_TAC >> fs [] >-
+   (fs [reg_wdata_sel_def] >>
+    Cases_on_word_value `opc (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)` >> fs [] >>
+    `(agp32 fext fbits (SUC t)).WB.WB_opc = 1w`
+      by METIS_TAC [is_sch_def,agp32_Rel_ag32_WB_opc_correct] >>
+    gs [is_sch_def,agp32_Rel_ag32_WB_SHIFT_res_correct]) >>
+  IF_CASES_TAC >> fs [] >-
+   METIS_TAC [agp32_Rel_ag32_data_in_WB] >>
+  IF_CASES_TAC >> fs [] >-
+   gs [is_sch_def,agp32_Rel_ag32_WB_PC_correct] >>
+  IF_CASES_TAC >> fs [] >- 
+   (rw [imm_updated_def] >>
+    `(agp32 fext fbits (SUC t)).WB.WB_opc = opc (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)`
+      by gs [is_sch_def,agp32_Rel_ag32_WB_opc_correct] >-
+     (`(agp32 fext fbits (SUC t)).WB.WB_opc <> 14w` by fs [] >>
+      gs [is_sch_def,agp32_Rel_ag32_WB_imm_correct_not_LoadUpperConstant]) >-
+     gs [is_sch_def,agp32_Rel_ag32_WB_imm_correct_LoadUpperConstant] >>
+    fs [reg_wdata_sel_def] >>
+    Cases_on_word_value `opc (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)` >> fs []) >>
+  IF_CASES_TAC >> fs [] >-
+   (`(fext (SUC t)).ready` by METIS_TAC [agp32_WB_state_flag_and_fext_ready] >>
+    fs [reg_wdata_sel_def] >>
+    Cases_on_word_value `opc (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)` >> fs [] >>
+    `(agp32 fext fbits (SUC t)).WB.WB_opc = 4w`
+      by METIS_TAC [is_sch_def,agp32_Rel_ag32_WB_opc_correct] >>
+    gs [agp32_Rel_ag32_WB_read_data_correct]) >>
+  IF_CASES_TAC >> fs [] >-
+   (`(fext (SUC t)).ready` by METIS_TAC [agp32_WB_state_flag_and_fext_ready] >>
+    fs [reg_wdata_sel_def] >>
+    Cases_on_word_value `opc (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)` >> fs [] >>
+    `(agp32 fext fbits (SUC t)).WB.WB_opc = 5w`
+      by METIS_TAC [is_sch_def,agp32_Rel_ag32_WB_opc_correct] >>
+    gs [agp32_Rel_ag32_WB_read_data_byte_correct]) >>
+  IF_CASES_TAC >> fs [] >-
+   (fs [reg_wdata_sel_def] >>
+    Cases_on_word_value `opc (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)` >> fs [] >>
+    `(agp32 fext fbits (SUC t)).WB.WB_opc = 8w`
+      by METIS_TAC [is_sch_def,agp32_Rel_ag32_WB_opc_correct] >>
+    gs [agp32_Rel_ag32_acc_res_correct]) >>
+  Cases_on_word_value `reg_wdata_sel (FUNPOW Next (THE (I' (5,SUC t)) − 1) a)` >> fs []
+QED
+
 
 (* WB_Rel *)
 Theorem agp32_Rel_ag32_WB_Rel_correct:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    is_data_in fext ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5,SUC t) <> NONE ==>
     WB_Rel (fext (SUC t)) (agp32 fext fbits (SUC t)) a (THE (I (5,SUC t)))
@@ -386,13 +480,13 @@ Proof
       agp32_Rel_ag32_WB_imm_correct_LoadUpperConstant,agp32_Rel_ag32_WB_ALU_res_correct,
       agp32_Rel_ag32_WB_SHIFT_res_correct,agp32_Rel_ag32_WB_write_reg_correct,
       agp32_Rel_ag32_WB_read_data_correct,agp32_Rel_ag32_WB_read_data_byte_correct,
-      agp32_Rel_ag32_WB_isOut_correct,agp32_Rel_ag32_WB_data_sel_correct] >>
-  cheat
+      agp32_Rel_ag32_WB_isOut_correct,agp32_Rel_ag32_WB_data_sel_correct,
+      agp32_Rel_ag32_WB_write_data_correct]
 QED
 
 
 (* registers R updated by WB stage *)
-Theorem agp32_Rel_ag32_R_correct:
+Theorem agp32_Rel_ag32_R_correct_WB_t:
   !fext fbits a t I.
     is_sch I (agp32 fext fbits) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
@@ -400,16 +494,20 @@ Theorem agp32_Rel_ag32_R_correct:
     wb_data_vaild (agp32 fext fbits t) ==>
     (agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I (5,t))) a).R
 Proof
-  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  rw [wb_data_vaild_def] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline] (fext t) s s` >>
-  `(agp32 fext fbits (SUC t)).R = (REG_write (fext t) s s').R` by cheat >>
-  fs [REG_write_def,wb_data_vaild_def] >>
+  `(agp32 fext fbits (SUC t)).R = (REG_write (fext t) s s').R`
+    by fs [agp32_R_updated_by_REG_write] >>
   `(s'.R = s.R) /\ (s'.WB.WB_state_flag <=> s.WB.WB_state_flag) /\
-  (s'.WB.WB_write_data = s.WB.WB_write_data)` by cheat >> fs [] >>
-  Cases_on `s.WB.WB_write_reg` >> fs [Rel_def] >-
+  (s'.WB.WB_write_data = s.WB.WB_write_data)` by cheat >> fs [REG_write_def] >>
+  Cases_on `s.WB.WB_write_reg` >> fs [] >-
    (Cases_on `I' (5,t-1) = NONE` >> fs [] >-
-     (`s.R = (FUNPOW Next (THE (I' (5,t)) - 1) a).R` by cheat >> rw [] >>
-      `THE (I' (5,t)) <> 0` by cheat >>
+     (`s.R = (FUNPOW Next (THE (I' (5,t)) - 1) a).R` by fs [Rel_def] >>
+      `(s.WB.WB_addrW = addrW (FUNPOW Next (THE (I' (5,t)) - 1) a)) /\
+      (s.WB.WB_write_data = reg_wdata (FUNPOW Next (THE (I' (5,t)) - 1) a)) /\
+      (reg_iswrite (FUNPOW Next (THE (I' (5,t)) - 1) a))`
+        by fs [Rel_def,WB_Rel_def] >> rw [] >>
+      `THE (I' (5,t)) <> 0` by METIS_TAC [WB_instr_index_not_0] >>
       `THE (I' (5,t)) = SUC (THE (I' (5,t)) − 1)` by fs [] >>
       `(FUNPOW Next (THE (I' (5,t))) a).R =
       (FUNPOW Next (SUC (THE (I' (5,t)) - 1)) a).R` by METIS_TAC [] >>

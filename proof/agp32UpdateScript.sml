@@ -3116,6 +3116,16 @@ Proof
   Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
 QED
 
+Theorem agp32_next_state_unchanged_acc_items:
+  !fext s s'.
+    ((agp32_next_state fext s s').acc_res = s'.acc_res) /\
+    ((agp32_next_state fext s s').acc_res_ready = s'.acc_res_ready) /\
+    ((agp32_next_state fext s s').acc_state = s'.acc_state)
+Proof
+  rw [agp32_next_state_def] >>
+  Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []
+QED
+
 
 (** lemmas **)
 Theorem slist_unchanged_EX_jump:
@@ -4238,6 +4248,36 @@ Proof
 QED
 
 
+(** rewrite WB_write_data with the MUX_81 function **)
+Theorem agp32_WB_write_data_rewrite_MUX_81:
+  !fext fbits t s s' s''.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
+    s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update;
+                 ID_data_update; ID_data_check_update;
+                 EX_ALU_input_imm_update; EX_ALU_update; EX_SHIFT_update;
+                 EX_jump_sel_addr_update; IF_PC_input_update; MEM_ctrl_update] (fext (SUC t)) s' s' ==>
+    (agp32 fext fbits (SUC t)).WB.WB_write_data =
+    MUX_81 (agp32 fext fbits (SUC t)).WB.WB_data_sel s''.WB.WB_ALU_res s''.WB.WB_SHIFT_res
+           (w2w (fext (SUC t)).data_in) (s''.WB.WB_PC + 4w) s''.WB.WB_imm
+           (agp32 fext fbits (SUC t)).WB.WB_read_data
+           (agp32 fext fbits (SUC t)).WB.WB_read_data_byte s'.acc_res
+Proof
+  rpt strip_tac >>
+  `((agp32 fext fbits (SUC t)).WB.WB_read_data = (WB_update (fext (SUC t)) s' s'').WB.WB_read_data) /\
+  ((agp32 fext fbits (SUC t)).WB.WB_read_data_byte =
+   (WB_update (fext (SUC t)) s' s'').WB.WB_read_data_byte) /\
+  ((agp32 fext fbits (SUC t)).WB.WB_data_sel = (WB_update (fext (SUC t)) s' s'').WB.WB_data_sel) /\
+  ((agp32 fext fbits (SUC t)).WB.WB_write_data = (WB_update (fext (SUC t)) s' s'').WB.WB_write_data)`
+    by fs [agp32_WB_ctrl_items_updated_by_WB_update] >> rw [] >>
+  qpat_abbrev_tac `s = agp32 fext fbits t` >>
+  qpat_abbrev_tac `s' = procs _ (fext t) s s` >>
+  qpat_abbrev_tac `s'' = procs _ (fext (SUC t)) s' s'` >>
+  rw [WB_update_def]
+QED
+
+
 (* additional theorems for the correctness proof *)
 Theorem agp32_same_EX_opc_func_until_ALU_update:
   !fext fbits t s s' s''.
@@ -4438,6 +4478,29 @@ Proof
   fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
       Hazard_ctrl_unchanged_EX_jump,WB_update_unchanged_EX_jump,
       MEM_ctrl_update_unchanged_EX_jump,IF_PC_input_update_unchanged_EX_jump]
+QED
+
+Theorem agp32_same_acc_items_until_Acc_compute:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update] (fext t) s s ==>
+    (s'.acc_state = s.acc_state) /\ (s'.acc_res = s.acc_res) /\
+    (s'.acc_res_ready = s.acc_res_ready)
+Proof
+  rpt STRIP_TAC >> fs [procs_def] >>
+  qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>
+  qpat_abbrev_tac `ss2 = WB_pipeline _ _ _` >>
+  qpat_abbrev_tac `ss3 = MEM_pipeline _ _ _` >>
+  qpat_abbrev_tac `ss4 = EX_pipeline _ _ _` >>
+  qpat_abbrev_tac `ss5 = REG_write _ _ _` >>
+  qpat_abbrev_tac `ss6 = ID_pipeline _ _ _` >>
+  qpat_abbrev_tac `ss7 = IF_PC_update _ _ _` >>
+  fs [Abbr `ss7`,Abbr `ss6`,Abbr `ss5`,Abbr `ss4`,Abbr `ss3`,Abbr `ss2`,Abbr `ss1`,
+      IF_PC_update_unchanged_acc_items,ID_pipeline_unchanged_acc_items,
+      REG_write_unchanged_acc_items,EX_pipeline_unchanged_acc_items,
+      MEM_pipeline_unchanged_acc_items,WB_pipeline_unchanged_acc_items,
+      agp32_next_state_unchanged_acc_items]
 QED
 
 Theorem agp32_same_items_until_MEM_pipeline:
@@ -4997,6 +5060,22 @@ Proof
   fs [Abbr `ss8`,Abbr `ss7`,Acc_compute_unchanged_IF]
 QED
 
+(** acc_res is unchanged after the Acc_compute function **)
+Theorem agp32_same_acc_res_after_Acc_compute:
+  !fext fbits t s s'.
+    s = agp32 fext fbits t ==>
+    s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s ==>
+    s'.acc_res = (agp32 fext fbits (SUC t)).acc_res
+Proof
+  rpt STRIP_TAC >>
+  Q.ABBREV_TAC `s'' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;
+                             EX_pipeline;REG_write;ID_pipeline;IF_PC_update] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).acc_res = (Acc_compute (fext t) s s'').acc_res`
+    by fs [agp32_acc_state_res_and_ready_updated_by_Acc_compute] >> fs [Abbr `s''`] >>
+  slist_update_state_tac
+QED
+
 (** EX_write_reg and EX_addrW are unchanged after the EX_pipeline function **)
 Theorem agp32_same_EX_pipeline_items_after_EX_pipeline:
   !fext fbits t s s'.
@@ -5269,7 +5348,7 @@ Proof
       EX_ALU_update_unchanged_EX_pipeline_items,EX_ALU_input_imm_update_unchanged_EX_pipeline_items]
 QED
 
-(** WB_dataA/WB_ALU_res/WB_SHIFT_res are unchanged after the WB_pipeline function **)
+(** WB_dataA/WB_ALU_res/WB_SHIFT_res/PC are unchanged after the WB_pipeline function **)
 Theorem agp32_same_WB_items_before_WB_update:
   !fext fbits t s s' s''.
     s = agp32 fext fbits t ==>
@@ -5282,7 +5361,9 @@ Theorem agp32_same_WB_items_before_WB_update:
     ((agp32 fext fbits (SUC t)).WB.WB_dataA = s''.WB.WB_dataA) /\
     ((agp32 fext fbits (SUC t)).WB.WB_opc = s''.WB.WB_opc) /\
     ((agp32 fext fbits (SUC t)).WB.WB_ALU_res = s''.WB.WB_ALU_res) /\
-    ((agp32 fext fbits (SUC t)).WB.WB_SHIFT_res = s''.WB.WB_SHIFT_res)
+    ((agp32 fext fbits (SUC t)).WB.WB_SHIFT_res = s''.WB.WB_SHIFT_res) /\
+    ((agp32 fext fbits (SUC t)).WB.WB_PC = s''.WB.WB_PC) /\
+    ((agp32 fext fbits (SUC t)).WB.WB_imm = s''.WB.WB_imm)
 Proof
   rpt gen_tac >> rpt disch_tac >>
   fs [agp32_def,mk_module_def,mk_circuit_def] >>

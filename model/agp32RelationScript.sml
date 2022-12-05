@@ -251,15 +251,15 @@ Definition MEM_req_rel_def:
    (s.WB.WB_opc = 3w ==> word_bit 2 s.data_wstrb ==> (23 >< 16) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 3w ==> word_bit 3 s.data_wstrb ==> (31 >< 24) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 8w ==> s.acc_arg = dataA (FUNPOW Next (i-1) a)) /\
-   (enable_stg 5 si ==> s.WB.WB_opc = 8w ==> s.acc_arg_ready) /\
-   (s.WB.WB_state_flag ==> s.WB.WB_opc = 8w ==> s.acc_res = acc_res (FUNPOW Next (i-1) a)))
+   (enable_stg 5 si ==> s.WB.WB_opc = 8w ==> s.acc_arg_ready))
 End
 
 (** data for load instructions **)
 Definition MEM_data_rel_def:
   MEM_data_rel (fext:ext) (s:state_circuit) (a:ag32_state) (i:num) <=>
   ((fext.ready ==> s.WB.WB_opc = 4w ==> fext.data_rdata = mem_data_rdata (FUNPOW Next (i-1) a)) /\
-   (fext.ready ==> s.WB.WB_opc = 5w ==> fext.data_rdata = mem_data_rdata_extra (FUNPOW Next (i-1) a)))
+   (fext.ready ==> s.WB.WB_opc = 5w ==> fext.data_rdata = mem_data_rdata_extra (FUNPOW Next (i-1) a)) /\
+   (s.WB.WB_state_flag ==> s.WB.WB_opc = 8w ==> s.acc_res = acc_res (FUNPOW Next (i-1) a)))
 End
 
 (** write back stage **)
@@ -279,7 +279,7 @@ Definition WB_Rel_def:
    (s.WB.WB_isOut = isOut_isa (FUNPOW Next (i-1) a)) /\ 
    (s.WB.WB_write_reg = reg_iswrite (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_data_sel = reg_wdata_sel (FUNPOW Next (i-1) a)) /\
-   (s.WB.WB_write_data = reg_wdata (FUNPOW Next (i-1) a)))
+   (s.WB.WB_state_flag ==> s.WB.WB_write_data = reg_wdata (FUNPOW Next (i-1) a)))
 End
 
 (** circuit level invariants **)
@@ -308,7 +308,7 @@ End
 (* si: circuit state at the previous cycle *)
 Definition Rel_def:
   Rel (I:num # num -> num option) (fext:ext) (si:state_circuit) (s:state_circuit) (a:ag32_state) (t:num) <=>
-  (I (5,t) <> NONE ==> fext.data_in = (FUNPOW Next (THE (I (5,t))) a).data_in) /\
+  (!n. fext.data_in = (FUNPOW Next n a).data_in) /\
   (I (3,t) <> NONE ==> (s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (3,t))) a).CarryFlag)) /\
   (I (3,t) = NONE ==> I (2,t) <> NONE ==> (s.EX.EX_carry_flag <=> (FUNPOW Next (THE (I (2,t)) - 1) a).CarryFlag)) /\
   (I (3,t) = NONE ==> I (2,t) = NONE ==> I (1,t) <> NONE ==>

@@ -857,6 +857,33 @@ Proof
   fs [WB_pipeline_def]
 QED
 
+(** rewrite the WB_write_data with SUC t **)
+Theorem agp32_WB_write_data_rewrite_SUC_t:
+  !fext fbits t.
+    (agp32 fext fbits (SUC t)).WB.WB_write_data =
+    MUX_81 (agp32 fext fbits (SUC t)).WB.WB_data_sel (agp32 fext fbits (SUC t)).WB.WB_ALU_res
+           (agp32 fext fbits (SUC t)).WB.WB_SHIFT_res (w2w (fext (SUC t)).data_in)
+           ((agp32 fext fbits (SUC t)).WB.WB_PC + 4w) (agp32 fext fbits (SUC t)).WB.WB_imm
+           (agp32 fext fbits (SUC t)).WB.WB_read_data
+           (agp32 fext fbits (SUC t)).WB.WB_read_data_byte (agp32 fext fbits (SUC t)).acc_res
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update; ID_data_update;
+                             ID_data_check_update; EX_ALU_input_imm_update; EX_ALU_update;
+                             EX_SHIFT_update; EX_jump_sel_addr_update; IF_PC_input_update;
+                             MEM_ctrl_update] (fext (SUC t)) s' s'` >>
+  `(agp32 fext fbits (SUC t)).WB.WB_write_data =
+  MUX_81 (agp32 fext fbits (SUC t)).WB.WB_data_sel s''.WB.WB_ALU_res
+         s''.WB.WB_SHIFT_res (w2w (fext (SUC t)).data_in) (s''.WB.WB_PC + 4w)
+         s''.WB.WB_imm (agp32 fext fbits (SUC t)).WB.WB_read_data
+         (agp32 fext fbits (SUC t)).WB.WB_read_data_byte s'.acc_res`
+    by fs [agp32_WB_write_data_rewrite_MUX_81] >> fs [] >>
+  METIS_TAC [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_WB_items_before_WB_update,
+             agp32_same_acc_res_after_Acc_compute]
+QED
+
 
 (** pipeline control flags **)
 (** IF_PC_write_enable **)
@@ -1885,6 +1912,25 @@ Proof
   rw [agp32_init_def]
 QED
 
+(** initial acc_state **)
+Theorem agp32_init_acc_state:
+  !fext fbits.
+    (agp32 fext fbits 0).acc_state = 0w
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_acc_items,WB_update_unchanged_acc_items,
+      MEM_ctrl_update_unchanged_acc_items,IF_PC_input_update_unchanged_acc_items,
+      EX_jump_sel_addr_update_unchanged_acc_items,EX_SHIFT_update_unchanged_acc_items,
+      EX_ALU_update_unchanged_acc_items,EX_ALU_input_imm_update_unchanged_acc_items,
+      ID_data_check_update_unchanged_acc_items,
+      ID_data_update_unchanged_acc_items,ID_imm_update_unchanged_acc_items,
+      ID_opc_func_update_unchanged_acc_items,IF_instr_update_unchanged_acc_items] >>
+  rw [agp32_init_def]
+QED
+
 (** initial ctrl flags are false **)
 Theorem agp32_init_ctrl_flags:
   !fext fbits.
@@ -2148,6 +2194,58 @@ Proof
   fs [Acc_compute_def] >>
   IF_CASES_TAC >> fs [] >>
   IF_CASES_TAC >> fs [] >>
+  IF_CASES_TAC >> fs []
+QED
+
+(** acc_arg_ready and acc_state **)
+Theorem agp32_acc_state_0w_then_acc_arg_ready_previous:
+  !fext fbits t.
+    t <> 0 ==>
+    (agp32 fext fbits t).acc_state = 0w ==>
+    (agp32 fext fbits (t - 1)).acc_arg_ready
+Proof
+  rw [] >> Induct_on `t` >> rw [] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).acc_state = (Acc_compute (fext t) s s').acc_state`
+    by fs [agp32_acc_state_res_and_ready_updated_by_Acc_compute] >>
+  fs [Acc_compute_def] >> gs [] >>
+  Cases_on `s.acc_arg_ready` >> fs [] >>
+  Cases_on `s'.acc_state = 0w` >> fs [] >>
+  Cases_on `s'.acc_state = 1w` >> fs []
+QED
+
+(** acc_state and state **)
+Theorem agp32_acc_state_0w_then_state_2w:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>    
+    t <> 0 ==>
+    (agp32 fext fbits t).acc_state = 0w ==>
+    (agp32 fext fbits t).state = 2w
+Proof
+  rw [] >>
+  `(agp32 fext fbits (t - 1)).acc_arg_ready` by fs [agp32_acc_state_0w_then_acc_arg_ready_previous] >>
+  `t = SUC (t - 1)` by fs [] >>
+  Q.ABBREV_TAC `t' = t - 1` >> fs [] >>
+  gs [agp32_acc_arg_ready_then_next_state_2w]
+QED
+
+(** acc_state possible values **)
+Theorem agp32_acc_state_possible_values:
+  !fext fbits t.
+    (agp32 fext fbits t).acc_state = 0w \/ (agp32 fext fbits t).acc_state = 1w
+Proof
+  rw [] >> Induct_on `t` >-
+   rw [agp32_init_acc_state] >> 
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update] (fext t) s s` >>
+  `(agp32 fext fbits (SUC t)).acc_state = (Acc_compute (fext t) s s').acc_state`
+    by fs [agp32_acc_state_res_and_ready_updated_by_Acc_compute] >>
+  `s'.acc_state = s.acc_state`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_acc_items_until_Acc_compute] >>
+  fs [Acc_compute_def] >>
   IF_CASES_TAC >> fs []
 QED
 

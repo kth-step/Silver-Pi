@@ -779,10 +779,10 @@ Proof
    (** 16 cases **)
    (** all NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (2,SUC t)) − 1) a).R`
-      by cheat >> fs []) >-
+      by gs [agp32_Rel_ag32_R_correct_ID] >> fs []) >-
    (** I (3,SUC t) is not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (3,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_EX] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >>
     `THE (I' (2,SUC t)) = THE (I' (3,SUC t)) + 1`
@@ -790,7 +790,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t) is not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_MEM] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >>
     fs [] >>
@@ -801,7 +801,7 @@ Proof
       by METIS_TAC [EX_NONE_ID_instr_index_with_MEM_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (4,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_MEM] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >>
     fs [] >>
@@ -816,7 +816,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,SUC t) is not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -827,7 +827,7 @@ Proof
       by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (5,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -842,7 +842,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t) and I (5,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -857,7 +857,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (3,SUC t), I (4,SUC t) and I (5,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -878,8 +878,9 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,t) is not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R`
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
        (subgoal `I' (2,SUC t) = I' (1,t)` >-
          (fs [is_sch_def,is_sch_decode_def,Abbr `s`] >>
@@ -930,8 +931,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (3,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R`
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -991,8 +993,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (4,SUC t) and I (5,t) are not NONE **)
    (Cases_on`s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R`
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -1037,8 +1040,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-     
    (** I (3,SUC t), I (4,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R`
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -1087,8 +1091,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (5,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-    (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+    (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+     `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R`
+       by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
      `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
        by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
            METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -1119,8 +1124,9 @@ Proof
     fs [Rel_def,ID_reg_data_Rel_def,reg_dataA_def,addrA_def] >> METIS_TAC []) >-
    (** I (3,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R`
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -1155,8 +1161,9 @@ Proof
     fs [Rel_def,ID_reg_data_Rel_def,reg_dataA_def,addrA_def] >> METIS_TAC []) >-
    (** I (4,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R`
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -1191,8 +1198,9 @@ Proof
     fs [Rel_def,ID_reg_data_Rel_def,reg_dataA_def,addrA_def] >> METIS_TAC []) >>
   (** all are not NONE **)
   Cases_on `s.WB.WB_state_flag` >-
-   (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-    `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+   (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+    `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R`
+      by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrA = (22 >< 17) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrA_def]) >> fs [] >>
@@ -1269,10 +1277,10 @@ Proof
   Cases_on `I' (3,SUC t) = NONE` >-
    (** all NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (2,SUC t)) − 1) a).R`
-      by cheat >> fs []) >-
+      by gs [agp32_Rel_ag32_R_correct_ID] >> fs []) >-
    (** I (3,SUC t) is not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (3,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_EX] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >>
     `THE (I' (2,SUC t)) = THE (I' (3,SUC t)) + 1`
@@ -1280,7 +1288,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t) is not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_MEM] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >>
     fs [] >>
@@ -1291,7 +1299,7 @@ Proof
       by METIS_TAC [EX_NONE_ID_instr_index_with_MEM_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (4,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_MEM] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >>
     fs [] >>
@@ -1306,7 +1314,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,SUC t) is not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1317,7 +1325,7 @@ Proof
       by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (5,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1332,7 +1340,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t) and I (5,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1347,7 +1355,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (3,SUC t), I (4,SUC t) and I (5,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1368,8 +1376,9 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,t) is not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
        (subgoal `I' (2,SUC t) = I' (1,t)` >-
          (fs [is_sch_def,is_sch_decode_def,Abbr `s`] >>
@@ -1420,8 +1429,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (3,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1481,8 +1491,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (4,SUC t) and I (5,t) are not NONE **)
    (Cases_on`s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1527,8 +1538,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (3,SUC t), I (4,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1577,8 +1589,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (5,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1609,8 +1622,9 @@ Proof
     fs [Rel_def,ID_reg_data_Rel_def,reg_dataB_def,addrB_def] >> METIS_TAC []) >-
    (** I (3,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1645,8 +1659,9 @@ Proof
     fs [Rel_def,ID_reg_data_Rel_def,reg_dataB_def,addrB_def] >> METIS_TAC []) >-
    (** I (4,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1681,8 +1696,9 @@ Proof
     fs [Rel_def,ID_reg_data_Rel_def,reg_dataB_def,addrB_def] >> METIS_TAC []) >>
   (** all are not NONE **)
   Cases_on `s.WB.WB_state_flag` >-
-   (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-    `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+   (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+    `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+      by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrB = (15 >< 10) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrB_def]) >> fs [] >>
@@ -1759,10 +1775,10 @@ Proof
   Cases_on `I' (3,SUC t) = NONE` >-
    (** all NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (2,SUC t)) − 1) a).R`
-      by cheat >> fs []) >-
+      by gs [agp32_Rel_ag32_R_correct_ID] >> fs []) >-
    (** I (3,SUC t) is not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (3,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_EX] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >>
     `THE (I' (2,SUC t)) = THE (I' (3,SUC t)) + 1`
@@ -1770,7 +1786,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t) is not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_MEM] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >>
     fs [] >>
@@ -1781,7 +1797,7 @@ Proof
       by METIS_TAC [EX_NONE_ID_instr_index_with_MEM_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (4,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (4,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_MEM] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >> METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >>
     fs [] >>
@@ -1796,7 +1812,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,SUC t) is not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -1807,7 +1823,7 @@ Proof
       by METIS_TAC [EX_MEM_NONE_ID_instr_index_with_WB_instr_plus_1] >> fs []) >-
    (** I (3,SUC t) and I (5,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -1822,7 +1838,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (4,SUC t) and I (5,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -1837,7 +1853,7 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (3,SUC t), I (4,SUC t) and I (5,SUC t) are not NONE **)
    (`(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,SUC t)) − 1) a).R`
-      by cheat >> fs [] >>
+      by gs [agp32_Rel_ag32_R_correct_WB_SUC_t] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -1858,8 +1874,9 @@ Proof
     METIS_TAC [reg_adr_update_isa_not_change_data]) >-
    (** I (5,t) is not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
        (subgoal `I' (2,SUC t) = I' (1,t)` >-
          (fs [is_sch_def,is_sch_decode_def,Abbr `s`] >>
@@ -1910,8 +1927,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (3,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -1971,8 +1989,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (4,SUC t) and I (5,t) are not NONE **)
    (Cases_on`s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -2017,8 +2036,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (3,SUC t), I (4,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -2067,8 +2087,9 @@ Proof
     `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >> fs []) >-
    (** I (5,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -2099,8 +2120,9 @@ Proof
     fs [Rel_def,ID_reg_data_Rel_def,reg_dataW_def,addrW_def] >> METIS_TAC []) >-
    (** I (3,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -2135,8 +2157,9 @@ Proof
     fs [Rel_def,ID_reg_data_Rel_def,reg_dataW_def,addrW_def] >> METIS_TAC []) >-
    (** I (4,SUC t), I (5,SUC t) and I (5,t) are not NONE **)
    (Cases_on `s.WB.WB_state_flag` >-
-     (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+     (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+      `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+        by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
       `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
         by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
             METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>
@@ -2171,8 +2194,9 @@ Proof
     fs [Rel_def,ID_reg_data_Rel_def,reg_dataW_def,addrW_def] >> METIS_TAC []) >>
   (** all are not NONE **)
   Cases_on `s.WB.WB_state_flag` >-
-   (`wb_data_vaild s` by fs [Abbr `s`,wb_data_vaild_def] >>
-    `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` by cheat >> fs [] >>
+   (`wb_data_valid s` by fs [Abbr `s`,wb_data_valid_def] >>
+    `(agp32 fext fbits (SUC t)).R = (FUNPOW Next (THE (I' (5,t))) a).R` 
+      by gs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >> fs [] >>
     `(agp32 fext fbits (SUC t)).ID.ID_addrW = (30 >< 25) i`
       by (fs [Abbr `i`,Abbr `s`,is_sch_def] >>
           METIS_TAC [agp32_Rel_ag32_ID_addr_correct,addrW_def]) >> fs [] >>

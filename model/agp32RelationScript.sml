@@ -66,9 +66,9 @@ Definition enable_stg_def:
   else F
 End
 
-(* wb_data_vaild: the register data is vaild from the external components e.g. memory *)
-Definition wb_data_vaild_def:
-  wb_data_vaild s = s.WB.WB_state_flag
+(* wb_data_valid: the register data is valid from the external components e.g. memory *)
+Definition wb_data_valid_def:
+  wb_data_valid s = s.WB.WB_state_flag
 End
 
 
@@ -251,7 +251,8 @@ Definition MEM_req_rel_def:
    (s.WB.WB_opc = 3w ==> word_bit 2 s.data_wstrb ==> (23 >< 16) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 3w ==> word_bit 3 s.data_wstrb ==> (31 >< 24) s.data_wdata = mem_data_wdata_byte (FUNPOW Next (i-1) a)) /\
    (s.WB.WB_opc = 8w ==> s.acc_arg = dataA (FUNPOW Next (i-1) a)) /\
-   (enable_stg 5 si ==> s.WB.WB_opc = 8w ==> s.acc_arg_ready))
+   (enable_stg 5 si ==> s.WB.WB_opc = 8w ==> s.acc_arg_ready) /\
+   (enable_stg 5 si ==> s.WB.WB_opc = 12w ==> s.do_interrupt))
 End
 
 (** data for load instructions **)
@@ -300,6 +301,8 @@ Definition Inv_Rel_def:
    (I (4,t) <> NONE ==> s.MEM.MEM_opc <> 16w) /\
    (I (5,t) <> NONE ==> s.WB.WB_opc <> 16w) /\
    (I (1,t) <> NONE ==> I (5,t) <> NONE ==> (THE (I (1,t)) > THE (I (5,t))) /\ (THE (I (1,t)) < THE (I (5,t)) + 5)) /\
+   (I (1,t-1) <> NONE ==> I (2,t-1) = NONE ==> I (3,t-1) = NONE ==> I (4,t-1) = NONE ==> I (5,t-1) <> NONE ==>
+    (THE (I (1,t-1)) > THE (I (5,t-1))) /\ (THE (I (1,t-1)) < THE (I (5,t-1)) + 2)) /\
    (I (1,t) <> NONE ==> I (2,t) = NONE ==> I (3,t) = NONE ==> I (4,t) = NONE ==> I (5,t) <> NONE ==>
     (THE (I (1,t)) > THE (I (5,t))) /\ (THE (I (1,t)) < THE (I (5,t)) + 2)))
 End
@@ -331,14 +334,17 @@ Definition Rel_def:
   (~fext.ready ==> ~enable_stg 2 s) /\
   (~s.EX.EX_jump_sel ==> reg_data_hazard s ==> ~enable_stg 2 s) /\
   (isMemOp_hw_op s ==> ~enable_stg 3 s) /\
-  (I (5,t-1) <> NONE ==> s.data_out = (FUNPOW Next (THE (I (5,t-1))) a).data_out) /\
-  (I (5,t-1) <> NONE ==> wb_data_vaild si ==> (s.R = (FUNPOW Next (THE (I (5,t-1))) a).R)) /\
+  (I (5,t-1) <> NONE ==> si.WB.WB_isOut ==> s.data_out = (FUNPOW Next (THE (I (5,t-1))) a).data_out) /\
+  (I (5,t-1) <> NONE ==> wb_data_valid si ==> (s.R = (FUNPOW Next (THE (I (5,t-1))) a).R)) /\
+  (I (5,t-1) <> NONE ==> ~wb_data_valid si ==> (s.R = (FUNPOW Next (THE (I (5,t-1)) - 1) a).R)) /\
   (I (5,t-1) = NONE ==> I (5,t) <> NONE ==> (s.R = (FUNPOW Next (THE (I (5,t)) - 1) a).R)) /\
   (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) <> NONE ==> (s.R = (FUNPOW Next (THE (I (4,t)) - 1) a).R)) /\
   (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) <> NONE ==> 
    (s.R = (FUNPOW Next (THE (I (3,t)) - 1) a).R)) /\
   (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) <> NONE ==>
    (s.R = (FUNPOW Next (THE (I (2,t)) - 1) a).R)) /\
+  (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) = NONE ==> I (1,t) <> NONE ==>
+   (s.R = (FUNPOW Next (THE (I (1,t)) - 1) a).R)) /\
   (Inv_Rel I si s a t) /\
   (I (1,t) <> NONE ==> IF_PC_Rel s a (THE (I (1,t)))) /\
   (I (1,t) <> NONE ==> fext.ready ==> IF_instr_Rel s a (THE (I (1,t)))) /\
@@ -347,6 +353,7 @@ Definition Rel_def:
   (I (2,t) <> NONE ==> ID_reg_data_Rel s a (THE (I (2,t))) (I (3,t)) (I (4,t)) (I (5,t))) /\
   (I (3,t) <> NONE ==> EX_Rel fext s a (THE (I (3,t)))) /\
   (EX_Rel_spec s a (I (3,t))) /\
+  (si.EX.EX_jump_sel = isJump_isa_op (I (3,t-1)) a) /\
   (I (4,t) <> NONE ==> MEM_Rel s a (THE (I (4,t)))) /\
   (I (5,t) <> NONE ==> MEM_req_rel fext si s a (THE (I (5,t)))) /\
   (I (5,t) <> NONE ==> MEM_data_rel fext s a (THE (I (5,t)))) /\
@@ -433,6 +440,12 @@ Definition is_sch_def:
   is_sch_memory I sf a /\
   is_sch_writeback I sf /\
   is_sch_disable I sf
+End
+
+(** processor is working **)
+Definition hw_work_def:
+   hw_work (s:state_circuit) <=>
+   (enable_stg 1 s \/ enable_stg 2 s \/ enable_stg 3 s \/ enable_stg 4 s \/ enable_stg 5 s)
 End
 
 val _ = export_theory ();

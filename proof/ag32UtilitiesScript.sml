@@ -413,6 +413,17 @@ Proof
   get_func_from_decode_tac
 QED
 
+(** if Decode got Normal(f,_,_), the func = num2funcT (w2n func _) **)
+Theorem ag32_Decode_Normal_func:
+  !ag f wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (f,wi,a,b) ==>
+    f = num2funcT (w2n (func ag))
+Proof
+  rw [] >> `opc ag = 0w` by fs [ag32_Decode_Normal_opc_0w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Normal (f,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
 (** if Decode got Out(fAdd,_,_,_), the func is 0w **)
 Theorem ag32_Decode_Out_fAdd_func_0w:
   !ag wi a b.
@@ -467,6 +478,17 @@ Theorem ag32_Decode_Out_func_not_0w_1w_2w:
     f <> fAddWithCarry ==>
     f <> fSub ==>
     (func ag <> 0w) /\ (func ag <> 1w) /\ (func ag <> 2w)
+Proof
+  rw [] >> `opc ag = 6w` by fs [ag32_Decode_Out_opc_6w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (f,wi,a,b)`` >>
+  get_func_from_decode_tac
+QED
+
+(** if Decode got Out(f,_,_), the func = num2funcT (w2n func _) **)
+Theorem ag32_Decode_Out_func:
+  !ag f wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (f,wi,a,b) ==>
+    f = num2funcT (w2n (func ag))
 Proof
   rw [] >> `opc ag = 6w` by fs [ag32_Decode_Out_opc_6w] >>
   UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (f,wi,a,b)`` >>
@@ -785,6 +807,16 @@ Proof
 QED
 
 (* decode the dataA *)
+(** Acc **)
+Theorem ag32_Decode_Acc_dataA:
+  !ag a b f wi.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Accelerator (wi,a) ==>
+    (dataA ag = ri2word a ag)
+Proof
+  get_data_simp_tac >>
+  rw [dataA_def,instr_def]
+QED
+
 (** Normal **)
 Theorem ag32_Decode_Normal_dataA:
   !ag a b f wi.
@@ -799,6 +831,16 @@ QED
 Theorem ag32_Decode_Out_dataA:
   !ag a b f wi.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (f,wi,a,b) ==>
+    (dataA ag = ri2word a ag)
+Proof
+  get_data_simp_tac >>
+  rw [dataA_def,instr_def]
+QED
+
+(** Shift **)
+Theorem ag32_Decode_Shift_dataA:
+  !ag a b f wi.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Shift (f,wi,a,b) ==>
     (dataA ag = ri2word a ag)
 Proof
   get_data_simp_tac >>
@@ -835,6 +877,26 @@ Proof
   rw [dataA_def,instr_def]
 QED
 
+(** LoadMEM **)
+Theorem ag32_Decode_LoadMEM_dataA:
+  !ag a wi.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadMEM (wi,a) ==>
+    (dataA ag = ri2word a ag)
+Proof
+  get_data_simp_tac >>
+  rw [dataA_def,instr_def]
+QED
+
+(** LoadMEMByte **)
+Theorem ag32_Decode_LoadMEMByte_dataA:
+  !ag a wi.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadMEMByte (wi,a) ==>
+    (dataA ag = ri2word a ag)
+Proof
+  get_data_simp_tac >>
+  rw [dataA_def,instr_def]
+QED
+
 
 (** dataB **)
 (** Normal **)
@@ -851,6 +913,16 @@ QED
 Theorem ag32_Decode_Out_dataB:
   !ag a b f wi.
     Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Out (f,wi,a,b) ==>
+    (dataB ag = ri2word b ag)
+Proof
+  get_data_simp_tac >>
+  rw [dataB_def,instr_def]
+QED
+
+(** Shift **)
+Theorem ag32_Decode_Shift_dataB:
+  !ag a b f wi.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Shift (f,wi,a,b) ==>
     (dataB ag = ri2word b ag)
 Proof
   get_data_simp_tac >>
@@ -899,6 +971,22 @@ Proof
   rw [dataW_def,instr_def]
 QED
 
+(** LoadUpperConstant **)
+Theorem ag32_Decode_LoadUpperConstant_dataW:
+  !ag a w1 w2.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadUpperConstant(w1,w2) ==>
+    (dataW ag = ag.R w1)
+Proof
+  rpt GEN_TAC >> simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >>              
+  qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >> rw [] >-
+   (rw [dataW_def,ri2word_def] >>
+    Cases_on `dc` >> fs [DecodeReg_imm_def,v2w_single]) >>
+  Cases_on `dc` >> fs [] >>
+  Q.ABBREV_TAC `op = (5 >< 0) (word_at_addr ag.MEM (align_addr ag.PC))` >>
+  Cases_on_word_value `op` >> fs []
+QED
+
 
 (** func **)
 Theorem ag32_func_for_SHIFT:
@@ -907,6 +995,55 @@ Theorem ag32_func_for_SHIFT:
     (1 >< 0) (func ag) = (7 >< 6) (instr ag)
 Proof
   rw [func_def,instr_def] >> BBLAST_TAC
+QED
+
+Theorem ag32_shift_func_rewrite:
+  !ag sh wi a b.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Shift (sh,wi,a,b) ==>
+    sh = num2shiftT (w2n ((7 >< 6) (instr ag)))
+Proof
+  rw [] >> `opc ag = 1w` by fs [ag32_Decode_Shift_opc_1w] >>
+  UNDISCH_TAC ``Decode (word_at_addr ag.MEM (align_addr ag.PC)) = Shift (sh,wi,a,b)`` >>
+  simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >>              
+  qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >> rw [] >>
+  Cases_on `dc` >> fs [] >>
+  Q.ABBREV_TAC `op = (5 >< 0) (word_at_addr ag.MEM (align_addr ag.PC))` >>
+  Cases_on_word_value `op` >> fs [] >>
+  Q.ABBREV_TAC `i = (word_at_addr ag.MEM (align_addr ag.PC))` >>
+  rw [instr_def] >>
+  `((1 >< 0) ((9 >< 6) i)) = (7 >< 6) i` by BBLAST_TAC >> fs []
+QED
+
+
+(** imm **)
+Theorem ag32_imm_LoadConstant:
+  !ag p0 p1 p2.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadConstant (p0,p1,p2) ==>
+    imm ag = if p1 then -1w * w2w p2 else w2w p2
+Proof
+  rpt GEN_TAC >> simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >>              
+  qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >> rw [] >>
+  Cases_on `dc` >> fs [] >>
+  rpt (fs [imm_def,instr_def,v2w_single] >> IF_CASES_TAC >> fs []) >>
+  Q.ABBREV_TAC `op = (5 >< 0) (word_at_addr ag.MEM (align_addr ag.PC))` >>
+  Cases_on_word_value `op` >> fs []
+QED
+
+Theorem ag32_imm_LoadUpperConstant:
+  !ag p0 p1.
+    Decode (word_at_addr ag.MEM (align_addr ag.PC)) = LoadUpperConstant (p0,p1) ==>
+    (8 >< 0) (imm ag) = p1
+Proof
+  rpt GEN_TAC >> simp [Decode_def,boolify32_def] >>
+  CONV_TAC v2w_word_bit_list_cleanup >>              
+  qpat_abbrev_tac `dc = DecodeReg_imm (_,_)` >> rw [] >-
+   (fs [imm_def,instr_def] >>
+    IF_CASES_TAC >> fs [] >> FULL_BBLAST_TAC) >>
+  Cases_on `dc` >> fs [] >>
+  Q.ABBREV_TAC `op = (5 >< 0) (word_at_addr ag.MEM (align_addr ag.PC))` >>
+  Cases_on_word_value `op` >> fs []
 QED
 
 
@@ -1150,6 +1287,43 @@ Proof
   fs [is_wrMEM_isa_def] >>
   rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
   Cases_on `Decode (word_at_addr a0.MEM (align_addr a0.PC))` >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def]) >-
+   (rw [Run_def,dfn'In_def,incPC_def]) >-
+   (rw [Run_def,dfn'Interrupt_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Jump_def,ALU_def] >> Cases_on `p0` >> fs []) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'JumpIfNotZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'JumpIfZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadConstant_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEM_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEMByte_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadUpperConstant_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Normal_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Out_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   rw [Run_def,dfn'ReservedInstr_def,incPC_def] >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_StoreMEM_opc_2w]) >>
+   PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
+QED
+
+Theorem MEM_not_changed_after_normal_instrs_extra:
+  !a.
+    ~is_wrMEM_isa a ==>
+    a.MEM = (Next a).MEM
+Proof
+  rw [is_wrMEM_isa_def,Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr a.MEM (align_addr a.PC))` >-
    (PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def]) >-
    (rw [Run_def,dfn'In_def,incPC_def]) >-
    (rw [Run_def,dfn'Interrupt_def,incPC_def]) >-
@@ -1465,6 +1639,204 @@ Proof
     EVAL_TAC >> fs []) >-
    (PairCases_on `p` >> rw [Run_def,dfn'StoreMEM_def,incPC_def]) >>
   PairCases_on `p` >> rw [Run_def,dfn'StoreMEMByte_def,incPC_def]
+QED
+
+(** R is unchanged when reg_iswrite is F **)
+Theorem ag32_R_unchanged_not_reg_iswrite:
+  !a.
+    ~reg_iswrite a ==>
+    (Next a).R = a.R
+Proof
+  rw [reg_iswrite_def,Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr a.MEM (align_addr a.PC))` >-
+   (PairCases_on `p` >> fs [ag32_Decode_Acc_opc_8w]) >-
+   fs [ag32_Decode_In_opc_7w] >-
+   rw [Run_def,dfn'Interrupt_def,incPC_def] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Jump_opc_9w]) >-
+   (PairCases_on `p` >> fs [Run_def,dfn'JumpIfNotZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'JumpIfZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadConstant_opc_13w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEM_opc_4w]) >-              
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEMByte_opc_5w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadUpperConstant_opc_14w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Normal_opc_0w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Out_opc_6w]) >-
+   rw [Run_def,dfn'ReservedInstr_def,incPC_def] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Shift_opc_1w]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'StoreMEM_def,incPC_def]) >>
+  PairCases_on `p` >> rw [Run_def,dfn'StoreMEMByte_def,incPC_def]
+QED
+
+
+(** lemma for FCP and word_concat **)
+Theorem word_concat_fcp_index_eq[local]:
+  !(x:word9) (y:word32).
+    (FCP i. if 23 <= i ∧ i <= 31 then x ' (i − 23) else y ' i) = x @@ ((22 >< 0) y)
+Proof
+  rw [] >>
+  BBLAST_TAC
+QED                                                       
+
+(** R is updated by addrW and reg_wdata when reg_iswrite is T **)
+Theorem ag32_R_addrW_reg_wdata_reg_iswrite:
+  !a.
+    reg_iswrite a ==>
+    (Next a).R = a.R (|addrW a |-> reg_wdata a|)
+Proof
+  rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr a.MEM (align_addr a.PC))` >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def] >>
+    `opc a = 8w` by fs [ag32_Decode_Acc_opc_8w] >>
+    `addrW a = p0` by fs [ag32_Decode_Acc_addrW] >>
+    `dataA a = ri2word p1 a` by fs [ag32_Decode_Acc_dataA] >>
+    fs [reg_wdata_def,reg_wdata_sel_def] >>
+    rw [acc_res_def,acc_arg_def]) >-
+   (rw [Run_def,dfn'In_def,incPC_def] >>
+    `opc a = 7w` by fs [ag32_Decode_In_opc_7w] >>
+    `addrW a = c` by fs [ag32_Decode_In_addrW] >>
+    fs [reg_wdata_def,reg_wdata_sel_def]) >-
+   fs [reg_iswrite_def,ag32_Decode_Interrupt_opc_12w] >-
+   (PairCases_on `p` >> fs [Run_def,dfn'Jump_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    `r.R = a.R` by METIS_TAC [ALU_state_eq_after] >>
+    `opc a = 9w` by fs [ag32_Decode_Jump_opc_9w] >>
+    `addrW a = p1` by fs [ag32_Decode_Jump_addrW] >>
+    fs [reg_wdata_def,reg_wdata_sel_def]) >-
+   (PairCases_on `p` >> fs [reg_iswrite_def,ag32_Decode_JumpIfNotZero_opc_11w]) >-
+   (PairCases_on `p` >> fs [reg_iswrite_def,ag32_Decode_JumpIfZero_opc_10w]) >-
+   (PairCases_on `p` >> fs [Run_def,dfn'LoadConstant_def,incPC_def] >>
+    `opc a = 13w` by fs [ag32_Decode_LoadConstant_opc_13w] >>
+    `addrW a = p0` by fs [ag32_Decode_LoadConstant_addrW] >>
+    fs [reg_wdata_def,reg_wdata_sel_def,imm_updated_def] >>
+    METIS_TAC [ag32_imm_LoadConstant]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEM_def,incPC_def] >>
+    `opc a = 4w` by fs [ag32_Decode_LoadMEM_opc_4w] >>
+    `addrW a = p0` by fs [ag32_Decode_LoadMEM_addrW] >>
+    `dataA a = ri2word p1 a` by fs [ag32_Decode_LoadMEM_dataA] >>
+    fs [reg_wdata_def,reg_wdata_sel_def,mem_data_rdata_def,
+        word_at_addr_def,mem_data_addr_def,align_addr_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'LoadMEMByte_def,incPC_def] >>
+    `opc a = 5w` by fs [ag32_Decode_LoadMEMByte_opc_5w] >>
+    `addrW a = p0` by fs [ag32_Decode_LoadMEMByte_addrW] >>
+    `dataA a = ri2word p1 a` by fs [ag32_Decode_LoadMEMByte_dataA] >>
+    fs [reg_wdata_def,reg_wdata_sel_def,mem_data_rdata_def,
+        mem_data_addr_def]) >-
+   (PairCases_on `p` >>
+    rw [Run_def,dfn'LoadUpperConstant_def,incPC_def,bit_field_insert_def,word_modify_def] >>
+    `opc a = 14w` by fs [ag32_Decode_LoadUpperConstant_opc_14w] >>
+    `addrW a = p0` by fs [ag32_Decode_LoadUpperConstant_addrW] >>
+    fs [reg_wdata_def,reg_wdata_sel_def,imm_updated_def] >>
+    `(8 >< 0) (imm a) = p1` by fs [ag32_imm_LoadUpperConstant] >>
+    `dataW a = a.R p0` by fs [ag32_Decode_LoadUpperConstant_dataW] >>
+    fs [word_concat_fcp_index_eq]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Normal_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    `r.R = a.R` by METIS_TAC [ALU_state_eq_after] >>
+    `opc a = 0w` by fs [ag32_Decode_Normal_opc_0w] >>
+    `addrW a = p1` by fs [ag32_Decode_Normal_addrW] >>
+    `dataA a = ri2word p2 a` by fs [ag32_Decode_Normal_dataA] >>
+    `dataB a = ri2word p3 a` by fs [ag32_Decode_Normal_dataB] >>
+    `num2funcT (w2n (func a)) = p0` by fs [ag32_Decode_Normal_func] >>
+    fs [reg_wdata_def,reg_wdata_sel_def,ALU_res_def,ALU_input1_def,ALU_input2_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Out_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    `r.R = a.R` by METIS_TAC [ALU_state_eq_after] >>
+    `opc a = 6w` by fs [ag32_Decode_Out_opc_6w] >>
+    `addrW a = p1` by fs [ag32_Decode_Out_addrW] >>
+    `dataA a = ri2word p2 a` by fs [ag32_Decode_Out_dataA] >>
+    `dataB a = ri2word p3 a` by fs [ag32_Decode_Out_dataB] >>
+    `num2funcT (w2n (func a)) = p0` by fs [ag32_Decode_Out_func] >>
+    fs [reg_wdata_def,reg_wdata_sel_def,ALU_res_def,ALU_input1_def,ALU_input2_def]) >-
+   fs [reg_iswrite_def,ag32_Decode_ReservedInstr_opc_15w] >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def] >>
+    `opc a = 1w` by fs [ag32_Decode_Shift_opc_1w] >>
+    `addrW a = p1` by fs [ag32_Decode_Shift_addrW] >>
+    `dataA a = ri2word p2 a` by fs [ag32_Decode_Shift_dataA] >>
+    `dataB a = ri2word p3 a` by fs [ag32_Decode_Shift_dataB] >> 
+    fs [reg_wdata_def,reg_wdata_sel_def,shift_res_def] >>
+    METIS_TAC [ag32_shift_func_rewrite]) >-
+   (PairCases_on `p` >> fs [reg_iswrite_def,ag32_Decode_StoreMEM_opc_2w]) >> 
+  PairCases_on `p` >> fs [reg_iswrite_def,ag32_Decode_StoreMEMByte_opc_3w]
+QED
+
+(** data_out **)
+Theorem ag32_data_out_ALU_res_isOut_isa:
+  !a.
+    isOut_isa a ==>
+    (Next a).data_out = (9 >< 0) (ALU_res a)
+Proof
+  rw [isOut_isa_def,Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr a.MEM (align_addr a.PC))` >-
+   (PairCases_on `p` >> fs [ag32_Decode_Acc_opc_8w]) >-
+   fs [ag32_Decode_In_opc_7w] >-
+   fs [ag32_Decode_Interrupt_opc_12w] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Jump_opc_9w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_JumpIfNotZero_opc_11w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_JumpIfZero_opc_10w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadConstant_opc_13w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEM_opc_4w]) >-              
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEMByte_opc_5w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadUpperConstant_opc_14w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Normal_opc_0w]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Out_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    `dataA a = ri2word p2 a` by fs [ag32_Decode_Out_dataA] >>
+    `dataB a = ri2word p3 a` by fs [ag32_Decode_Out_dataB] >>
+    `num2funcT (w2n (func a)) = p0` by fs [ag32_Decode_Out_func] >>
+    fs [ALU_res_def,ALU_input1_def,ALU_input2_def] >>
+    BBLAST_TAC) >-
+   fs [ag32_Decode_ReservedInstr_opc_15w] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Shift_opc_1w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_StoreMEM_opc_2w]) >>
+  PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
+QED
+
+
+(** io_events **)
+Theorem ag32_io_events_MEM_interrupt:
+  !a.
+    opc a = 12w ==>
+    (Next a).io_events = a.io_events ++ [a.MEM]
+Proof
+  rw [Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr a.MEM (align_addr a.PC))` >-
+   (PairCases_on `p` >> fs [ag32_Decode_Acc_opc_8w]) >-
+   fs [ag32_Decode_In_opc_7w] >-
+   rw [Run_def,dfn'Interrupt_def,incPC_def] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Jump_opc_9w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_JumpIfNotZero_opc_11w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_JumpIfZero_opc_10w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadConstant_opc_13w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEM_opc_4w]) >-              
+   (PairCases_on `p` >> fs [ag32_Decode_LoadMEMByte_opc_5w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_LoadUpperConstant_opc_14w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Normal_opc_0w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Out_opc_6w]) >-
+   fs [ag32_Decode_ReservedInstr_opc_15w] >-
+   (PairCases_on `p` >> fs [ag32_Decode_Shift_opc_1w]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_StoreMEM_opc_2w]) >>
+  PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
+QED
+
+Theorem ag32_io_events_Next_MEM_interrupt:
+  !a.
+    opc a = 12w ==>
+    (Next a).io_events = a.io_events ++ [(Next a).MEM]
+Proof
+  rw [] >>
+  `~is_wrMEM_isa a` by rw [is_wrMEM_isa_def] >>
+  gs [GSYM MEM_not_changed_after_normal_instrs_extra,
+      ag32_io_events_MEM_interrupt]
 QED
 
 val _ = export_theory ();

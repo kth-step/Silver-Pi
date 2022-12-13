@@ -1548,9 +1548,25 @@ Proof
   METIS_TAC [agp32_MEM_state_flag_and_state]
 QED
 
+Theorem agp32_state_1_and_not_WB_state_flag:
+  !fext fbits t.
+    (agp32 fext fbits t).state = 1w ==>
+    ~(agp32 fext fbits t).WB.WB_state_flag
+Proof
+  rw [] >> METIS_TAC [agp32_WB_state_flag_and_state]
+QED
+
 Theorem agp32_state_3_and_not_WB_state_flag:
   !fext fbits t.
     (agp32 fext fbits t).state = 3w ==>
+    ~(agp32 fext fbits t).WB.WB_state_flag
+Proof
+  rw [] >> METIS_TAC [agp32_WB_state_flag_and_state]
+QED
+
+Theorem agp32_state_4_and_not_WB_state_flag:
+  !fext fbits t.
+    (agp32 fext fbits t).state = 4w ==>
     ~(agp32 fext fbits t).WB.WB_state_flag
 Proof
   rw [] >> METIS_TAC [agp32_WB_state_flag_and_state]
@@ -1893,6 +1909,44 @@ Proof
   rw [agp32_init_def]
 QED
 
+(** inital do_interrupt is F **)
+Theorem agp32_init_do_interrupt:
+  !fext fbits.
+    ~(agp32 fext fbits 0).do_interrupt
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_ctrl_update_unchanged_state_items,IF_PC_input_update_unchanged_state_items,
+      EX_jump_sel_addr_update_unchanged_state_items,EX_SHIFT_update_unchanged_state_items,
+      EX_ALU_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_state_items,
+      ID_data_check_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_instr_update_unchanged_state_items] >>
+  rw [agp32_init_def]
+QED
+
+(** inital interrupt_req is F **)
+Theorem agp32_init_interrupt_req:
+  !fext fbits.
+    ~(agp32 fext fbits 0).interrupt_req
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,
+      Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_ctrl_update_unchanged_state_items,IF_PC_input_update_unchanged_state_items,
+      EX_jump_sel_addr_update_unchanged_state_items,EX_SHIFT_update_unchanged_state_items,
+      EX_ALU_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_state_items,
+      ID_data_check_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_instr_update_unchanged_state_items] >>
+  rw [agp32_init_def]
+QED
+
 (** initial acc_arg_ready is F **)
 Theorem agp32_init_acc_arg_ready:
   !fext fbits.
@@ -2126,6 +2180,221 @@ Proof
   METIS_TAC [agp32_WB_opc_unchanged_when_WB_disabled]
 QED
 
+(** state is 4w then there is interrupt_req **)
+Theorem agp32_state_4w_interrupt_req:
+  !fext fbits t.
+    (agp32 fext fbits t).state = 4w ==>
+    (agp32 fext fbits t).interrupt_req
+Proof
+  rw [] >> Induct_on `t` >> rw [] >-
+   fs [agp32_init_state_3w] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `(agp32 fext fbits (SUC t)).interrupt_req = (agp32_next_state (fext t) s s).interrupt_req`
+    by fs [agp32_interrupt_items_updated_by_agp32_next_state] >>
+  fs [agp32_next_state_def] >>
+  Cases_on `(fext t).error = 0w` >> fs [] >>
+  Cases_on `s.state = 0w` >> fs [] >-
+   (Cases_on `~(fext t).ready` >> fs [] >>
+    Cases_on `s.MEM.MEM_isInterrupt` >> fs [] >>
+    Cases_on `s.MEM.MEM_read_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem_byte` >> fs [] >-
+     (Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []) >>
+    Cases_on `s.MEM.MEM_isAcc` >> fs []) >>
+  Cases_on `s.state = 1w` >> fs [] >-
+   (Cases_on `(fext t).ready /\ s.command = 0w` >-
+     (Cases_on `s.do_interrupt` >> fs []) >> gs []) >>
+  Cases_on `s.state = 2w` >> fs [] >-
+   (Cases_on `s.acc_res_ready /\ ~s.acc_arg_ready` >> fs [] >> fs []) >>
+  Cases_on `s.state = 3w` >> fs [] >-
+   (IF_CASES_TAC >> fs []) >>
+  Cases_on `s.state = 4w` >> fs [] >>
+  Cases_on `(fext t).interrupt_ack` >> fs []
+QED
+
+(** state is not 4w then there is no interrupt_req **)
+Theorem agp32_state_not_4w_no_interrupt_req:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).state <> 4w ==>
+    ~(agp32 fext fbits t).interrupt_req
+Proof
+  rw [] >> Induct_on `t` >> rw [] >-
+   fs [agp32_init_interrupt_req] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `(agp32 fext fbits (SUC t)).interrupt_req = (agp32_next_state (fext t) s s).interrupt_req`
+    by fs [agp32_interrupt_items_updated_by_agp32_next_state] >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+  fs [agp32_next_state_def] >>
+  Cases_on `s.state = 0w` >> fs [] >-
+   (Cases_on `~(fext t).ready` >> fs [] >>
+    Cases_on `s.MEM.MEM_isInterrupt` >> fs [] >>
+    Cases_on `s.MEM.MEM_read_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem_byte` >> fs [] >-
+     (Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []) >>
+    Cases_on `s.MEM.MEM_isAcc` >> fs []) >>
+  Cases_on `s.state = 1w` >> fs [] >-
+   (Cases_on `(fext t).ready /\ s.command = 0w` >-
+     (Cases_on `s.do_interrupt` >> fs []) >> rw []) >>
+  Cases_on `s.state = 2w` >> fs [] >-
+   (Cases_on `s.acc_res_ready /\ ~s.acc_arg_ready` >> fs [] >> fs []) >>
+  Cases_on `s.state = 3w` >> fs [] >-
+   (IF_CASES_TAC >> fs []) >>
+  Cases_on `s.state = 4w` >> fs [] >>
+  Cases_on `(fext t).interrupt_ack` >> fs []
+QED
+
+Theorem agp32_interrupt_req_state_4w:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).interrupt_req ==>
+    (agp32 fext fbits t).state = 4w
+Proof
+  rw [] >> METIS_TAC [agp32_state_not_4w_no_interrupt_req]
+QED
+
+(** state is not 1w then there is no do_interrupt **)
+Theorem agp32_state_not_1w_no_do_interrupt:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).state <> 1w ==>
+    ~(agp32 fext fbits t).do_interrupt
+Proof
+  rw [] >> Induct_on `t` >> rw [] >-
+   fs [agp32_init_do_interrupt] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  `(agp32 fext fbits (SUC t)).do_interrupt = (agp32_next_state (fext t) s s).do_interrupt`
+    by fs [agp32_interrupt_items_updated_by_agp32_next_state] >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+  fs [agp32_next_state_def] >>
+  Cases_on `s.state = 0w` >> fs [] >-
+   (Cases_on `~(fext t).ready` >> fs [] >>
+    Cases_on `s.MEM.MEM_isInterrupt` >> fs [] >>
+    Cases_on `s.MEM.MEM_read_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem_byte` >> fs [] >-
+     (Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []) >>
+    Cases_on `s.MEM.MEM_isAcc` >> fs []) >>
+  Cases_on `s.state = 1w` >> fs [] >-
+   (Cases_on `(fext t).ready /\ s.command = 0w` >-
+     (Cases_on `s.do_interrupt` >> fs []) >> rw [] >> gs []) >>
+  Cases_on `s.state = 2w` >> fs [] >-
+   (Cases_on `s.acc_res_ready /\ ~s.acc_arg_ready` >> fs [] >> fs []) >>
+  Cases_on `s.state = 3w` >> fs [] >-
+   (IF_CASES_TAC >> fs []) >>
+  Cases_on `s.state = 4w` >> fs [] >>
+  Cases_on `(fext t).interrupt_ack` >> fs []
+QED
+
+Theorem agp32_do_interrupt_state_1w:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).do_interrupt ==>
+    (agp32 fext fbits t).state = 1w
+Proof
+  rw [] >> METIS_TAC [agp32_state_not_1w_no_do_interrupt]
+QED
+
+(** state and WB_opc for interrupt **)
+Theorem agp32_do_interrupt_WB_opc_12:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).do_interrupt ==>
+    (agp32 fext fbits t).WB.WB_opc = 12w
+Proof
+  rw [] >> Induct_on `t` >> rw [] >-
+   fs [agp32_init_do_interrupt] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).do_interrupt = (agp32_next_state (fext t) s s).do_interrupt`
+    by fs [agp32_interrupt_items_updated_by_agp32_next_state] >>
+  `(fext t).error = 0w` by fs [is_mem_def,mem_no_errors_def] >>
+  fs [agp32_next_state_def] >>
+  Cases_on `s.state = 0w` >> fs [] >-
+   (`~s.do_interrupt` by fs [Abbr `s`,agp32_state_not_1w_no_do_interrupt] >>
+    Cases_on `~(fext t).ready` >> fs [] >>
+    Cases_on `s.MEM.MEM_isInterrupt` >> fs [] >-
+     (`enable_stg 5 (agp32 fext fbits t)`
+        by fs [agp32_state_fext_ready_and_WB_state_flag,enable_stg_def] >>
+      `s.MEM.MEM_opc = 12w` by METIS_TAC [Abbr `s`,agp32_MEM_isInterrupt_MEM_opc_12w] >>
+       gs [agp32_WB_opc_MEM_opc_when_WB_enabled]) >>
+    Cases_on `s.MEM.MEM_read_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem_byte` >> fs [] >-
+     (Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []) >>
+    Cases_on `s.MEM.MEM_isAcc` >> fs []) >>
+  Cases_on `s.state = 1w` >> fs [] >-
+   (Cases_on `(fext t).ready /\ s.command = 0w` >-
+     (Cases_on `s.do_interrupt` >> fs []) >> gs [] >>
+    `~enable_stg 5 (agp32 fext fbits t)`
+      by fs [agp32_state_1_and_not_WB_state_flag,enable_stg_def] >>
+    gs [agp32_WB_opc_unchanged_when_WB_disabled]) >>
+  Cases_on `s.state = 2w` >> fs [] >-
+   (`~s.do_interrupt` by fs [Abbr `s`,agp32_state_not_1w_no_do_interrupt] >>
+    Cases_on `s.acc_res_ready /\ ~s.acc_arg_ready` >> fs [] >> fs []) >> 
+  Cases_on `s.state = 3w` >> fs [] >-
+   (`~s.do_interrupt` by fs [Abbr `s`,agp32_state_not_1w_no_do_interrupt] >>
+    Cases_on `(fext t).mem_start_ready` >> gs []) >>
+  Cases_on `s.state = 4w` >> fs [] >-
+   (`~s.do_interrupt` by fs [Abbr `s`,agp32_state_not_1w_no_do_interrupt] >>
+    Cases_on `(fext t).interrupt_ack` >> fs []) >>
+  METIS_TAC [Abbr `s`,agp32_state_not_1w_no_do_interrupt]
+QED
+
+Theorem agp32_state_4w_WB_opc_12w:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).state = 4w ==>
+    (agp32 fext fbits t).WB.WB_opc = 12w
+Proof
+  rw [] >> Induct_on `t` >-
+   fs [agp32_init_state_3w] >>
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  `(agp32 fext fbits (SUC t)).state = (agp32_next_state (fext t) s s).state`
+    by fs [agp32_command_state_updated_by_agp32_next_state] >>
+  fs [agp32_next_state_def] >>
+  Cases_on `(fext t).error = 0w` >> fs [] >>
+  Cases_on `s.state = 0w` >> fs [] >-
+   (Cases_on `~(fext t).ready` >> fs [] >>
+    Cases_on `s.MEM.MEM_isInterrupt` >> fs [] >>
+    Cases_on `s.MEM.MEM_read_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem` >> fs [] >>
+    Cases_on `s.MEM.MEM_write_mem_byte` >> fs [] >-
+     (Cases_on_word_value `(1 >< 0) s.MEM.MEM_dataB` >> fs []) >>
+    Cases_on `s.MEM.MEM_isAcc` >> fs []) >>
+  Cases_on `s.state = 1w` >> fs [] >-
+   (Cases_on `(fext t).ready /\ s.command = 0w` >-
+     (Cases_on `s.do_interrupt` >> fs [] >>
+      `~enable_stg 5 (agp32 fext fbits t)`
+        by fs [agp32_state_1_and_not_WB_state_flag,enable_stg_def] >>
+      gs [agp32_WB_opc_unchanged_when_WB_disabled,agp32_do_interrupt_WB_opc_12]) >> gs []) >>
+  Cases_on `s.state = 2w` >> fs [] >-
+   (Cases_on `s.acc_res_ready /\ ~s.acc_arg_ready` >> fs [] >> fs []) >>
+  Cases_on `s.state = 3w` >> fs [] >-
+   (Cases_on `(fext t).mem_start_ready` >> fs []) >>
+  Cases_on `s.state = 4w` >> fs [] >>
+  Cases_on `(fext t).interrupt_ack` >> fs [] >>
+  `~enable_stg 5 (agp32 fext fbits t)`
+    by fs [agp32_state_4_and_not_WB_state_flag,enable_stg_def] >>
+  gs [agp32_WB_opc_unchanged_when_WB_disabled]
+QED
+
+(** interrupt_req and WB_opc **)
+Theorem agp32_interrupt_req_WB_opc_12w:
+  !fext fbits t.
+    is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (agp32 fext fbits t).interrupt_req ==>
+    (agp32 fext fbits t).WB.WB_opc = 12w
+Proof
+  gs [agp32_interrupt_req_state_4w,agp32_state_4w_WB_opc_12w]
+QED
+  
 
 (** Accelerator **)
 (** acc_arg_ready and state **)

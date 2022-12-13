@@ -205,6 +205,9 @@ Theorem IF_instr_update_unchanged_state_items:
     ((IF_instr_update fext s s').command = s'.command) /\
     ((IF_instr_update fext s s').state = s'.state) /\
     ((IF_instr_update fext s s').R = s'.R) /\
+    ((IF_instr_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((IF_instr_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((IF_instr_update fext s s').data_out = s'.data_out) /\
     ((IF_instr_update fext s s').data_addr = s'.data_addr) /\
     ((IF_instr_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((IF_instr_update fext s s').data_wdata = s'.data_wdata)
@@ -374,6 +377,9 @@ Theorem IF_PC_input_update_unchanged_state_items:
     ((IF_PC_input_update fext s s').command = s'.command) /\
     ((IF_PC_input_update fext s s').state = s'.state) /\
     ((IF_PC_input_update fext s s').R = s'.R) /\
+    ((IF_PC_input_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((IF_PC_input_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((IF_PC_input_update fext s s').data_out = s'.data_out) /\
     ((IF_PC_input_update fext s s').data_addr = s'.data_addr) /\
     ((IF_PC_input_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((IF_PC_input_update fext s s').data_wdata = s'.data_wdata)
@@ -491,6 +497,9 @@ Theorem ID_opc_func_update_unchanged_state_items:
     ((ID_opc_func_update fext s s').command = s'.command) /\
     ((ID_opc_func_update fext s s').state = s'.state) /\
     ((ID_opc_func_update fext s s').R = s'.R) /\
+    ((ID_opc_func_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((ID_opc_func_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((ID_opc_func_update fext s s').data_out = s'.data_out) /\
     ((ID_opc_func_update fext s s').data_addr = s'.data_addr) /\
     ((ID_opc_func_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((ID_opc_func_update fext s s').data_wdata = s'.data_wdata)
@@ -616,6 +625,9 @@ Theorem ID_imm_update_unchanged_state_items:
     ((ID_imm_update fext s s').command = s'.command) /\
     ((ID_imm_update fext s s').state = s'.state) /\
     ((ID_imm_update fext s s').R = s'.R) /\
+    ((ID_imm_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((ID_imm_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((ID_imm_update fext s s').data_out = s'.data_out) /\
     ((ID_imm_update fext s s').data_addr = s'.data_addr) /\
     ((ID_imm_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((ID_imm_update fext s s').data_wdata = s'.data_wdata)
@@ -748,6 +760,9 @@ Theorem ID_data_update_unchanged_state_items:
     ((ID_data_update fext s s').command = s'.command) /\
     ((ID_data_update fext s s').state = s'.state) /\
     ((ID_data_update fext s s').R = s'.R) /\
+    ((ID_data_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((ID_data_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((ID_data_update fext s s').data_out = s'.data_out) /\
     ((ID_data_update fext s s').data_addr = s'.data_addr) /\
     ((ID_data_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((ID_data_update fext s s').data_wdata = s'.data_wdata)
@@ -895,6 +910,9 @@ Theorem ID_data_check_update_unchanged_state_items:
     ((ID_data_check_update fext s s').command = s'.command) /\
     ((ID_data_check_update fext s s').state = s'.state) /\
     ((ID_data_check_update fext s s').R = s'.R) /\
+    ((ID_data_check_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((ID_data_check_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((ID_data_check_update fext s s').data_out = s'.data_out) /\
     ((ID_data_check_update fext s s').data_addr = s'.data_addr) /\
     ((ID_data_check_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((ID_data_check_update fext s s').data_wdata = s'.data_wdata)
@@ -1057,6 +1075,9 @@ Theorem EX_ALU_input_imm_update_unchanged_state_items:
     ((EX_ALU_input_imm_update fext s s').command = s'.command) /\
     ((EX_ALU_input_imm_update fext s s').state = s'.state) /\
     ((EX_ALU_input_imm_update fext s s').R = s'.R) /\
+    ((EX_ALU_input_imm_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((EX_ALU_input_imm_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((EX_ALU_input_imm_update fext s s').data_out = s'.data_out) /\
     ((EX_ALU_input_imm_update fext s s').data_addr = s'.data_addr) /\
     ((EX_ALU_input_imm_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((EX_ALU_input_imm_update fext s s').data_wdata = s'.data_wdata)
@@ -1238,6 +1259,9 @@ Theorem EX_ALU_update_unchanged_state_items:
     ((EX_ALU_update fext s s').command = s'.command) /\
     ((EX_ALU_update fext s s').state = s'.state) /\
     ((EX_ALU_update fext s s').R = s'.R)  /\
+    ((EX_ALU_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((EX_ALU_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((EX_ALU_update fext s s').data_out = s'.data_out) /\
     ((EX_ALU_update fext s s').data_addr = s'.data_addr) /\
     ((EX_ALU_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((EX_ALU_update fext s s').data_wdata = s'.data_wdata)
@@ -1412,6 +1436,9 @@ Theorem EX_SHIFT_update_unchanged_state_items:
     ((EX_SHIFT_update fext s s').command = s'.command) /\
     ((EX_SHIFT_update fext s s').state = s'.state) /\
     ((EX_SHIFT_update fext s s').R = s'.R) /\
+    ((EX_SHIFT_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((EX_SHIFT_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((EX_SHIFT_update fext s s').data_out = s'.data_out) /\
     ((EX_SHIFT_update fext s s').data_addr = s'.data_addr) /\
     ((EX_SHIFT_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((EX_SHIFT_update fext s s').data_wdata = s'.data_wdata)
@@ -1576,6 +1603,9 @@ Theorem EX_jump_sel_addr_update_unchanged_state_items:
     ((EX_jump_sel_addr_update fext s s').command = s'.command) /\
     ((EX_jump_sel_addr_update fext s s').state = s'.state) /\
     ((EX_jump_sel_addr_update fext s s').R = s'.R) /\
+    ((EX_jump_sel_addr_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((EX_jump_sel_addr_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((EX_jump_sel_addr_update fext s s').data_out = s'.data_out) /\
     ((EX_jump_sel_addr_update fext s s').data_addr = s'.data_addr) /\
     ((EX_jump_sel_addr_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((EX_jump_sel_addr_update fext s s').data_wdata = s'.data_wdata)
@@ -1746,6 +1776,9 @@ Theorem MEM_ctrl_update_unchanged_state_items:
     ((MEM_ctrl_update fext s s').command = s'.command) /\
     ((MEM_ctrl_update fext s s').state = s'.state) /\
     ((MEM_ctrl_update fext s s').R = s'.R) /\
+    ((MEM_ctrl_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((MEM_ctrl_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((MEM_ctrl_update fext s s').data_out = s'.data_out) /\
     ((MEM_ctrl_update fext s s').data_addr = s'.data_addr) /\
     ((MEM_ctrl_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((MEM_ctrl_update fext s s').data_wdata = s'.data_wdata)
@@ -1922,6 +1955,9 @@ Theorem WB_update_unchanged_state_items:
     ((WB_update fext s s').command = s'.command) /\
     ((WB_update fext s s').state = s'.state) /\
     ((WB_update fext s s').R = s'.R) /\
+    ((WB_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((WB_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((WB_update fext s s').data_out = s'.data_out) /\
     ((WB_update fext s s').data_addr = s'.data_addr) /\
     ((WB_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((WB_update fext s s').data_wdata = s'.data_wdata)
@@ -2101,6 +2137,10 @@ Theorem Hazard_ctrl_unchanged_state_items:
     ((Hazard_ctrl fext s s').command = s'.command) /\
     ((Hazard_ctrl fext s s').state = s'.state) /\
     ((Hazard_ctrl fext s s').R = s'.R) /\
+    ((Hazard_ctrl fext s s').do_interrupt = s'.do_interrupt) /\
+    ((Hazard_ctrl fext s s').interrupt_req = s'.interrupt_req) /\
+    ((Hazard_ctrl fext s s').data_out = s'.data_out) /\
+    ((Hazard_ctrl fext s s').data_out = s'.data_out) /\
     ((Hazard_ctrl fext s s').data_addr = s'.data_addr) /\
     ((Hazard_ctrl fext s s').data_wstrb = s'.data_wstrb) /\
     ((Hazard_ctrl fext s s').data_wdata = s'.data_wdata)
@@ -2223,6 +2263,9 @@ Theorem Acc_compute_unchanged_state_items:
     ((Acc_compute fext s s').command = s'.command) /\
     ((Acc_compute fext s s').state = s'.state) /\
     ((Acc_compute fext s s').R = s'.R) /\
+    ((Acc_compute fext s s').do_interrupt = s'.do_interrupt) /\
+    ((Acc_compute fext s s').interrupt_req = s'.interrupt_req) /\
+    ((Acc_compute fext s s').data_out = s'.data_out) /\
     ((Acc_compute fext s s').data_addr = s'.data_addr) /\
     ((Acc_compute fext s s').data_wstrb = s'.data_wstrb) /\
     ((Acc_compute fext s s').data_wdata = s'.data_wdata)
@@ -2335,6 +2378,9 @@ Theorem IF_PC_update_unchanged_state_items:
     ((IF_PC_update fext s s').command = s'.command) /\
     ((IF_PC_update fext s s').state = s'.state) /\
     ((IF_PC_update fext s s').R = s'.R) /\
+    ((IF_PC_update fext s s').do_interrupt = s'.do_interrupt) /\
+    ((IF_PC_update fext s s').interrupt_req = s'.interrupt_req) /\
+    ((IF_PC_update fext s s').data_out = s'.data_out) /\
     ((IF_PC_update fext s s').data_addr = s'.data_addr) /\
     ((IF_PC_update fext s s').data_wstrb = s'.data_wstrb) /\
     ((IF_PC_update fext s s').data_wdata = s'.data_wdata)
@@ -2451,6 +2497,9 @@ Theorem ID_pipeline_unchanged_state_items:
     ((ID_pipeline fext s s').command = s'.command) /\
     ((ID_pipeline fext s s').state = s'.state) /\
     ((ID_pipeline fext s s').R = s'.R) /\
+    ((ID_pipeline fext s s').do_interrupt = s'.do_interrupt) /\
+    ((ID_pipeline fext s s').interrupt_req = s'.interrupt_req) /\
+    ((ID_pipeline fext s s').data_out = s'.data_out) /\
     ((ID_pipeline fext s s').data_addr = s'.data_addr) /\
     ((ID_pipeline fext s s').data_wstrb = s'.data_wstrb) /\
     ((ID_pipeline fext s s').data_wdata = s'.data_wdata)
@@ -2577,6 +2626,9 @@ Theorem REG_write_unchanged_state_items:
   !fext s s'.
     ((REG_write fext s s').command = s'.command) /\
     ((REG_write fext s s').state = s'.state) /\
+    ((REG_write fext s s').do_interrupt = s'.do_interrupt) /\
+    ((REG_write fext s s').interrupt_req = s'.interrupt_req) /\
+    ((REG_write fext s s').data_out = s'.data_out) /\
     ((REG_write fext s s').data_addr = s'.data_addr) /\
     ((REG_write fext s s').data_wstrb = s'.data_wstrb) /\
     ((REG_write fext s s').data_wdata = s'.data_wdata)
@@ -2695,6 +2747,9 @@ Theorem EX_pipeline_unchanged_state_items:
     ((EX_pipeline fext s s').command = s'.command) /\
     ((EX_pipeline fext s s').state = s'.state) /\
     ((EX_pipeline fext s s').R = s'.R) /\
+    ((EX_pipeline fext s s').do_interrupt = s'.do_interrupt) /\
+    ((EX_pipeline fext s s').interrupt_req = s'.interrupt_req) /\
+    ((EX_pipeline fext s s').data_out = s'.data_out) /\
     ((EX_pipeline fext s s').data_addr = s'.data_addr) /\
     ((EX_pipeline fext s s').data_wstrb = s'.data_wstrb) /\
     ((EX_pipeline fext s s').data_wdata = s'.data_wdata)
@@ -2820,6 +2875,9 @@ Theorem MEM_pipeline_unchanged_state_items:
     ((MEM_pipeline fext s s').command = s'.command) /\
     ((MEM_pipeline fext s s').state = s'.state) /\
     ((MEM_pipeline fext s s').R = s'.R) /\
+    ((MEM_pipeline fext s s').do_interrupt = s'.do_interrupt) /\
+    ((MEM_pipeline fext s s').interrupt_req = s'.interrupt_req) /\
+    ((MEM_pipeline fext s s').data_out = s'.data_out) /\
     ((MEM_pipeline fext s s').data_addr = s'.data_addr) /\
     ((MEM_pipeline fext s s').data_wstrb = s'.data_wstrb) /\
     ((MEM_pipeline fext s s').data_wdata = s'.data_wdata)
@@ -2954,6 +3012,9 @@ Theorem WB_pipeline_unchanged_state_items:
     ((WB_pipeline fext s s').command = s'.command) /\
     ((WB_pipeline fext s s').state = s'.state) /\
     ((WB_pipeline fext s s').R = s'.R) /\
+    ((WB_pipeline fext s s').do_interrupt = s'.do_interrupt) /\
+    ((WB_pipeline fext s s').interrupt_req = s'.interrupt_req) /\
+    ((WB_pipeline fext s s').data_out = s'.data_out) /\
     ((WB_pipeline fext s s').data_addr = s'.data_addr) /\
     ((WB_pipeline fext s s').data_wstrb = s'.data_wstrb) /\
     ((WB_pipeline fext s s').data_wdata = s'.data_wdata)
@@ -4168,6 +4229,61 @@ Proof
       WB_pipeline_unchanged_state_items]
 QED
 
+(** data_out is updated by the agp32_next_state function **)
+Theorem agp32_data_out_updated_by_agp32_next_state:
+  !fext fbits t s.
+    s = agp32 fext fbits t ==>
+    (agp32 fext fbits (SUC t)).data_out = (agp32_next_state (fext t) s s).data_out
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_ctrl_update_unchanged_state_items,IF_PC_input_update_unchanged_state_items,
+      EX_jump_sel_addr_update_unchanged_state_items,EX_SHIFT_update_unchanged_state_items,
+      EX_ALU_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_state_items,
+      ID_data_check_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_instr_update_unchanged_state_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Abbr `ss7`,Abbr `ss6`,Abbr `ss5`,Abbr `ss4`,Abbr `ss3`,Abbr `ss2`,
+      Acc_compute_unchanged_state_items,IF_PC_update_unchanged_state_items,
+      ID_pipeline_unchanged_state_items,REG_write_unchanged_state_items,
+      EX_pipeline_unchanged_state_items,MEM_pipeline_unchanged_state_items,
+      WB_pipeline_unchanged_state_items]
+QED
+
+(** do_interrupt and interrupt_req are updated by the agp32_next_state function **)
+Theorem agp32_interrupt_items_updated_by_agp32_next_state:
+  !fext fbits t s.
+    s = agp32 fext fbits t ==>
+    ((agp32 fext fbits (SUC t)).do_interrupt = (agp32_next_state (fext t) s s).do_interrupt) /\
+    ((agp32 fext fbits (SUC t)).interrupt_req = (agp32_next_state (fext t) s s).interrupt_req)        
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  qpat_abbrev_tac `s' = mk_circuit (procs _) (procs _) (agp32_init fbits) fext t` >>
+  qpat_abbrev_tac `s'' = procs _ (fext t) s' s'` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,
+      Abbr `s6`,Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,Abbr `s''`,
+      Hazard_ctrl_unchanged_state_items,WB_update_unchanged_state_items,
+      MEM_ctrl_update_unchanged_state_items,IF_PC_input_update_unchanged_state_items,
+      EX_jump_sel_addr_update_unchanged_state_items,EX_SHIFT_update_unchanged_state_items,
+      EX_ALU_update_unchanged_state_items,EX_ALU_input_imm_update_unchanged_state_items,
+      ID_data_check_update_unchanged_state_items,
+      ID_data_update_unchanged_state_items,ID_imm_update_unchanged_state_items,
+      ID_opc_func_update_unchanged_state_items,IF_instr_update_unchanged_state_items] >>
+  slist_update_state_tac >>
+  fs [Abbr `ss8`,Abbr `ss7`,Abbr `ss6`,Abbr `ss5`,Abbr `ss4`,Abbr `ss3`,Abbr `ss2`,
+      Acc_compute_unchanged_state_items,IF_PC_update_unchanged_state_items,
+      ID_pipeline_unchanged_state_items,REG_write_unchanged_state_items,
+      EX_pipeline_unchanged_state_items,MEM_pipeline_unchanged_state_items,
+      WB_pipeline_unchanged_state_items]
+QED
+
 (** acc_arg and acc_arg_ready are updated by the agp32_next_state function **)
 Theorem agp32_acc_arg_and_ready_updated_by_agp32_next_state:
   !fext fbits t s.
@@ -4576,7 +4692,8 @@ Theorem agp32_same_items_before_REG_write:
     s = agp32 fext fbits t ==>
     s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline] (fext t) s s ==>
     (s'.WB.WB_state_flag <=> s.WB.WB_state_flag) /\
-    (s'.R = s.R)
+    (s'.R = s.R) /\
+    (s'.WB.WB_write_data = s.WB.WB_write_data)
 Proof
   rpt STRIP_TAC >> fs [procs_def] >>
   qpat_abbrev_tac `ss1 = agp32_next_state _ _ _` >>

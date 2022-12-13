@@ -10,7 +10,7 @@ val _ = prefer_num ();
 val _ = guess_lengths ();
 
 val _ = Datatype `
- interrupt_state = InterruptReady | InterruptWorking | InterruptAck`;
+ interrupt_state = InterruptReady | InterruptAck`;
 
 (* External inputs, and model of relevant part of world (i.e., contents of memory) *)
 val _ = Datatype `
@@ -25,7 +25,7 @@ val _ = Datatype `
 
           (* Mem start interface used for indication on when to start *)
           mem_start_ready : bool;
-
+          
           (* Interrupt *)
           interrupt_state : interrupt_state;
           interrupt_ack : bool;
@@ -157,31 +157,26 @@ val is_acc_def = Define `
 val is_mem_start_interface_def = Define `
  is_mem_start_interface fext =
   ?n. (!m. m < n ==> ~(fext m).mem_start_ready) /\ (fext n).mem_start_ready`;
-
+  
 (** Interrupt interface **)
 
 (* This is a little difficult to model properly because the interrupt interface is async. *)
 val is_interrupt_interface_def = Define `
  is_interrupt_interface accessors step fext =
-  ((fext 0).io_events = [] /\
-  (fext 0).interrupt_state = InterruptReady /\
+  ((fext 0).interrupt_state = InterruptReady /\
+   ~(fext 0).interrupt_ack /\
   !n. case (fext n).interrupt_state of
          InterruptReady =>
           if accessors.get_interrupt_req (step n) then
-           ?m. (!p. p < m ==> ~(fext (SUC (n + p))).interrupt_ack) /\
+           ?m. (!p. p < m ==> ~(fext (SUC (n + p))).interrupt_ack /\ 
+                             (fext (SUC (n + p))).interrupt_state = InterruptReady) /\
                (fext (SUC (n + m))).interrupt_state = InterruptAck /\
-               (* This assumes that memory is not changed during interrupts,
-                  this assumption could be added as a precondition. *)
-               (fext (SUC (n + m))).io_events = SNOC (fext n).mem (fext n).io_events /\
                (fext (SUC (n + m))).interrupt_ack
           else
            (fext (SUC n)).interrupt_state = InterruptReady /\
-           (fext (SUC n)).io_events = (fext n).io_events /\
            ~(fext (SUC n)).interrupt_ack
-       | InterruptWorking => T
        | InterruptAck =>
          (fext (SUC n)).interrupt_state = InterruptReady /\
-         (fext (SUC n)).io_events = (fext n).io_events /\
          ~(fext (SUC n)).interrupt_ack)`;
 
 (* data_in: keep unchanged based on the ISA *)

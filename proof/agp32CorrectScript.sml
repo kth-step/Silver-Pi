@@ -74,13 +74,15 @@ Proof
    (** memory stage op and ex stage **)
    fs [enable_stg_def,MEM_stg_op_agp32_ID_EX_write_disable] >-
    (** data_out **)
-   cheat >-
+   fs [agp32_Rel_ag32_data_out_correct] >-
    (** registers **)
-   fs [agp32_Rel_ag32_R_correct_WB_t] >-
-   cheat >-
-   cheat >-
-   cheat >-
-   cheat >-
+   fs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >-
+   fs [agp32_Rel_ag32_R_correct_WB_t_invalid_data] >-
+   fs [agp32_Rel_ag32_R_correct_WB_SUC_t] >-
+   fs [agp32_Rel_ag32_R_correct_MEM] >-
+   fs [agp32_Rel_ag32_R_correct_EX] >-
+   fs [agp32_Rel_ag32_R_correct_ID] >-
+   fs [agp32_Rel_ag32_R_correct_IF] >-
    (** Inv_Rel **)
    fs [agp32_Rel_ag32_Inv_Rel_correct] >-
    (** IF_PC **)
@@ -94,6 +96,7 @@ Proof
    (** EX **)
    fs [agp32_Rel_ag32_EX_Rel_correct] >-
    fs [agp32_Rel_ag32_EX_Rel_spec_correct] >-
+   fs [Rel_def,EX_Rel_spec_def] >-
    (** MEM **)
    fs [agp32_Rel_ag32_MEM_Rel_correct] >-
    fs [agp32_Rel_ag32_MEM_req_rel_correct] >-

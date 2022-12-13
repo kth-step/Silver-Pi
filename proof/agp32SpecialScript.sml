@@ -394,6 +394,21 @@ Proof
   fs [Rel_def,Inv_Rel_def]
 QED
 
+(** similar as above but for t **)
+Theorem IF_instr_index_with_WB_instr_ID_EX_MEM_NONE_t:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (1,t) <> NONE ==>
+    I (2,t) = NONE ==>
+    I (3,t) = NONE ==>
+    I (4,t) = NONE ==>
+    I (5,t) <> NONE ==>
+    (THE (I (1,t)) > THE (I (5,t))) /\ (THE (I (1,t)) < THE (I (5,t)) + 2)
+Proof
+  rw [Rel_def] >>
+  fs [Inv_Rel_def]
+QED
 
 (* Inv_Rel *)
 Theorem agp32_Rel_ag32_Inv_Rel_correct:
@@ -406,11 +421,12 @@ Proof
   METIS_TAC [IF_instr_index_not_none,ID_NONE_exists_a_jump,EX_NONE_previous_jump_special,
              ID_instr_index_NONE_opc_flush_when_disabled,EX_instr_index_NONE_opc_flush,
              EX_instr_index_NONE_EX_not_write_reg,IF_instr_index_with_WB_instr,
-             IF_instr_index_with_WB_instr_ID_EX_MEM_NONE,
              MEM_instr_index_NONE_opc_flush,MEM_instr_index_NONE_MEM_not_write_reg,
              WB_instr_index_NONE_opc_flush,WB_instr_index_NONE_WB_not_write_reg,
              EX_instr_index_not_NONE_opc_not_16,MEM_instr_index_not_NONE_opc_not_16,
-             WB_instr_index_not_NONE_opc_not_16] 
+             WB_instr_index_not_NONE_opc_not_16,
+             IF_instr_index_with_WB_instr_ID_EX_MEM_NONE,
+             IF_instr_index_with_WB_instr_ID_EX_MEM_NONE_t] 
 QED
 
 val _ = export_theory ();

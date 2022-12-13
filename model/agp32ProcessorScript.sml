@@ -417,11 +417,10 @@ End
 (** state **)
 Definition agp32_next_state_def:
   agp32_next_state fext s s' =
+  let s' = s' with data_out := if s'.WB.WB_isOut then (9 >< 0) s'.WB.WB_ALU_res else s.data_out in
   if fext.error = 0w then
     case s'.state of
-      0w => (let s' = s' with data_out := if s'.WB.WB_isOut then (9 >< 0) s'.WB.WB_ALU_res
-                                          else s.data_out in
-              if ~fext.ready then s' with state := 1w
+      0w => (if ~fext.ready then s' with state := 1w
               else if s'.MEM.MEM_isInterrupt then
                 let s' = s' with state := 1w;
                     s' = s' with command := 4w;

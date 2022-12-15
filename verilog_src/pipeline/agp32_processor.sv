@@ -422,11 +422,10 @@ end
 end
 
 always_ff @ (posedge clk) begin
+data_out <= WB_isOut ? WB_ALU_res[9:0] : data_out;
 if (error == 2'd0) begin
 case (state)
-3'd0 : begin
-data_out <= WB_isOut ? WB_ALU_res[9:0] : data_out;
-if (!ready) begin
+3'd0 : if (!ready) begin
 state = 3'd1;
 end else begin
 if (MEM_isInterrupt) begin
@@ -466,7 +465,6 @@ acc_arg <= MEM_dataA;
 acc_arg_ready <= 1;
 end else begin
 command <= 3'd1;
-end
 end
 end
 end

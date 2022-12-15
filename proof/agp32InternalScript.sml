@@ -2162,6 +2162,22 @@ Proof
   Cases_on `s.state = 4w` >> fs [] >>
   Cases_on `(fext t).interrupt_ack` >> fs []
 QED
+
+(** state is 3 then state is 3 at all previous cycles **)
+Theorem agp32_state_3_all_previous_state_3:
+  !fext fbits t t'.
+    (agp32 fext fbits t).state = 3w ==>
+    t' < t ==>
+    (agp32 fext fbits t').state = 3w
+Proof
+  rw [] >> Induct_on `t'` >> Induct_on `t` >> rw [] >>
+  fs [agp32_init_state_3w] >>
+  Cases_on `SUC t' = t` >> fs [] >-
+   gs [agp32_state_3_previous_state_3] >>
+  Cases_on `SUC t' > t` >> fs [] >>
+  `SUC t' < t` by fs [] >> fs [] >>
+  gs [agp32_state_3_previous_state_3] 
+QED
             
 (** state is 3 then there WB_opc is 16w **)
 Theorem agp32_state_3_WB_opc_16:
@@ -3180,28 +3196,8 @@ Theorem IF_instr_NOT_NONE_ID_NONE_THEN_EX_NONE:
     I (2,t) = NONE ==>
     I (3,t) = NONE
 Proof
-  rw [] >> Induct_on `t` >-
-   fs [is_sch_def,is_sch_init_def] >>
-  rw [] >> Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
-   (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
-     (`enable_stg 3 (agp32 fext fbits t)`
-        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_EX_write_enable] >>
-      fs [is_sch_def,is_sch_execute_def]) >>
-    Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a \/ I' (1,t) = NONE` >-
-     (fs [is_sch_def,is_sch_fetch_def] >> METIS_TAC []) >> fs [] >>
-    `enable_stg 2 (agp32 fext fbits t)`
-      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
-    `I' (2,SUC t) = I' (1,t)` by METIS_TAC [is_sch_def,is_sch_decode_def] >> fs [] >>
-    `I' (1,SUC t) = SOME (THE (I' (1,t)) + 1)` by METIS_TAC [is_sch_def,is_sch_fetch_def] >> fs []) >>
-  `~enable_stg 2 (agp32 fext fbits t)`
-    by METIS_TAC [enable_stg_def,agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
-  Cases_on `~enable_stg 3 (agp32 fext fbits t)` >> fs [] >-
-   (fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []) >>
-  Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
-   (fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []) >>
-  `reg_data_hazard (agp32 fext fbits t)`
-    by fs [enable_stg_def,agp32_IF_PC_write_disable_ID_EX_write_enable_reg_data_hazard] >>
-  fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []
+  rw [] >>
+  METIS_TAC [IF_EX_instr_NOT_NONE_ID_NOT_NONE]
 QED
 
 (** instr index relation between IF and MEM stages when ID and MEM EX NONE **)

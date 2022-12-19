@@ -19,8 +19,8 @@ Proof
   fs [agp32_init_IF_PC_input,agp32_init_EX_opc,IF_PC_Rel_def,IF_instr_Rel_def,
       Inv_Rel_def,enable_stg_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs [] >>
   rw [agp32_init_ID_opc,agp32_init_EX_opc,agp32_init_EX_write_reg,
-      agp32_init_MEM_opc,agp32_init_MEM_write_reg,
-      agp32_init_WB_opc,agp32_init_WB_write_reg] >>
+      agp32_init_MEM_opc,agp32_init_MEM_write_reg,agp32_init_WB_opc,
+      agp32_init_WB_write_reg,agp32_init_WB_isOut] >>
   `a.data_in = (FUNPOW Next 0 a).data_in` by rw [] >>
   METIS_TAC [ag32_data_in_unchanged_all]
 QED
@@ -74,7 +74,12 @@ Proof
    (** memory stage op and ex stage **)
    fs [enable_stg_def,MEM_stg_op_agp32_ID_EX_write_disable] >-
    (** data_out **)
-   fs [agp32_Rel_ag32_data_out_correct] >-
+   fs [agp32_Rel_ag32_data_out_correct_WB_t] >-
+   fs [agp32_Rel_ag32_data_out_correct_WB_SUC_t] >-
+   fs [agp32_Rel_ag32_data_out_correct_MEM] >-
+   fs [agp32_Rel_ag32_data_out_correct_EX] >-
+   fs [agp32_Rel_ag32_data_out_correct_ID] >-
+   fs [agp32_Rel_ag32_data_out_correct_IF] >-
    (** registers **)
    fs [agp32_Rel_ag32_R_correct_WB_t_valid_data] >-
    fs [agp32_Rel_ag32_R_correct_WB_t_invalid_data] >-

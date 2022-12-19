@@ -1801,6 +1801,43 @@ Proof
   PairCases_on `p` >> fs [ag32_Decode_StoreMEMByte_opc_3w]
 QED
 
+Theorem ag32_data_out_unchanged_not_isOut_isa:
+  !a.
+    ~isOut_isa a ==>
+    (Next a).data_out = a.data_out
+Proof
+  rw [isOut_isa_def,Next_def,GSYM word_at_addr_def,GSYM align_addr_def] >>
+  Cases_on `Decode (word_at_addr a.MEM (align_addr a.PC))` >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Accelerator_def,incPC_def]) >-              
+   rw [Run_def,dfn'In_def,incPC_def] >-
+   rw [Run_def,dfn'Interrupt_def,incPC_def] >-
+   (PairCases_on `p` >> fs [Run_def,dfn'Jump_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> fs [Run_def,dfn'JumpIfNotZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'JumpIfZero_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> fs [Run_def,dfn'LoadConstant_def,incPC_def]) >-
+   (PairCases_on `p` >> fs [Run_def,dfn'LoadMEM_def,incPC_def]) >-              
+   (PairCases_on `p` >> fs [Run_def,dfn'LoadMEMByte_def,incPC_def]) >-
+   (PairCases_on `p` >> fs [Run_def,dfn'LoadUpperConstant_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Normal_def,norm_def,incPC_def] >>
+    qpat_abbrev_tac `alu = ALU _ _` >>
+    Cases_on `alu` >> rw [] >>
+    METIS_TAC [ALU_state_eq_after]) >-
+   (PairCases_on `p` >> fs [ag32_Decode_Out_opc_6w]) >-
+   rw [Run_def,dfn'ReservedInstr_def,incPC_def] >-
+   (PairCases_on `p` >> rw [Run_def,dfn'Shift_def,incPC_def]) >-
+   (PairCases_on `p` >> rw [Run_def,dfn'StoreMEM_def,incPC_def]) >>
+  PairCases_on `p` >> rw [Run_def,dfn'StoreMEMByte_def,incPC_def]
+QED
+
 
 (** io_events **)
 Theorem ag32_io_events_MEM_interrupt:

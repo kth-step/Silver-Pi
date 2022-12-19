@@ -1849,6 +1849,40 @@ Proof
   rw [agp32_init_def]
 QED
 
+(** initial WB_isOut is F **)
+Theorem agp32_init_WB_isOut:
+  !fext fbits.
+    ~(agp32 fext fbits 0).WB.WB_isOut
+Proof
+  rw [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Hazard_ctrl_unchanged_WB_ctrl_items] >>
+  Cases_on `s11.WB.WB_state_flag` >>
+  gs [WB_update_def] >-
+   (fs [Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,
+        Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+        MEM_ctrl_update_unchanged_WB_pipeline_items,IF_PC_input_update_unchanged_WB_pipeline_items,
+        EX_jump_sel_addr_update_unchanged_WB_pipeline_items,
+        EX_SHIFT_update_unchanged_WB_pipeline_items,
+        EX_ALU_update_unchanged_WB_pipeline_items,
+        EX_ALU_input_imm_update_unchanged_WB_pipeline_items,
+        ID_data_check_update_unchanged_WB_pipeline_items,
+        ID_data_update_unchanged_WB_pipeline_items,ID_imm_update_unchanged_WB_pipeline_items,
+        ID_opc_func_update_unchanged_WB_pipeline_items,IF_instr_update_unchanged_WB_pipeline_items] >>
+    rw [agp32_init_def]) >>
+  fs [Abbr `s11`,Abbr `s10`,Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,
+      Abbr `s5`,Abbr `s4`,Abbr `s3`,Abbr `s2`,Abbr `s1`,
+      MEM_ctrl_update_unchanged_WB_ctrl_items,IF_PC_input_update_unchanged_WB_ctrl_items,
+      EX_jump_sel_addr_update_unchanged_WB_ctrl_items,
+      EX_SHIFT_update_unchanged_WB_ctrl_items,
+      EX_ALU_update_unchanged_WB_ctrl_items,
+      EX_ALU_input_imm_update_unchanged_WB_ctrl_items,
+      ID_data_check_update_unchanged_WB_ctrl_items,
+      ID_data_update_unchanged_WB_ctrl_items,ID_imm_update_unchanged_WB_ctrl_items,
+      ID_opc_func_update_unchanged_WB_ctrl_items,IF_instr_update_unchanged_WB_ctrl_items] >>
+  rw [agp32_init_def]
+QED
+
 (** initial IF_PC_input = PC + 4w **)
 Theorem agp32_init_IF_PC_input:
   !fext fbits.

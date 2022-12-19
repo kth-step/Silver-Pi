@@ -297,6 +297,7 @@ Definition Inv_Rel_def:
    (I (4,t) = NONE ==> ~s.MEM.MEM_write_reg) /\
    (I (5,t) = NONE ==> (s.WB.WB_opc = 16w \/ s.WB.WB_opc = 15w)) /\
    (I (5,t) = NONE ==> ~s.WB.WB_write_reg) /\
+   (I (5,t) = NONE ==> ~s.WB.WB_isOut) /\
    (I (3,t) <> NONE ==> s.EX.EX_opc <> 16w) /\
    (I (4,t) <> NONE ==> s.MEM.MEM_opc <> 16w) /\
    (I (5,t) <> NONE ==> s.WB.WB_opc <> 16w) /\
@@ -334,7 +335,15 @@ Definition Rel_def:
   (~fext.ready ==> ~enable_stg 2 s) /\
   (~s.EX.EX_jump_sel ==> reg_data_hazard s ==> ~enable_stg 2 s) /\
   (isMemOp_hw_op s ==> ~enable_stg 3 s) /\
-  (I (5,t-1) <> NONE ==> si.WB.WB_isOut ==> s.data_out = (FUNPOW Next (THE (I (5,t-1))) a).data_out) /\
+  (I (5,t-1) <> NONE ==> s.data_out = (FUNPOW Next (THE (I (5,t-1))) a).data_out) /\
+  (I (5,t-1) = NONE ==> I (5,t) <> NONE ==> (s.data_out = (FUNPOW Next (THE (I (5,t)) - 1) a).data_out)) /\
+  (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) <> NONE ==> (s.data_out = (FUNPOW Next (THE (I (4,t)) - 1) a).data_out)) /\
+  (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) <> NONE ==> 
+   (s.data_out = (FUNPOW Next (THE (I (3,t)) - 1) a).data_out)) /\
+  (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) <> NONE ==>
+   (s.data_out = (FUNPOW Next (THE (I (2,t)) - 1) a).data_out)) /\
+  (I (5,t-1) = NONE ==> I (5,t) = NONE ==> I (4,t) = NONE ==> I (3,t) = NONE ==> I (2,t) = NONE ==> I (1,t) <> NONE ==>
+   (s.data_out = (FUNPOW Next (THE (I (1,t)) - 1) a).data_out)) /\
   (I (5,t-1) <> NONE ==> wb_data_valid si ==> (s.R = (FUNPOW Next (THE (I (5,t-1))) a).R)) /\
   (I (5,t-1) <> NONE ==> ~wb_data_valid si ==> (s.R = (FUNPOW Next (THE (I (5,t-1)) - 1) a).R)) /\
   (I (5,t-1) = NONE ==> I (5,t) <> NONE ==> (s.R = (FUNPOW Next (THE (I (5,t)) - 1) a).R)) /\

@@ -302,6 +302,37 @@ Proof
   fs [agp32_WB_write_reg_unchanged_when_WB_disabled,Rel_def,Inv_Rel_def]
 QED
 
+(** WB_isOut **)
+Theorem WB_instr_index_NONE_WB_not_isOut:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    I (5,SUC t) = NONE ==>
+    ~(agp32 fext fbits (SUC t)).WB.WB_isOut
+Proof
+  rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state;WB_pipeline;MEM_pipeline;EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update;ID_opc_func_update;ID_imm_update;ID_data_update;
+                             ID_data_check_update;EX_ALU_input_imm_update;EX_ALU_update;
+                             EX_SHIFT_update;EX_jump_sel_addr_update;IF_PC_input_update;
+                             MEM_ctrl_update] (fext (SUC t)) s' s'` >>
+  `(agp32 fext fbits (SUC t)).WB.WB_isOut = (WB_update (fext (SUC t)) s' s'').WB.WB_isOut`
+    by fs [agp32_WB_ctrl_items_updated_by_WB_update] >>
+  `(s''.WB.WB_state_flag = s.WB.WB_state_flag)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_WB_items_until_WB_update] >>
+  Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+    (`s''.WB.WB_opc = (agp32 fext fbits (SUC t)).WB.WB_opc`
+       by METIS_TAC [Abbr `s`,Abbr `s'`,agp32_same_WB_items_before_WB_update] >>  
+     gs [enable_stg_def,WB_update_def] >>
+     `((agp32 fext fbits (SUC t)).WB.WB_opc = 16w) \/ ((agp32 fext fbits (SUC t)).WB.WB_opc = 15w)`
+       by METIS_TAC [WB_instr_index_NONE_opc_flush] >> fs []) >>
+  `I' (5,SUC t) = I' (5,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >>
+  `(s''.WB.WB_isOut = s.WB.WB_isOut)`
+    by METIS_TAC [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_WB_items_until_WB_update] >>
+  gs [enable_stg_def,WB_update_def,Rel_def,Inv_Rel_def]
+QED
+
 (** instr index relation between IF and WB stages **)
 Theorem IF_instr_index_with_WB_instr:
   !I t fext fbits a.
@@ -423,8 +454,8 @@ Proof
              EX_instr_index_NONE_EX_not_write_reg,IF_instr_index_with_WB_instr,
              MEM_instr_index_NONE_opc_flush,MEM_instr_index_NONE_MEM_not_write_reg,
              WB_instr_index_NONE_opc_flush,WB_instr_index_NONE_WB_not_write_reg,
-             EX_instr_index_not_NONE_opc_not_16,MEM_instr_index_not_NONE_opc_not_16,
-             WB_instr_index_not_NONE_opc_not_16,
+             WB_instr_index_NONE_WB_not_isOut,EX_instr_index_not_NONE_opc_not_16,
+             MEM_instr_index_not_NONE_opc_not_16,WB_instr_index_not_NONE_opc_not_16,
              IF_instr_index_with_WB_instr_ID_EX_MEM_NONE,
              IF_instr_index_with_WB_instr_ID_EX_MEM_NONE_t] 
 QED

@@ -509,7 +509,7 @@ val init_tm = add_x_inits ``<| R := K 0w;
                                ID := <| ID_instr := 0x0000003Fw |>;
                                EX := <| EX_opc := 16w; EX_write_reg := F |>;
                                MEM := <| MEM_write_reg := F; MEM_opc := 16w |>;
-                               WB := <| WB_write_reg := F; WB_opc := 16w |> |>``;
+                               WB := <| WB_write_reg := F; WB_isOut := F; WB_opc := 16w |> |>``;
 
 Definition agp32_init_def:
   agp32_init fbits = ^init_tm

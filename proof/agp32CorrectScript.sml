@@ -1,6 +1,6 @@
 open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32SpecialTheory agp32_IF_CorrectTheory agp32_ID_CorrectTheory agp32_EX_CorrectTheory agp32_EX_Flags_CorrectTheory agp32_MEM_CorrectTheory agp32_MEM_Data_CorrectTheory agp32_WB_CorrectTheory;
 
-(* correctness of the pipelined Silver circuit against the ISA *)
+(* correctness of the pipelined circuit with respect to the ISA *)
 val _ = new_theory "agp32Correct";
 
 val _ = prefer_num ();
@@ -26,7 +26,7 @@ Proof
 QED
 
 
-(* correctness of the pipelined Silver concerning the ISA *)
+(* correctness of the pipelined circuit with the ISA *)
 Theorem agp32_Rel_ag32_correct:
   !fext fbits s a t I.
     s = agp32 fext fbits ==>

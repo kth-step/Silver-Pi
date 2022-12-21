@@ -72,7 +72,7 @@ val get_func_from_decode_tac =
   fs [func_def,num2funcT_thm,instr_def]);
 
 
-(* two lemmas about word concat and add *)
+(* lemmas about addr *)
 Theorem addr_add:
   !(w:word32).
     (31 >< 2) w @@ (0w:word2) + 1w = (31 >< 2) w @@ (1w:word2) /\
@@ -147,6 +147,7 @@ Proof
   rw [] >> Induct_on `n` >> Induct_on `m` >> rw [] >>
   METIS_TAC [ag32_data_in_unchanged_next]  
 QED
+
 
 (* ISA: opc is correct with respect to the Decode *)
 (** if Deocde got Normal, then opc is 0w **)
@@ -806,6 +807,7 @@ Proof
   get_addrW_from_decode_tac
 QED
 
+
 (* decode the dataA *)
 (** Acc **)
 Theorem ag32_Decode_Acc_dataA:
@@ -898,7 +900,7 @@ Proof
 QED
 
 
-(** dataB **)
+(* dataB *)
 (** Normal **)
 Theorem ag32_Decode_Normal_dataB:
   !ag a b f wi.
@@ -950,7 +952,7 @@ Proof
 QED
 
 
-(** dataW **)
+(* dataW *)
 (** JumpIfNotZero **)
 Theorem ag32_Decode_JumpIfNotZero_dataW:
   !ag a b f wi.
@@ -1047,7 +1049,7 @@ Proof
 QED
 
 
-(* if the current instr does not jump, the next pc = current pc + 4w *)
+(** if the current instr does not jump, the next pc = current pc + 4w **)
 Theorem ag32_not_isJump_isa_Next_PC:
   !ag.
     ~isJump_isa ag ==>
@@ -1229,8 +1231,7 @@ Proof
   fs [addr_add,addr_concat]
 QED
 
-
-(* word_at_addr is unchanged after a memory write *)
+(** word_at_addr is unchanged after a memory write **)
 Theorem word_at_addr_not_changed_after_write_mem:
   !adr n a.
     is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
@@ -1276,7 +1277,7 @@ Proof
   simp [addr_add] >> METIS_TAC [addr_concat]
 QED
 
-(* if the instr is a not write operation, then MEM and fetched value are not affected *)
+(** if the instr is a not write operation, then MEM and fetched value are not affected **)
 Theorem MEM_not_changed_after_normal_instrs:
   !n a.
     ~is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
@@ -1363,8 +1364,7 @@ Proof
   rw [] >> METIS_TAC [MEM_not_changed_after_normal_instrs]
 QED
 
-
-(* StoreMEM with mem_update *)
+(** StoreMEM with mem_update **)
 Theorem ag32_StoreMEM_mem_update:
   !a.
     opc a = 2w ==>
@@ -1377,7 +1377,7 @@ Proof
   rw [mem_update_def,dataA_def,dataB_def,align_addr_def]
 QED
 
-(* StoreMEMByte with mem_update *)
+(** StoreMEMByte with mem_update **)
 Theorem ag32_StoreMEMByte_mem_update:
   !a wdata.
     opc a = 3w ==>
@@ -1463,7 +1463,7 @@ Proof
 QED
 
         
-(* Given the self-modified condition, 4 instrs' fetched values after an instr are not affected. *)
+(** given the self-modified condition, 4 instrs' fetched values after an instr are not affected **)
 Theorem SC_self_mod_isa_not_affect_fetched_instr:
   !a i j.
     SC_self_mod_isa a ==>
@@ -1529,7 +1529,7 @@ Proof
 QED
 
 
-(* correctness of ISA help funcations imm/flag/data for ports A/B/W *)
+(* correctness of ISA help funcations imm/flag/data for A/B/W *)
 (** data port A **)
 Theorem dataA_correct_rewrite_flag_imm_reg_data:
   !a.
@@ -1673,14 +1673,12 @@ Proof
   PairCases_on `p` >> rw [Run_def,dfn'StoreMEMByte_def,incPC_def]
 QED
 
-
 (** lemma for FCP and word_concat **)
 Theorem word_concat_fcp_index_eq[local]:
   !(x:word9) (y:word32).
     (FCP i. if 23 <= i ∧ i <= 31 then x ' (i − 23) else y ' i) = x @@ ((22 >< 0) y)
 Proof
-  rw [] >>
-  BBLAST_TAC
+  rw [] >> BBLAST_TAC
 QED                                                       
 
 (** R is updated by addrW and reg_wdata when reg_iswrite is T **)

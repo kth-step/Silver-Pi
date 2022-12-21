@@ -802,7 +802,6 @@ Proof
   gs [is_sch_def,is_sch_disable_def]
 QED
 
-
 (** I (5,t) is NONE, I (5,SUC t) is not NONE **)
 Theorem agp32_Rel_ag32_R_correct_WB_SUC_t:
   !fext fbits a t I.
@@ -1274,7 +1273,6 @@ Proof
     `THE (I' (1,n)) = THE (I' (5,n)) + 1` by fs [Rel_def,Inv_Rel_def] >> fs []) >>
   gs [is_sch_def,is_sch_disable_def]
 QED
-
 
 (** I (5,t) is NONE, I (5,SUC t) is not NONE **)
 Theorem agp32_Rel_ag32_data_out_correct_WB_SUC_t:

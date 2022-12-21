@@ -437,8 +437,7 @@ Theorem IF_instr_index_with_WB_instr_ID_EX_MEM_NONE_t:
     I (5,t) <> NONE ==>
     (THE (I (1,t)) > THE (I (5,t))) /\ (THE (I (1,t)) < THE (I (5,t)) + 2)
 Proof
-  rw [Rel_def] >>
-  fs [Inv_Rel_def]
+  rw [Rel_def] >> fs [Inv_Rel_def]
 QED
 
 (* Inv_Rel *)

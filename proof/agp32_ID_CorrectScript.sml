@@ -6,7 +6,6 @@ val _ = new_theory "agp32_ID_Correct";
 val _ = prefer_num ();
 val _ = guess_lengths ();
 
-
 (** ID_PC **)
 Theorem agp32_Rel_ag32_ID_PC_correct:
   !fext fbits a t I.
@@ -36,7 +35,6 @@ Proof
   rw [ID_pipeline_def] >>
   fs [Rel_def,ID_Rel_def]
 QED
-
 
 (** ID_instr **)
 Theorem agp32_Rel_ag32_ID_instr_correct:
@@ -75,7 +73,6 @@ Proof
   fs [Rel_def,ID_Rel_def]
 QED
 
-
 (** ID_addrA/B/W **)
 Theorem agp32_Rel_ag32_ID_addr_correct:
   !fext fbits a t I.
@@ -103,7 +100,6 @@ Proof
   `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_ID_imm_update] >> fs []
 QED
-
 
 (** flagA/B/W: indicate imm or reg **)
 Theorem agp32_Rel_ag32_ID_flag_correct:
@@ -136,7 +132,6 @@ Proof
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_ID_imm_update] >> fs []
 QED
 
-
 (** immA/B/W **)
 Theorem agp32_Rel_ag32_ID_imm_data_correct:
   !fext fbits a t I.
@@ -165,7 +160,6 @@ Proof
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_ID_imm_update] >> fs []
 QED
 
-
 (** imm for LoadConstant and LoadUpperConstant **)
 Theorem agp32_Rel_ag32_ID_imm_correct:
   !fext fbits a t I.
@@ -189,7 +183,6 @@ Proof
    fs [ID_imm_update_def,imm_def] >> rw []
 QED
 
-
 (** ID_opc **)
 Theorem agp32_Rel_ag32_ID_opc_correct:
   !fext fbits a t I.
@@ -212,7 +205,6 @@ Proof
     by fs [Abbr `s`,Abbr `s'`,Abbr `s''`,agp32_same_ID_instr_after_IF_instr_update] >> fs [] >>
   rw [ID_opc_func_update_def,opc_def]
 QED
-
 
 (** ID_func **)
 (** lemmas show the relation between the ID_opc and ID_func **)
@@ -300,7 +292,6 @@ Proof
   fs [func_def,ID_opc_func_update_other_func] >> METIS_TAC []
 QED
 
-
 (** ID_data: when using the imm, dataA/B/W are correct **)
 Theorem agp32_Rel_ag32_ID_dataA_correct_using_immA:
   !fext fbits a t I.
@@ -346,7 +337,6 @@ Proof
   rw [dataW_correct_rewrite_flag_imm_reg_data,v2w_single_0w] >>
   fs [agp32_ID_addrW_disable_dataW_immW,agp32_Rel_ag32_ID_imm_data_correct]
 QED
-
 
 (* ID_Rel: items directly from the IF stage or ID_instr *)
 Theorem agp32_Rel_ag32_ID_Rel_correct:

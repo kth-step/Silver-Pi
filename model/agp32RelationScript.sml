@@ -1,18 +1,13 @@
 open hardwarePreamble agp32StateTheory agp32EnvironmentTheory ag32Theory ag32ExtraTheory;
 
+(* definitions between the ISA and pipelined circuit *)
 val _ = new_theory "agp32Relation";
-
-(** general variables:
-    k: pipeline stage.
-    t: cycle for the pipeline circuit.
-    i: cycle (instr index) for the ISA.
- **)
 
 val _ = prefer_num ();
 val _ = guess_lengths ();
 
 
-(** extra help functions on the ISA level **)
+(** extra help functions **)
 Definition isJump_isa_op_def:
   isJump_isa_op nop a =
   if nop = NONE then F
@@ -54,7 +49,6 @@ Definition reg_adr_update_isa_def:
   else reg_iswrite (FUNPOW Next (THE nop - 1) a) /\ (addrW (FUNPOW Next (THE nop - 1) a) = adr)
 End
 
-(* Additional definitions for the pipeline correctness proofs *)
 (* enable_stg: stage k is enabled in the hardware circuit *)
 Definition enable_stg_def:
   enable_stg k s =
@@ -73,7 +67,7 @@ End
 
 
 (* software conditions *)
-(* self modified: a memory write operation does not affect the fetched value of the next 3 instructions *)
+(* self modified: a memory write operation does not affect the fetched value of the following instructions *)
 Definition SC_self_mod_isa_def:
   SC_self_mod_isa (a:ag32_state) <=>
   !n i. is_wrMEM_isa (FUNPOW Next (n-1) a) ==>
@@ -82,7 +76,7 @@ Definition SC_self_mod_isa_def:
 End
 
 
-(* Definitions of relations to prove the correctness of the pipelined Silver *)
+(* definitions of relations *)
 (* relation for the initial states *)
 Definition Init_def:
   Init (fext:ext) (s:state_circuit) (a:ag32_state) <=>
@@ -115,8 +109,7 @@ Definition Init_def:
   ~s.WB.WB_state_flag
 End
 
-
-(* relation between the circuit and ISA state for different pipeline stages *)
+(** relation between the circuit and ISA state for different pipeline stages **)
 (** fetch stage **)
 Definition IF_PC_Rel_def:
   IF_PC_Rel (s:state_circuit) (a:ag32_state) (i:num) <=>
@@ -370,7 +363,7 @@ Definition Rel_def:
 End
 
 
-(* oracle for the scheduling function I *)
+(* scheduling I *)
 Definition is_sch_init_def:
   is_sch_init (I:num # num -> num option) <=>
   (I (1,0) = SOME 1) /\

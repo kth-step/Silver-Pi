@@ -1,6 +1,6 @@
 open hardwarePreamble translatorTheory translatorCoreLib agp32StateTheory agp32EnvironmentTheory;
 
-(* Pipelined Silver processor implementation *)
+(* pipelined circuit implementation *)
 val _ = new_theory "agp32Processor";
 
 val _ = prefer_num ();
@@ -34,7 +34,7 @@ Definition MUX_81_def:
 End
 
 
-(* always_comb related *)
+(* always_comb blocks *)
 (** fetch the instruction **)
 Definition IF_instr_update_def:
   IF_instr_update fext (s:state_circuit) s' =
@@ -91,7 +91,7 @@ Definition ID_imm_update_def:
     s' with ID := s'.ID with ID_imm := 0w
 End
 
-(** update the data from read_data and imm for A/B/W **)
+(** update the data for A/B/W **)
 Definition ID_data_update_def:
   ID_data_update (fext:ext) (s:state_circuit) s' =
   let s' = s' with ID := s'.ID with ID_addrA := (22 >< 17) s'.ID.ID_instr;
@@ -224,7 +224,7 @@ Definition EX_jump_sel_addr_update_def:
          s' with EX := s'.EX with EX_jump_addr := 0w
 End
 
-(** Set up flags of MEM stage **)
+(** set up flags of MEM stage **)
 Definition MEM_ctrl_update_def:
   MEM_ctrl_update (fext:ext) s s' =
   let s' = s' with MEM := s'.MEM with MEM_read_mem := (s.MEM.MEM_opc = 4w \/ s.MEM.MEM_opc = 5w);
@@ -265,7 +265,7 @@ End
 
 Theorem WB_update_trans = REWRITE_RULE [MUX_41_def,MUX_81_def] WB_update_def
 
-(** hazard handling **)
+(** hazards handling **)
 Definition Hazard_ctrl_def:
   Hazard_ctrl fext s s' =
   if s'.state = 1w \/ s'.state = 2w \/ s'.state = 3w \/ 
@@ -329,7 +329,7 @@ Definition Hazard_ctrl_def:
 End
 
 
-(* always_ff related: triggered by posedge clk *)
+(* always_ff blocks (only positive edge is used by the Verilog model) *)
 (** fetch: update PC **)
 Definition IF_PC_update_def:
   IF_PC_update (fext:ext) (s:state_circuit) s' =
@@ -414,7 +414,7 @@ Definition WB_pipeline_def:
   else s'
 End
 
-(** state **)
+(** state update **)
 Definition agp32_next_state_def:
   agp32_next_state fext s s' =
   let s' = s' with data_out := if s'.WB.WB_isOut then (9 >< 0) s'.WB.WB_ALU_res else s.data_out in
@@ -515,7 +515,7 @@ Definition agp32_init_def:
   agp32_init fbits = ^init_tm
 End
 
-(** pipelined Silver **)
+(** pipelined circuit module **)
 Definition agp32_def:
   agp32 = mk_module (procs [agp32_next_state; WB_pipeline; MEM_pipeline;
                             EX_pipeline; REG_write; ID_pipeline; IF_PC_update; Acc_compute])

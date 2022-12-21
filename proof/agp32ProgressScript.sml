@@ -1,11 +1,10 @@
 open hardwarePreamble translatorTheory translatorLib arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib;
 
-(* the pipelined Silver circuit makes progress based on the environment *)
+(* the pipelined circuit makes progress according to the environment *)
 val _ = new_theory "agp32Progress";
 
 val _ = prefer_num ();
 val _ = guess_lengths ();
-
 
 (** hw_work and I **)
 (** WB processes an instr from the previous stage **)
@@ -732,7 +731,7 @@ Proof
 QED
 
 
-(* the pipelined Silver can make progress *)
+(* the pipelined circuit can make progress *)
 Theorem agp32_progress:
   !fext fbits s a t I.
     s = agp32 fext fbits ==>

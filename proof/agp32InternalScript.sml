@@ -1,5 +1,6 @@
 open hardwarePreamble translatorTheory arithmeticTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib ag32ExtraTheory agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory agp32RelationTheory agp32UpdateTheory agp32UpdateLib;
 
+(* lemmas and theorems of the piplined circuit *)
 val _ = new_theory "agp32Internal";
 
 val _ = prefer_num ();
@@ -58,7 +59,6 @@ Proof
 QED
 
 
-(* internal relation between opc and func *)
 (** ID stage **)
 Theorem agp32_ID_opc_implies_ID_func:
   !fext fbits t.
@@ -901,7 +901,7 @@ Proof
   check_hazard_ctrl
 QED
 
-(* IF_PC_write_enable and ID_EX_write_enable *)
+(** IF_PC_write_enable and ID_EX_write_enable **)
 Theorem agp32_IF_PC_write_enable_and_ID_EX_write_enable:
   !fext fbits t.
     (agp32 fext fbits t).IF.IF_PC_write_enable ==>
@@ -915,7 +915,7 @@ Proof
   check_hazard_ctrl
 QED
 
-(* IF_PC_write_enable and MEM_state_flag *)
+(** IF_PC_write_enable and MEM_state_flag **)
 Theorem agp32_IF_PC_write_enable_and_MEM_flag:
   !fext fbits t.
     (agp32 fext fbits t).IF.IF_PC_write_enable ==>
@@ -929,7 +929,7 @@ Proof
   check_hazard_ctrl
 QED
 
-(* IF_PC_write_enable and WB_state_flag *)
+(** IF_PC_write_enable and WB_state_flag **)
 Theorem agp32_IF_PC_write_enable_and_WB_flag:
   !fext fbits t.
     (agp32 fext fbits t).IF.IF_PC_write_enable ==>
@@ -994,7 +994,7 @@ Proof
   rw_hazard_ctrl_checks_regular
 QED
 
-(* ID_ID_write_enable *)
+(** ID_ID_write_enable **)
 (** ID_ID_write_enable and ID_EX_write_enable **)
 Theorem agp32_ID_ID_write_enable_and_ID_EX_write_enable:
   !fext fbits t.
@@ -1080,7 +1080,6 @@ Theorem agp32_not_EX_jump_sel_reg_data_hazard_then_ID_ID_write_disable:
 Proof
   rw [] >> METIS_TAC [agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard]
 QED
-
 
 (** ID_EX_write_enable **)
 (** ID_EX_write_enable and MEM_state_flag **)
@@ -1277,7 +1276,7 @@ Proof
              agp32_IF_PC_write_disable_ID_EX_write_enable_reg_data_hazard]
 QED
 
-(* MEM_state_flag *)
+(** MEM_state_flag **)
 (** MEM_state_flag and WB_state_flag **)
 Theorem agp32_MEM_state_flag_eq_WB_state_flag:
   !fext fbits t.
@@ -1515,7 +1514,6 @@ Proof
       ID_opc_func_update_unchanged_MEM_pipeline_items,
       IF_instr_update_unchanged_MEM_pipeline_items]
 QED
-
 
 (** WB_state_flag **)
 (** WB_state_flag and fext t.ready **)
@@ -2569,7 +2567,7 @@ Proof
 QED
 
 
-(* lemmas about the scheduling function I *)
+(* lemmas about the scheduling *)
 (** I (1,t) is not 0 **)
 Theorem IF_instr_index_not_0:
   !I t fext fbits a.
@@ -3073,7 +3071,6 @@ Proof
   METIS_TAC [MEM_instr_index_with_WB_instr_plus_1]
 QED
 
-
 (** instr index relation when IF and EX stages are not NONE then ID is NOT NONE **)
 Theorem IF_EX_instr_NOT_NONE_ID_NOT_NONE:
   !I t fext fbits a.
@@ -3106,7 +3103,6 @@ Proof
     by fs [enable_stg_def,agp32_IF_PC_write_disable_ID_EX_write_enable_reg_data_hazard] >>
   fs [is_sch_def,is_sch_execute_def] >> METIS_TAC []
 QED
-
 
 (** instr index relation between ID and MEM stages when EX is NONE **)
 Theorem ID_instr_index_with_MEM_instr_EX_NONE:
@@ -3162,7 +3158,6 @@ Proof
   `(THE (I' (2,t)) > THE (I' (4,t))) /\ (THE (I' (2,t)) < THE (I' (4,t)) + 2)`
     by METIS_TAC [ID_instr_index_with_MEM_instr_EX_NONE] >> fs []
 QED
-
 
 (** instr index relation between ID and MEM stages when EX is NONE **)
 Theorem EX_instr_index_with_WB_instr_MEM_NONE:

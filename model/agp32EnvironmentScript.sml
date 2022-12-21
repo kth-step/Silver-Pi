@@ -1,9 +1,8 @@
 open hardwarePreamble;
 (* depend on the circuit datatype *)
 open agp32StateTheory;
-(* open ag32MachineTheory *)
 
-
+(* external environment for the processor, based on the previous Silver work settings *)
 val _ = new_theory "agp32Environment";
 
 val _ = prefer_num ();
@@ -32,8 +31,8 @@ val _ = Datatype `
           io_events : (word32 -> word8) list
         |>`;
 
-(** Memory specification **)
 
+(** Memory specification **)
 val mem_update_def = Define `
  mem_update mem addr wdata wstrb =
   let mem = if word_bit 0 wstrb then (addr      =+ ((7 >< 0) wdata)) mem else mem;
@@ -41,7 +40,6 @@ val mem_update_def = Define `
       mem = if word_bit 2 wstrb then (addr + 2w =+ ((23 >< 16) wdata)) mem else mem in
             if word_bit 3 wstrb then (addr + 3w =+ ((31 >< 24) wdata)) mem else mem`;
 
-(* TODO: Consider using alignmentTheory instead *)
 val align_addr_def = Define `
  align_addr (addr:word32) = ((31 >< 2) addr @@ (0w:word2)):word32`;
 
@@ -73,8 +71,6 @@ val word_at_addr_def = Define `
 val mem_no_errors_def = Define `
  mem_no_errors fext = !n. (fext n).error = 0w`;
 
-(* TODO: Should just handle errors in the same way as other interfaces *)
-(* TODO: Would make more sense to have alignment preconds, rather than doing alignment "automatically" *)
 val is_mem_def = Define `
  is_mem accessors step fext =
   !n.

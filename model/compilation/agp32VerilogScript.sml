@@ -1,5 +1,6 @@
 open hardwarePreamble alignmentTheory alistTheory agp32ProcessorTheory translatorLib verilogPrintLib;
 
+(* generate the pipelined Silver Verilog code using the translator *)
 val _ = new_theory "agp32Verilog";
 
 val _ = guess_lengths ();

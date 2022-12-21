@@ -1,10 +1,11 @@
 open hardwarePreamble translatorTheory arithmeticTheory pred_setTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax wordsLib agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory agp32UpdateLib;
 
-(* Theorems about the pipelined circuit's state update functions *)
+(* lemmas and theorems about the pipelined circuit state updates *)
 val _ = new_theory "agp32Update";
 
 val _ = prefer_num ();
 val _ = guess_lengths ();
+
 
 (** lemma about MAX_SET **)
 Theorem FINITE_max_ready_cycle:

@@ -1,13 +1,12 @@
 open hardwarePreamble agp32EnvironmentTheory ag32Theory;
 
+(* extra definitions based on the Silver ISA *)
 val _ = new_theory "ag32Extra";
-
-(* extra definitions based on the Silver ISA for the equvialence of invisible registers/singals *)
 
 val _ = prefer_num ();
 val _ = guess_lengths ();
 
-(* current instruction processed by Silver ISA *)
+(* current instruction processed by Silver ISA machine *)
 Definition instr_def:
   instr (a:ag32_state) = word_at_addr a.MEM (align_addr a.PC)
 End
@@ -150,7 +149,7 @@ Definition shift_res_def:
     shift (shiftOp, dataA a, dataB a)
 End
 
-(* singals related to the accelerator *)
+(* accelerator *)
 Definition acc_arg_def:
   acc_arg a = dataA a
 End
@@ -159,6 +158,7 @@ Definition acc_res_def:
   acc_res a = accelerator_f (acc_arg a)
 End
 
+(* opc for some instruction *)
 Definition isAcc_isa_def:
   isAcc_isa a = (opc a = 8w)
 End
@@ -171,7 +171,7 @@ Definition isinterrupt_def:
   isinterrupt a = (opc a = 12w)
 End
 
-(* singals related to memory operations *)
+(* memory operations *)
 Definition mem_isread_def:
   mem_isread a = (opc a = 4w \/ opc a = 5w)
 End
@@ -246,7 +246,7 @@ Definition mem_data_rdata_extra_def:
     else 0w
 End
 
-(* singals related to update Silver register R *)
+(* update register file R *)
 Definition reg_iswrite_def:
   reg_iswrite a =
   let opc = opc a in
@@ -282,7 +282,7 @@ Definition reg_wdata_def:
     else 0w
 End
 
-(* detect if a jump is happening in the ISA machine *)
+(* (conditional) jumps *)
 Definition isJump_isa_def:
   isJump_isa a =
   let opc = opc a;

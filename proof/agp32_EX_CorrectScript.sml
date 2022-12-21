@@ -101,7 +101,6 @@ Proof
   fs [agp32_EX_opc_unchanged_when_EX_disabled,Rel_def,Inv_Rel_def]
 QED
 
-
 (** EX_PC **)
 Theorem agp32_Rel_ag32_EX_PC_correct:
   !fext fbits a t I.
@@ -640,7 +639,6 @@ Proof
   fs [Rel_def,EX_Rel_def]
 QED
 
-
 (* EX Rel *)
 Theorem agp32_Rel_ag32_EX_Rel_correct:
   !fext fbits a t I.
@@ -746,8 +744,7 @@ Proof
   fs [EX_jump_sel_addr_update_def]
 QED
 
-
-(* EX Rel_spec: for jumps *)
+(* EX Rel_spec *)
 Theorem agp32_Rel_ag32_EX_Rel_spec_correct:
   !fext fbits a t I.
     is_sch I (agp32 fext fbits) a ==>

@@ -1,6 +1,6 @@
 open hardwarePreamble translatorTheory translatorLib arithmeticTheory pred_setTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32StepLib agp32_EX_CorrectTheory agp32_MEM_Data_CorrectTheory agp32SpecialTheory;
 
-(* correctness of IF stage and related items with repsect to the ISA *)
+(* correctness of IF stage items with repsect to the ISA *)
 val _ = new_theory "agp32_IF_Correct";
 
 val _ = prefer_num ();
@@ -81,7 +81,6 @@ Proof
    METIS_TAC [agp32_Rel_ag32_IF_enable_PC_correct] >>
   METIS_TAC [is_sch_def,agp32_Rel_ag32_IF_disable_PC_correct]
 QED
-
 
 (** IF_instr **)
 (** IF_instr when IF is enabled **)
@@ -973,7 +972,7 @@ Proof
 QED
 
 
-(* IF_PC_input when jump *)
+(** IF_PC_input when jump **)
 Theorem agp32_Rel_ag32_IF_PC_input_jump_correct:
   !fext fbits a t I.
     is_sch I (agp32 fext fbits) a ==>
@@ -1000,7 +999,7 @@ Proof
 QED
 
 
-(* IF_PC_input when not jump *)
+(** IF_PC_input when not jump **)
 Theorem agp32_Rel_ag32_IF_PC_input_not_jump_correct:
   !fext fbits a t I.
     is_sch I (agp32 fext fbits) a ==>

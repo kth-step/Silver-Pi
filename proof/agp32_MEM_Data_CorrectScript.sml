@@ -1,6 +1,6 @@
 open hardwarePreamble translatorTheory translatorLib arithmeticTheory pred_setTheory wordsExtraTheory dep_rewrite blastLib bitstringSyntax fcpSyntax listSyntax wordsSyntax agp32StateTheory agp32EnvironmentTheory agp32ProcessorTheory ag32Theory ag32ExtraTheory ag32UtilitiesTheory agp32RelationTheory agp32UpdateTheory agp32InternalTheory agp32SpecialTheory agp32StepLib agp32_MEM_CorrectTheory;
 
-(* correctness of memory and data loading with respect to the ISA *)
+(* correctness of memory requests with respect to the ISA *)
 val _ = new_theory "agp32_MEM_Data_Correct";
 
 val _ = prefer_num ();

@@ -11,6 +11,8 @@ verified in-order pipelined circuit in the HOL4 interactive theorem prover.
 ### Building
 Requirements:
 
+[Poly/ML](https://github.com/polyml/polyml)
+
 [HOL4](https://github.com/HOL-Theorem-Prover/HOL)
 
 [verified (System) Verilog](https://github.com/CakeML/hardware/tree/v3)

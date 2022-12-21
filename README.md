@@ -17,7 +17,7 @@ Requirements:
 
 [verified (System) Verilog](https://github.com/CakeML/hardware/tree/v3)
 
-Notice: please use the v3 branch of the Verilog repository to build our work, and the failed HOL4 files of the Verilog model (like `verilogWriteCheckerScript.sml`) does not affect the pipelined Silver.
+Notice: please use the `v3` branch of the Verilog repository to build our work, and the failed HOL4 files of the Verilog model (like `verilogWriteCheckerScript.sml`) does not affect the pipelined Silver.
 
 Please run `Holmake` to build our `silver_isa`, `model` and `proof` HOL4 files.
 

@@ -357,8 +357,8 @@ WB_state_flag = 1;
 end else begin
 if (ID_checkPC || EX_checkPC || MEM_checkPC) begin
 IF_PC_write_enable = 0;
-ID_ID_write_enable = 1;
-ID_flush_flag = 1;
+ID_ID_write_enable = 0;
+ID_flush_flag = 0;
 ID_EX_write_enable = 1;
 EX_NOP_flag = 0;
 MEM_state_flag = 1;

@@ -3,7 +3,7 @@
 /* Notable changes compared to the previous version:
    1. Only keep the instruction cache, data cache removed.
    2. Data memory operations (load and store) are directly sent to the main memory via AXI.
-   3. Update the data structure and code to fetch 16 32-bits instructions in one round.
+   3. Update the data structure and code to fetch 8 32-bits instructions in one round.
    4. If the command is 1 (only fetch the next instruction), produce the hit/miss (+ inst_rdata if hit) in one clock cycle.
    5. The cache bram is changed to enable "assign inst_out = ram[inst_addr];".  
 */
@@ -114,35 +114,35 @@ module cache_v2(
 
 // Sizes
 //
-// Cache size: 2^16 bytes
-// Blocks are 64 bytes, i.e. 2^6
+// Cache size: 2^15 bytes
+// Blocks are 32 bytes, i.e. 2^5
 // Number of blocks are 1024, i.e. 2^10
 
 // Address structure
 // NOTE: tag bits are the ms-bits here
 typedef struct packed {
-  logic[15:0] tag;
+  logic[16:0] tag;
   logic[9:0] index;
-  logic[5:0] block_offset;
+  logic[4:0] block_offset;
 } address;
 
 // BRAM structure
 typedef struct packed {
   logic active;
-  logic[15:0] tag;
+  logic[16:0] tag;
 } cache_block;
 
 logic [31:0] mem_start = 0;
 
 // Instruction BRAM
-logic[511:0] inst_buffer;
+logic[255:0] inst_buffer;
 
 logic inst_ibram_we = 0;
 logic[9:0] inst_ibram_addr;
 cache_block inst_ibram_tag_in;
 cache_block inst_ibram_tag_out;
-logic [511:0] inst_ibram_data_in;
-logic [511:0] inst_ibram_data_out;
+logic [255:0] inst_ibram_data_in;
+logic [255:0] inst_ibram_data_out;
                  
 cache_bram_v2 ibram(.clk(clk), .inst_we(inst_ibram_we), .inst_addr(inst_ibram_addr), .inst_tag_in(inst_ibram_tag_in), .inst_data_in(inst_ibram_data_in), .inst_tag_out(inst_ibram_tag_out), .inst_data_out(inst_ibram_data_out));
 
@@ -154,7 +154,7 @@ typedef enum { BLOCK_NONE, BLOCK_HIT, BLOCK_OVERWRITE, BLOCK_ERROR } block_state
 block_state inst_block_state = BLOCK_NONE;
 
 logic[2:0] data_write_check;
-logic[5:0] inst_block_read;
+logic[4:0] inst_block_read;
 
 logic data_inf_error = 0;
 
@@ -244,7 +244,7 @@ always_ff @ (posedge clk) begin
         
         inst_block_state = BLOCK_OVERWRITE;
         mem_i_arvalid <= 1;
-        mem_i_araddr <= {later_inst_addr[31:6], 6'b0};
+        mem_i_araddr <= {later_inst_addr[31:5], 5'b0};
             
         inst_block_read = 0;
         

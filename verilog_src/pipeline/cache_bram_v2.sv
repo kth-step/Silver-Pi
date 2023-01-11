@@ -6,16 +6,16 @@ input clk;
 
 input inst_we;
 input [9:0] inst_addr;
-input [16:0] inst_tag_in;
-input [511:0] inst_data_in;
-output logic [16:0] inst_tag_out;
-output logic [511:0] inst_data_out;
+input [17:0] inst_tag_in;
+input [255:0] inst_data_in;
+output logic [17:0] inst_tag_out;
+output logic [255:0] inst_data_out;
 
-reg [16:0] ram_tag [2**10 - 1:0];
-reg [511:0] ram_data [2**10 - 1:0];
+reg [17:0] ram_tag [1023:0];
+reg [255:0] ram_data [1023:0];
 
 initial begin
-  for (integer i = 0; i < 2**10; i = i + 1) begin
+  for (integer i = 0; i < 1024; i = i + 1) begin
     ram_tag[i] = 0;
     ram_data[i] = 0;
   end

@@ -1,5 +1,4 @@
 HWDIR = ../../hardware
-CAKEMLDIR = ../../cakeml
 INCLUDES = $(HOLDIR)/examples/l3-machine-code/common \
            $(HOLDIR)/examples/l3-machine-code/lib \
            $(HWDIR) \

@@ -17,8 +17,8 @@ Theorem agp32_Init_implies_Rel:
 Proof
   rw [Init_def,Rel_def,is_sch_init_def] >>
   fs [agp32_init_IF_PC_input,agp32_init_EX_opc,IF_PC_Rel_def,IF_instr_Rel_def,
-      Inv_Rel_def,enable_stg_def,EX_Rel_spec_def,isJump_isa_op_def] >> fs [] >>
-  rw [agp32_init_ID_opc,agp32_init_EX_opc,agp32_init_EX_write_reg,
+      Inv_Rel_def,enable_stg_def,EX_Rel_spec_def,isJump_isa_op_def,isJump_hw_op_def] >> fs [] >>
+  rw [agp32_init_ID_opc,agp32_init_EX_opc,agp32_init_EX_write_reg,agp32_init_EX_jump_sel,
       agp32_init_MEM_opc,agp32_init_MEM_write_reg,agp32_init_WB_opc,
       agp32_init_WB_write_reg,agp32_init_WB_isOut] >>
   `a.data_in = (FUNPOW Next 0 a).data_in` by rw [] >>
@@ -32,7 +32,6 @@ Theorem agp32_Rel_ag32_correct:
     s = agp32 fext fbits ==>
     SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit s fext ==>
-    is_acc accelerator_f s ==>
     is_interrupt_interface fext_accessor_circuit s fext ==>
     is_data_in fext ==>
     is_sch I s a ==>

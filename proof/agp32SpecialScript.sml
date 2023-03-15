@@ -7,6 +7,78 @@ val _ = prefer_num ();
 val _ = guess_lengths ();
 
 
+(** when EX is jump, ID is NONE **)
+Theorem isJump_hw_op_ID_instr_index_none:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    isJump_hw_op (agp32 fext fbits (SUC t)) ==>
+    I (2,SUC t) = NONE
+Proof
+  rw [] >> Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_hw_op (agp32 fext fbits t) \/ isJump_isa_op (I' (2,t)) a` >-
+     fs [is_sch_def,is_sch_decode_def] >> fs [] >>
+    `enable_stg 3 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_ID_ID_write_enable_and_ID_EX_write_enable] >>
+    `~reg_data_hazard (agp32 fext fbits t)`
+      by fs [enable_stg_def,isJump_hw_op_def,
+             agp32_ID_ID_write_enable_EX_jump_sel_then_no_reg_data_hazard] >>
+    `I' (3,SUC t) = I' (2,t)` by fs [is_sch_def,is_sch_execute_def] >>
+    `~isJump_isa_op (I' (3,SUC t)) a` by fs [] >>
+    fs [isJump_hw_op_def] >> METIS_TAC [agp32_Rel_ag32_EX_jump_sel_correct]) >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     METIS_TAC [enable_stg_def,agp32_ID_EX_write_enable_isJump_hw_op_IF_PC_write_enable,
+                agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >> fs [] >-
+     (`I' (3,SUC t) = NONE` by fs [is_sch_def,is_sch_execute_def] >>
+      fs [isJump_hw_op_def] >>
+      `isJump_isa_op (I' (3,SUC t)) a` by METIS_TAC [agp32_Rel_ag32_EX_jump_sel_correct] >>
+      METIS_TAC [isJump_isa_op_not_none]) >>
+    gs [enable_stg_def,agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_ID_ID_write_enable]) >>
+  `isJump_hw_op (agp32 fext fbits (SUC t)) = isJump_hw_op (agp32 fext fbits t)`
+    by fs [isJump_hw_op_def,agp32_EX_jump_sel_unchanged_when_EX_disabled] >>
+  fs [Rel_def,Inv_Rel_def,is_sch_def,is_sch_disable_def]
+QED
+
+(** when EX is jump, IF is NONE **)
+Theorem isJump_hw_op_IF_instr_index_none:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    isJump_hw_op (agp32 fext fbits (SUC t)) ==>
+    I (1,SUC t) = NONE
+Proof
+  rw [] >> Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     (`enable_stg 3 (agp32 fext fbits t)`
+        by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_EX_write_enable] >>
+      `I' (3,SUC t) = NONE` by fs [is_sch_def,is_sch_execute_def] >>
+      fs [isJump_hw_op_def] >>
+      `isJump_isa_op (I' (3,SUC t)) a` by METIS_TAC [agp32_Rel_ag32_EX_jump_sel_correct] >>
+      METIS_TAC [isJump_isa_op_not_none]) >>
+    Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a \/ I' (1,t) = NONE` >-
+     gs [is_sch_def,is_sch_fetch_def] >> fs [] >>
+    `enable_stg 2 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
+    `I' (2,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_decode_def] >>
+    METIS_TAC [isJump_hw_op_ID_instr_index_none]) >>
+  `~enable_stg 2 (agp32 fext fbits t)`
+    by gs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
+  Cases_on `enable_stg 3 (agp32 fext fbits t)` >-
+   (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     gs [enable_stg_def,agp32_ID_EX_write_enable_isJump_hw_op_IF_PC_write_enable] >>
+    Cases_on `reg_data_hazard (agp32 fext fbits t)` >> fs [] >-
+     (`I' (3,SUC t) = NONE` by fs [is_sch_def,is_sch_execute_def] >>
+      fs [isJump_hw_op_def] >>
+      `isJump_isa_op (I' (3,SUC t)) a` by METIS_TAC [agp32_Rel_ag32_EX_jump_sel_correct] >>
+      METIS_TAC [isJump_isa_op_not_none]) >>
+    gs [enable_stg_def,agp32_ID_EX_write_enable_no_jump_or_reg_data_hazard_ID_ID_write_enable]) >>
+  `isJump_hw_op (agp32 fext fbits (SUC t)) = isJump_hw_op (agp32 fext fbits t)`
+    by fs [isJump_hw_op_def,agp32_EX_jump_sel_unchanged_when_EX_disabled] >>
+  fs [Rel_def,Inv_Rel_def,is_sch_def,is_sch_disable_def]
+QED
+
 (** when ID and EX are not jump, IF is not NONE **)
 Theorem IF_instr_index_not_none:
   !I t fext fbits a.
@@ -450,6 +522,7 @@ Proof
   rw [Inv_Rel_def] >>
   METIS_TAC [IF_instr_index_not_none,ID_NONE_exists_a_jump,EX_NONE_previous_jump_special,
              ID_instr_index_NONE_opc_flush_when_disabled,EX_instr_index_NONE_opc_flush,
+             isJump_hw_op_IF_instr_index_none,isJump_hw_op_ID_instr_index_none,
              EX_instr_index_NONE_EX_not_write_reg,IF_instr_index_with_WB_instr,
              MEM_instr_index_NONE_opc_flush,MEM_instr_index_NONE_MEM_not_write_reg,
              WB_instr_index_NONE_opc_flush,WB_instr_index_NONE_WB_not_write_reg,

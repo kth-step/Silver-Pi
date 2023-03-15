@@ -2685,6 +2685,28 @@ Proof
   rw [] >> METIS_TAC [IF_instr_isJump_ID_instr_not_isJump]
 QED
 
+Theorem ID_instr_isJump_IF_instr_none:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    isJump_isa_op (I (2,t)) a ==>
+    I (1,t) = NONE
+Proof
+  rw [] >> Induct_on `t` >-
+   fs [is_sch_def,is_sch_init_def,isJump_isa_op_def] >>
+  rw [] >> Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
+   (`enable_stg 2 (agp32 fext fbits t)`
+      by fs [enable_stg_def,agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
+    Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+     (`I' (2,SUC t) = NONE` by fs [is_sch_def,is_sch_decode_def] >>
+      fs [isJump_isa_op_def]) >>
+    Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a \/ I' (1,t) = NONE` >-
+     fs [is_sch_def,is_sch_fetch_def] >> fs [] >>
+    `I' (2,SUC t) = I' (1,t)` by fs [is_sch_def,is_sch_decode_def] >> fs []) >>
+  `~enable_stg 2 (agp32 fext fbits t)`
+    by METIS_TAC [enable_stg_def,agp32_IF_PC_write_enable_and_ID_ID_write_enable] >>
+  fs [is_sch_def,is_sch_disable_def] >> METIS_TAC []
+QED
+
 
 (** instr index relation between IF and ID stages **)
 Theorem IF_instr_index_with_ID_instr:

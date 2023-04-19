@@ -732,7 +732,7 @@ QED
 
 
 (** progress of the scheduling **)
-Theorem agp32_progress_partical_partial:
+Theorem agp32_progress_partical:
   !fext fbits s a t I.
     s = agp32 fext fbits ==>
     is_mem fext_accessor_circuit s fext ==>

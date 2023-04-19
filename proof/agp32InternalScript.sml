@@ -1593,12 +1593,12 @@ Proof
 QED
 
 
-(** ID_instr is 63 when there is a jump in EX stage at the previous cycle **)
+(** ID_instr is 0x8081003F when there is a jump in EX stage at the previous cycle **)
 Theorem EX_isJump_hw_op_next_ID_instr:
   !fext fbits t.
     enable_stg 2 (agp32 fext fbits t) ==>
     isJump_hw_op (agp32 fext fbits t) ==>
-    (agp32 fext fbits (SUC t)).ID.ID_instr = 63w
+    (agp32 fext fbits (SUC t)).ID.ID_instr = 0x8081003Fw
 Proof
   rw [enable_stg_def,isJump_hw_op_def] >>
   `(agp32 fext fbits t).ID.ID_flush_flag`
@@ -1621,7 +1621,7 @@ Theorem EX_isJump_hw_op_next_ID_opc:
     (agp32 fext fbits (SUC t)).ID.ID_opc = 15w
 Proof
   rw [] >>
-  `(agp32 fext fbits (SUC t)).ID.ID_instr = 63w` by fs [EX_isJump_hw_op_next_ID_instr] >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = 0x8081003Fw` by fs [EX_isJump_hw_op_next_ID_instr] >>
   Q.ABBREV_TAC `s = agp32 fext fbits t` >>
   Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
                             REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
@@ -1631,6 +1631,30 @@ Proof
   `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
     by fs [agp32_same_ID_instr_after_IF_instr_update] >> fs [] >>
   fs [ID_opc_func_update_def]
+QED
+
+(** ID_addrA/B/W_disable is true when there is a jump in EX stage at the previous cycle **)
+Theorem EX_isJump_hw_op_next_ID_addr_disable:
+  !fext fbits t.
+    enable_stg 2 (agp32 fext fbits t) ==>
+    isJump_hw_op (agp32 fext fbits t) ==>
+    (agp32 fext fbits (SUC t)).ID.ID_addrA_disable /\
+    (agp32 fext fbits (SUC t)).ID.ID_addrB_disable /\
+    (agp32 fext fbits (SUC t)).ID.ID_addrW_disable
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = 0x8081003Fw` by fs [EX_isJump_hw_op_next_ID_instr] >>
+  Q.ABBREV_TAC `s = agp32 fext fbits t` >>
+  Q.ABBREV_TAC `s' = procs [agp32_next_state; WB_pipeline; MEM_pipeline; EX_pipeline;
+                            REG_write; ID_pipeline; IF_PC_update; Acc_compute] (fext t) s s` >>
+  Q.ABBREV_TAC `s'' = procs [IF_instr_update; ID_opc_func_update; ID_imm_update] (fext (SUC t)) s' s'` >>
+  `((agp32 fext fbits (SUC t)).ID.ID_addrA_disable = (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrA_disable) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_addrB_disable = (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrB_disable) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_addrW_disable = (ID_data_update (fext (SUC t)) s' s'').ID.ID_addrW_disable)`         
+    by fs [agp32_ID_flag_updated_by_ID_data_update] >>
+  `s''.ID.ID_instr = (agp32 fext fbits (SUC t)).ID.ID_instr`
+    by fs [agp32_same_ID_instr_after_ID_imm_update] >>
+  fs [ID_data_update_def]
 QED
 
 (** ID_instr is unchanged when ID is disabled **)
@@ -1667,12 +1691,26 @@ Proof
   METIS_TAC [agp32_ID_opc_func_update_same_output_under_same_ID_instr]
 QED
 
+(** ID_addrA_disable is unchanged when ID is disabled **)
+Theorem ID_addr_disable_unchanged_when_ID_disabled:
+  !fext fbits t.
+    ~enable_stg 2 (agp32 fext fbits t) ==>
+    ((agp32 fext fbits (SUC t)).ID.ID_addrA_disable = (agp32 fext fbits t).ID.ID_addrA_disable) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_addrB_disable = (agp32 fext fbits t).ID.ID_addrB_disable) /\
+    ((agp32 fext fbits (SUC t)).ID.ID_addrW_disable = (agp32 fext fbits t).ID.ID_addrW_disable)
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  `(agp32 fext fbits (SUC t)).ID.ID_instr = (agp32 fext fbits t).ID.ID_instr`
+     by rw [ID_instr_unchanged_when_ID_disabled] >>                   
+  gs [agp32_ID_addr_disable_rewrite_ID_instr]
+QED
+
 
 (* initial values *)
 (** intiial ID_instr **)
 Theorem agp32_init_ID_instr:
   !fext fbits.
-    (agp32 fext fbits 0).ID.ID_instr = 63w
+    (agp32 fext fbits 0).ID.ID_instr = 0x8081003Fw
 Proof
   rw [agp32_def,mk_module_def,mk_circuit_def] >>
   clist_update_state_tac >>
@@ -1694,7 +1732,7 @@ Theorem agp32_init_ID_opc:
   !fext fbits.
     (agp32 fext fbits 0).ID.ID_opc = 15w
 Proof
-  rw [] >> `(agp32 fext fbits 0).ID.ID_instr = 63w` by rw [agp32_init_ID_instr] >>
+  rw [] >> `(agp32 fext fbits 0).ID.ID_instr = 0x8081003Fw` by rw [agp32_init_ID_instr] >>
   fs [agp32_def,mk_module_def,mk_circuit_def] >>
   clist_update_state_tac >>
   fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
@@ -1713,6 +1751,33 @@ Proof
       ID_imm_update_unchanged_ID_opc_func,ID_imm_update_unchanged_ID_pipeline_items,
       ID_opc_func_update_unchanged_ID_pipeline_items] >>
    rw [ID_opc_func_update_def]
+QED
+
+(** intiial ID_addr_disable **)
+Theorem agp32_init_ID_addr_disable:
+  !fext fbits.
+    (agp32 fext fbits 0).ID.ID_addrA_disable /\
+    (agp32 fext fbits 0).ID.ID_addrB_disable /\
+    (agp32 fext fbits 0).ID.ID_addrW_disable
+Proof
+  rw [] >> `(agp32 fext fbits 0).ID.ID_instr = 0x8081003Fw` by rw [agp32_init_ID_instr] >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,Abbr `s9`,
+      Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
+      Hazard_ctrl_unchanged_ID_data_items,Hazard_ctrl_unchanged_ID_pipeline_items,
+      WB_update_unchanged_ID_data_items,WB_update_unchanged_ID_pipeline_items,
+      MEM_ctrl_update_unchanged_ID_data_items,MEM_ctrl_update_unchanged_ID_pipeline_items,
+      IF_PC_input_update_unchanged_ID_data_items,IF_PC_input_update_unchanged_ID_pipeline_items,
+      EX_jump_sel_addr_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_ID_pipeline_items,
+      EX_SHIFT_update_unchanged_ID_data_items,EX_SHIFT_update_unchanged_ID_pipeline_items,
+      EX_ALU_update_unchanged_ID_data_items,EX_ALU_update_unchanged_ID_pipeline_items,
+      EX_ALU_input_imm_update_unchanged_ID_data_items,
+      EX_ALU_input_imm_update_unchanged_ID_pipeline_items,
+      ID_data_check_update_unchanged_ID_data_items,ID_data_check_update_unchanged_ID_pipeline_items,
+      ID_data_update_unchanged_ID_pipeline_items] >>
+   rw [ID_data_update_def]
 QED
 
 (** initial EX_opc **)

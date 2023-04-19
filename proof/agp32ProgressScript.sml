@@ -731,8 +731,8 @@ Proof
 QED
 
 
-(* the pipelined circuit can make progress *)
-Theorem agp32_progress:
+(** progress of the scheduling **)
+Theorem agp32_progress_partical_partial:
   !fext fbits s a t I.
     s = agp32 fext fbits ==>
     is_mem fext_accessor_circuit s fext ==>
@@ -749,5 +749,108 @@ Proof
   Q.EXISTS_TAC `n` >> gs [] >>
   METIS_TAC [agp32_hw_work_instr_processed]
 QED
+
+(*
+Theorem agp32_progress_none_MEM:
+  !fext fbits s a t I.
+    s = agp32 fext fbits ==>
+    is_mem fext_accessor_circuit s fext ==>
+    is_mem_start_interface fext ==>
+    is_acc accelerator_f s ==>
+    is_interrupt_interface fext_accessor_circuit s fext ==>
+    is_sch I s a ==>
+    I (4,t) = NONE ==>
+    ?n. I (4,SUC (t + n)) <> NONE
+Proof
+  rw [] >> cheat
+QED
+
+Theorem agp32_progress_none_WB:
+  !fext fbits s a t I.
+    s = agp32 fext fbits ==>
+    is_mem fext_accessor_circuit s fext ==>
+    is_mem_start_interface fext ==>
+    is_acc accelerator_f s ==>
+    is_interrupt_interface fext_accessor_circuit s fext ==>
+    is_sch I s a ==>
+    I (5,t) = NONE ==>
+    ?n. I (5,SUC (t + n)) <> NONE
+Proof
+  rw [] >> Cases_on `enable_stg 5 (agp32 fext fbits t)` >-
+   (`I' (5,SUC t) = I' (4,t)` by gs [is_sch_def,is_sch_writeback_def] >>
+    Cases_on `I' (4,t) <> NONE` >-
+     (Q.EXISTS_TAC `0` >> fs []) >>
+    fs [] >> `?n. I' (4,SUC (t + n)) <> NONE` by METIS_TAC [agp32_progress_none_MEM] >>
+    cheat) >>
+  cheat      
+QED
+
+Theorem agp32_progress_none:
+  !fext fbits s a t k I.
+    s = agp32 fext fbits ==>
+    is_mem fext_accessor_circuit s fext ==>
+    is_mem_start_interface fext ==>
+    is_acc accelerator_f s ==>
+    is_interrupt_interface fext_accessor_circuit s fext ==>
+    is_sch I s a ==>
+    k >= 1 ==>
+    k <= 5 ==>
+    I (k,t) = NONE ==>
+    ?n. I (k,SUC (t + n)) <> NONE
+Proof
+  rw [] >> `k = 1 \/ k = 2 \/ k = 3 \/ k = 4 \/ k = 5` by fs [] >> fs [] >-
+   (Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
+     (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+       (Q.EXISTS_TAC `0` >> gs [is_sch_def,is_sch_fetch_def]) >>
+      cheat >>
+      cheat) >>
+    cheat) >-
+   cheat >-
+   cheat >-
+   METIS_TAC [agp32_progress_none_MEM,ADD_COMM] >>
+  METIS_TAC [agp32_progress_none_WB,ADD_COMM]
+QED
+
+Theorem agp32_progress_not_none:
+  !fext fbits s a t k I.
+    s = agp32 fext fbits ==>
+    is_mem fext_accessor_circuit s fext ==>
+    is_mem_start_interface fext ==>
+    is_acc accelerator_f s ==>
+    is_interrupt_interface fext_accessor_circuit s fext ==>
+    is_sch I s a ==>
+    k >= 1 ==>
+    k <= 5 ==>
+    I (k,t) <> NONE ==>
+    ?n. THE (I (k,SUC (t + n))) > THE (I (k,t))
+Proof
+  rw [] >> `k = 1 \/ k = 2 \/ k = 3 \/ k = 4 \/ k = 5` by fs [] >> fs [] >-
+   (Cases_on `enable_stg 1 (agp32 fext fbits t)` >-
+     (Cases_on `isJump_hw_op (agp32 fext fbits t)` >-
+       cheat >>
+      Cases_on `isJump_isa_op (I' (1,t)) a \/ isJump_isa_op (I' (2,t)) a` >-
+       cheat >>
+      Q.EXISTS_TAC `0` >> gs [is_sch_def,is_sch_fetch_def]) >>
+    cheat) >>
+  cheat
+QED
+
+Theorem agp32_progress:
+  !fext fbits s a t k I.
+    s = agp32 fext fbits ==>
+    is_mem fext_accessor_circuit s fext ==>
+    is_mem_start_interface fext ==>
+    is_acc accelerator_f s ==>
+    is_interrupt_interface fext_accessor_circuit s fext ==>
+    is_sch I s a ==>
+    k >= 1 ==>
+    k <= 5 ==>
+    (I (k,t) <> NONE ==> ?n. THE (I (k,SUC (t + n))) > THE (I (k,t))) /\
+    (I (k,t) = NONE ==> ?n. I (k,SUC (t + n)) <> NONE)
+Proof
+  rpt strip_tac >>
+  METIS_TAC [agp32_progress_none,agp32_progress_not_none,ADD_COMM]
+QED
+*)
 
 val _ = export_theory ();

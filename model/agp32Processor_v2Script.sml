@@ -1,7 +1,7 @@
 open hardwarePreamble translatorTheory translatorCoreLib agp32StateTheory agp32EnvironmentTheory;
 
 (* pipelined circuit implementation *)
-val _ = new_theory "agp32Processor";
+val _ = new_theory "agp32Processor_v2";
 
 val _ = prefer_num ();
 val _ = guess_lengths ();
@@ -343,7 +343,7 @@ Definition ID_pipeline_def:
   ID_pipeline (fext:ext) s s' =
   if s'.ID.ID_ID_write_enable then
     let s' = s' with ID := s'.ID with ID_PC := s.PC in
-    s' with ID := s'.ID with ID_instr := if s'.ID.ID_flush_flag then 0x8081003Fw else s'.IF.IF_instr
+    s' with ID := s'.ID with ID_instr := if s'.ID.ID_flush_flag then ((31 >< 25) s'.IF.IF_instr @@ (0w:word1) @@ (23 >< 10) s'.IF.IF_instr @@ (63w:word10)) else s'.IF.IF_instr
   else s'
 End
 

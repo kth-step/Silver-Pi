@@ -5159,6 +5159,45 @@ Proof
   rw [ID_data_update_def]
 QED
 
+(** rewrite the ID_addr_disable with ID_instr **)
+Theorem agp32_ID_addr_disable_rewrite_ID_instr:
+  !fext fbits t.
+    ((agp32 fext fbits t).ID.ID_addrA_disable = word_bit 23 (agp32 fext fbits t).ID.ID_instr) /\
+    ((agp32 fext fbits t).ID.ID_addrB_disable = word_bit 16 (agp32 fext fbits t).ID.ID_instr) /\
+    ((agp32 fext fbits t).ID.ID_addrW_disable = word_bit 31 (agp32 fext fbits t).ID.ID_instr)
+Proof
+  rpt gen_tac >> Cases_on `t` >>
+  fs [agp32_def,mk_module_def,mk_circuit_def] >-
+   (clist_update_state_tac >>
+    fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+        Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
+        Hazard_ctrl_unchanged_ID_pipeline_items,Hazard_ctrl_unchanged_ID_data_items,
+        WB_update_unchanged_ID_pipeline_items,WB_update_unchanged_ID_data_items,
+        MEM_ctrl_update_unchanged_ID_pipeline_items,MEM_ctrl_update_unchanged_ID_data_items,
+        IF_PC_input_update_unchanged_ID_pipeline_items,IF_PC_input_update_unchanged_ID_data_items,
+        EX_jump_sel_addr_update_unchanged_ID_pipeline_items,EX_jump_sel_addr_update_unchanged_ID_data_items,
+        EX_SHIFT_update_unchanged_ID_pipeline_items,EX_SHIFT_update_unchanged_ID_data_items,
+        EX_ALU_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_data_items,
+        EX_ALU_input_imm_update_unchanged_ID_pipeline_items,EX_ALU_input_imm_update_unchanged_ID_data_items,
+        ID_data_check_update_unchanged_ID_pipeline_items,ID_data_check_update_unchanged_ID_data_items] >>
+    rw [ID_data_update_def]) >>
+  qpat_abbrev_tac `s = mk_circuit (procs _) (procs _) (agp32_init fbits) fext _` >>
+  qpat_abbrev_tac `s' = procs _ (fext t) s s` >>
+  clist_update_state_tac >>
+  fs [Abbr `s13`,Abbr `s12`,Abbr `s11`,Abbr `s10`,
+      Abbr `s9`,Abbr `s8`,Abbr `s7`,Abbr `s6`,Abbr `s5`,Abbr `s4`,
+      Hazard_ctrl_unchanged_ID_pipeline_items,Hazard_ctrl_unchanged_ID_data_items,
+      WB_update_unchanged_ID_pipeline_items,WB_update_unchanged_ID_data_items,
+      MEM_ctrl_update_unchanged_ID_pipeline_items,MEM_ctrl_update_unchanged_ID_data_items,
+      IF_PC_input_update_unchanged_ID_pipeline_items,IF_PC_input_update_unchanged_ID_data_items,
+      EX_jump_sel_addr_update_unchanged_ID_pipeline_items,EX_jump_sel_addr_update_unchanged_ID_data_items,
+      EX_SHIFT_update_unchanged_ID_pipeline_items,EX_SHIFT_update_unchanged_ID_data_items,
+      EX_ALU_update_unchanged_ID_pipeline_items,EX_ALU_update_unchanged_ID_data_items,
+      EX_ALU_input_imm_update_unchanged_ID_pipeline_items,EX_ALU_input_imm_update_unchanged_ID_data_items,
+      ID_data_check_update_unchanged_ID_pipeline_items,ID_data_check_update_unchanged_ID_data_items] >>
+  rw [ID_data_update_def]
+QED
+
 
 (* lemma for correctness proof *)
 (** PC is unchanged after the IF_PC_update function **)

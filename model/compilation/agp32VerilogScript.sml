@@ -1,4 +1,7 @@
-open hardwarePreamble alignmentTheory alistTheory agp32ProcessorTheory translatorLib verilogPrintLib;
+open hardwarePreamble alignmentTheory alistTheory translatorLib verilogPrintLib;
+(* processor *)
+open agp32ProcessorTheory;
+(* open agp32Processor_v2Theory; *)
 
 (* generate the pipelined Silver Verilog code using the translator *)
 val _ = new_theory "agp32Verilog";

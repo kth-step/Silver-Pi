@@ -283,7 +283,10 @@ Definition Inv_Rel_def:
    (enable_stg 2 si ==> ~isJump_hw_op s ==> I (2,t) = NONE ==> isJump_hw_op si) /\
    (enable_stg 2 si ==> enable_stg 3 s ==> ~isJump_hw_op s ==> ~reg_data_hazard s ==> I (3,SUC t) = NONE ==>
     isJump_hw_op si) /\
-   (~enable_stg 2 si ==> ~isJump_hw_op s ==> I (2,t) = NONE ==> s.ID.ID_opc = 15w) /\
+   (~isJump_hw_op s ==> I (2,t) = NONE ==> s.ID.ID_opc = 15w) /\
+   (~isJump_hw_op s ==> I (2,t) = NONE ==> s.ID.ID_addrA_disable) /\
+   (~isJump_hw_op s ==> I (2,t) = NONE ==> s.ID.ID_addrB_disable) /\
+   (~isJump_hw_op s ==> I (2,t) = NONE ==> s.ID.ID_addrW_disable) /\
    (isJump_hw_op s ==> I (1,t) = NONE) /\
    (isJump_hw_op s ==> I (2,t) = NONE) /\
    (I (3,t) = NONE ==> (s.EX.EX_opc = 16w \/ s.EX.EX_opc = 15w)) /\

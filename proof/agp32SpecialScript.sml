@@ -198,6 +198,105 @@ Proof
              agp32_ID_EX_write_enable_isJump_hw_op_IF_PC_write_enable]
 QED
 
+Theorem ID_instr_index_NONE_opc_flush_when_enabled:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    ~isJump_hw_op (agp32 fext fbits (SUC t)) ==>
+    I (2,SUC t) = NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_opc = 15w
+Proof
+  rw [] >> `isJump_hw_op (agp32 fext fbits t)` by METIS_TAC [ID_NONE_exists_a_jump] >>
+  gs [EX_isJump_hw_op_next_ID_opc]
+QED
+
+Theorem ID_instr_index_NONE_opc_flush:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    ~isJump_hw_op (agp32 fext fbits (SUC t)) ==>
+    I (2,SUC t) = NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_opc = 15w
+Proof
+  rw [] >> Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
+   METIS_TAC [ID_instr_index_NONE_opc_flush_when_enabled] >>
+  METIS_TAC [ID_instr_index_NONE_opc_flush_when_disabled]
+QED
+
+(** ID_addrA/B/W_disable is true under certain conditions **)
+Theorem ID_addr_disable_NONE_flush_when_disabled:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    ~enable_stg 2 (agp32 fext fbits t) ==>
+    ~isJump_hw_op (agp32 fext fbits (SUC t)) ==>
+    I (2,SUC t) = NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_addrA_disable /\
+    (agp32 fext fbits (SUC t)).ID.ID_addrB_disable /\
+    (agp32 fext fbits (SUC t)).ID.ID_addrW_disable
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  `I' (2,SUC t) = I' (2,t)` by METIS_TAC [is_sch_def,is_sch_disable_def] >>
+  `((agp32 fext fbits (SUC t)).ID.ID_addrA_disable = (agp32 fext fbits t).ID.ID_addrA_disable) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_addrB_disable = (agp32 fext fbits t).ID.ID_addrB_disable) /\
+  ((agp32 fext fbits (SUC t)).ID.ID_addrW_disable = (agp32 fext fbits t).ID.ID_addrW_disable)`
+    by gs [ID_addr_disable_unchanged_when_ID_disabled] >>
+  Cases_on `enable_stg 2 (agp32 fext fbits (t-1))` >-
+   (Cases_on `~isJump_hw_op (agp32 fext fbits t)` >> fs [] >-
+     (`isJump_hw_op (agp32 fext fbits (t − 1))` by fs [Rel_def,Inv_Rel_def] >>
+      `(agp32 fext fbits (SUC (t-1))).ID.ID_addrA_disable /\
+      (agp32 fext fbits (SUC (t-1))).ID.ID_addrB_disable /\
+      (agp32 fext fbits (SUC (t-1))).ID.ID_addrW_disable`
+        by fs [EX_isJump_hw_op_next_ID_addr_disable] >> 
+      Cases_on `t` >> fs []) >>
+    Cases_on `~enable_stg 3 (agp32 fext fbits t)` >-
+     (`isJump_hw_op (agp32 fext fbits (SUC t)) = isJump_hw_op (agp32 fext fbits t)`
+        by fs [isJump_hw_op_def,agp32_EX_jump_sel_unchanged_when_EX_disabled] >> fs []) >>
+    fs [enable_stg_def] >>
+    METIS_TAC [agp32_IF_PC_write_enable_and_ID_ID_write_enable,
+               agp32_ID_EX_write_enable_isJump_hw_op_IF_PC_write_enable]) >>
+  fs [] >> Cases_on `~isJump_hw_op (agp32 fext fbits t)` >> fs [] >-
+   fs [Rel_def,Inv_Rel_def] >>
+  Cases_on `~enable_stg 3 (agp32 fext fbits t)` >-
+   (`isJump_hw_op (agp32 fext fbits (SUC t)) = isJump_hw_op (agp32 fext fbits t)`
+      by fs [isJump_hw_op_def,agp32_EX_jump_sel_unchanged_when_EX_disabled] >> fs []) >>
+  fs [enable_stg_def] >>
+  METIS_TAC [agp32_IF_PC_write_enable_and_ID_ID_write_enable,
+             agp32_ID_EX_write_enable_isJump_hw_op_IF_PC_write_enable]
+QED
+
+Theorem ID_addr_disable_NONE_flush_when_enabled:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    enable_stg 2 (agp32 fext fbits t) ==>
+    ~isJump_hw_op (agp32 fext fbits (SUC t)) ==>
+    I (2,SUC t) = NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_addrA_disable /\
+    (agp32 fext fbits (SUC t)).ID.ID_addrB_disable /\
+    (agp32 fext fbits (SUC t)).ID.ID_addrW_disable
+Proof
+  rw [] >> `isJump_hw_op (agp32 fext fbits t)` by METIS_TAC [ID_NONE_exists_a_jump] >>
+  gs [EX_isJump_hw_op_next_ID_addr_disable]
+QED
+
+Theorem ID_addr_disable_NONE_flush:
+  !I t fext fbits a.
+    is_sch I (agp32 fext fbits) a ==>
+    Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
+    ~isJump_hw_op (agp32 fext fbits (SUC t)) ==>
+    I (2,SUC t) = NONE ==>
+    (agp32 fext fbits (SUC t)).ID.ID_addrA_disable /\
+    (agp32 fext fbits (SUC t)).ID.ID_addrB_disable /\
+    (agp32 fext fbits (SUC t)).ID.ID_addrW_disable
+Proof
+  rpt gen_tac >> rpt disch_tac >>
+  Cases_on `enable_stg 2 (agp32 fext fbits t)` >-
+   METIS_TAC [ID_addr_disable_NONE_flush_when_enabled] >>
+  METIS_TAC [ID_addr_disable_NONE_flush_when_disabled]
+QED
+
 (** EX_write_reg **)
 Theorem EX_instr_index_NONE_EX_not_write_reg:
   !I t fext fbits a.
@@ -521,7 +620,7 @@ Theorem agp32_Rel_ag32_Inv_Rel_correct:
 Proof
   rw [Inv_Rel_def] >>
   METIS_TAC [IF_instr_index_not_none,ID_NONE_exists_a_jump,EX_NONE_previous_jump_special,
-             ID_instr_index_NONE_opc_flush_when_disabled,EX_instr_index_NONE_opc_flush,
+             ID_instr_index_NONE_opc_flush,ID_addr_disable_NONE_flush,EX_instr_index_NONE_opc_flush,
              isJump_hw_op_IF_instr_index_none,isJump_hw_op_ID_instr_index_none,
              EX_instr_index_NONE_EX_not_write_reg,IF_instr_index_with_WB_instr,
              MEM_instr_index_NONE_opc_flush,MEM_instr_index_NONE_MEM_not_write_reg,

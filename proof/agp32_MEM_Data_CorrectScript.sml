@@ -703,6 +703,7 @@ Theorem agp32_mem_unchanged_when_WB_NONE:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5,SUC t) = NONE ==>
     (fext (SUC t)).mem = (fext t).mem
@@ -734,7 +735,7 @@ Proof
        METIS_TAC [same_mem_t_SUC_t_under_MAX_SET_0] >> fs [ADD1] >>
       `m = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >> rw [] >>
       Cases_on `m` >> gs [ADD1]) >>
-    last_assum (mp_tac o is_mem_do_nothing_spec `SUC 0`) >> simp [] >> strip_tac >>
+    last_assum (mp_tac o is_mem_do_nothing `SUC 0`) >> simp [] >> strip_tac >>
     Cases_on `(fext 0 ).ready` >> fs [] >-
      (`!p. p < 0 ==> ~(fext (p + 1)).ready /\ (fext 0).mem = (fext (p + 1)).mem` by rw [] >>
       `1 = 0 + 1` by rw [] >>
@@ -743,19 +744,7 @@ Proof
        (`SUC t = t + 1` by rw [] >>
         `0 = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >> fs []) >>
       METIS_TAC [same_mem_t_SUC_t_under_MAX_SET_0]) >>
-    `(!p. p < m + n' ==> ~(fext (p + 1)).ready)` by METIS_TAC [not_ready_m_plus_n] >>
-    `(!p. p < m ==> ~(fext (p + (n'+1))).ready)` by fs [] >>
-    Cases_on `(fext (SUC t)).ready` >-
-     (`SUC t = t + 1` by rw [] >>
-      FULL_SIMP_TAC std_ss [ADD_ASSOC] >>
-      `m + n' = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >>
-      Q.ABBREV_TAC `m' = m + n'` >>
-      Cases_on `m` >> fs [] >>
-      `(fext (n' + (n + 1))).mem = (fext n').mem` by fs [] >>
-      `n' + (n + 1) = t` by fs [ADD1] >> fs []) >>
-    `(!p. p < m + n' ==> (fext (p + 1)).mem = (fext 0).mem)` by METIS_TAC [not_ready_m_plus_n_mem_0] >>
-    `(fext (m + n' + 1)).ready` by fs [] >>
-    METIS_TAC [same_mem_t_SUC_t_under_MAX_SET_0]) >>
+    fs [Init_def]) >>
   Q.ABBREV_TAC `i = SUC n` >> `i <> 0` by fs [Abbr `i`] >>
   `FINITE {t0 | t0 < t /\ (fext t0).ready}` by fs [FINITE_max_ready_cycle] >>
   Cases_on `{t0 | t0 < t /\ (fext t0).ready} = {}` >> fs [MAX_SET_DEF] >>
@@ -807,6 +796,7 @@ Theorem agp32_Rel_ag32_fext_MEM_correct_MEM_not_NONE:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5,SUC t) = NONE ==>
     I (4,SUC t) <> NONE ==>
@@ -836,6 +826,7 @@ Theorem agp32_Rel_ag32_fext_MEM_correct_EX_not_NONE:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5,SUC t) = NONE ==>
     I (4,SUC t) = NONE ==>
@@ -884,6 +875,7 @@ Theorem agp32_Rel_ag32_fext_MEM_correct_ID_not_NONE:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5,SUC t) = NONE ==>
     I (4,SUC t) = NONE ==>
@@ -953,6 +945,7 @@ Theorem agp32_Rel_ag32_fext_MEM_correct_IF_not_NONE:
   !fext fbits a t I.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (5,SUC t) = NONE ==>
     I (4,SUC t) = NONE ==>

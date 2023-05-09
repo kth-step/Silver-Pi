@@ -89,6 +89,7 @@ Theorem agp32_Rel_ag32_IF_enable_instr_correct:
     SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (1,SUC t) <> NONE ==>
     (fext (SUC t)).ready ==>
@@ -300,6 +301,7 @@ Theorem agp32_Rel_ag32_IF_disable_instr_not_ready_before_correct:
     SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (1,SUC t) <> NONE ==>
     (fext (SUC t)).ready ==>
@@ -507,72 +509,13 @@ Proof
        by METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_IF_not_NONE] >>
      `(fext 0).mem = (FUNPOW Next ((THE (I' (1,SUC m))) - 1) a).MEM` by fs [] >> fs []) >>
     (** command is 0 **)
-    last_assum (mp_tac o is_mem_do_nothing_spec `SUC 0`) >> rw [] >>
+    last_assum (mp_tac o is_mem_do_nothing `SUC 0`) >> rw [] >>
     Cases_on `(fext 0).ready` >> fs [] >-
      (`!p. p < 0 ==> ~(fext (p + 1)).ready` by rw [] >>
       `1 = 0 + 1` by rw [] >>
       `(fext (0 + 1)).ready` by METIS_TAC [] >>
       `SUC t = t + 1` by rw [] >>
-      `0 = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >> fs []) >>
-    `(!p. p < m + n' ==> ~(fext (p + 1)).ready)` by METIS_TAC [not_ready_m_plus_n] >>
-    `(!p. p < m ==> ~(fext (p + (n'+1))).ready)` by fs [] >>
-    `(agp32 fext fbits (n'+1)).PC = (agp32 fext fbits (m+(n'+1))).PC`
-      by METIS_TAC [PC_unchanged_after_disabled_cycles] >>
-    `SUC t = t + 1` by rw [] >>
-    FULL_SIMP_TAC std_ss [ADD_ASSOC] >>
-    `m + n' = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >>
-    Q.ABBREV_TAC `m' = m + n'` >>
-    `(fext 1).mem = (fext (m' + 1)).mem`
-      by (Cases_on `m'` >> fs [] >> `n' - 1 < n'` by rw [] >>
-          `(fext (n'-1+1)).mem = (fext 1).mem` by fs [] >>
-          `n'-1+1 = n'` by rw [] >> fs []) >>
-    `(agp32 fext fbits (SUC m')).PC = (FUNPOW Next (THE (I'(1,SUC m')) - 1) a).PC`
-      by METIS_TAC [agp32_Rel_ag32_IF_disable_PC_correct,is_sch_def] >>
-    `(agp32 fext fbits (m'+1)).PC = (FUNPOW Next (THE (I'(1,SUC m')) - 1) a).PC`
-      by (`m'+1 = SUC m'` by rw [] >> METIS_TAC []) >>
-    `(fext (SUC m')).mem = (fext (m' + 1)).mem` by rw [] >>
-    `I' (1,t + 1) = I' (1,SUC m')` by rw [] >>
-    Cases_on `I' (5,SUC m') <> NONE` >> fs [] >-
-     (Cases_on `(fext (SUC m')).ready` >-
-       (`(fext (SUC m')).mem = (FUNPOW Next (THE (I' (5,SUC m'))) a).MEM`
-          by METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_WB_not_NONE] >>
-        `(fext 0).mem = (FUNPOW Next (THE (I' (5,SUC m'))) a).MEM` by fs [] >>
-        `THE (I' (1,SUC m')) > THE (I' (5,SUC m')) /\ THE (I' (1,SUC m')) < THE (I' (5,SUC m')) + 5`
-          by METIS_TAC [IF_instr_index_with_WB_instr] >> rw [instr_def] >>
-        METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr]) >>
-      `(fext (SUC m')).mem = (FUNPOW Next (THE (I' (5,SUC m')) - 1) a).MEM`
-        by METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_WB_not_NONE_extra] >>
-      `(fext 0).mem = (FUNPOW Next (THE (I' (5,SUC m')) - 1) a).MEM` by fs [] >>
-      `THE (I' (1,SUC m')) > THE (I' (5,SUC m')) /\ THE (I' (1,SUC m')) < THE (I' (5,SUC m')) + 5`
-        by METIS_TAC [IF_instr_index_with_WB_instr] >> rw [instr_def] >>
-      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>   
-    Cases_on `I' (4,SUC m') <> NONE` >> fs [] >-
-     (`(fext (SUC m')).mem = (FUNPOW Next (THE (I' (4,SUC m')) - 1) a).MEM`
-        by METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_MEM_not_NONE] >>
-      `(fext 0).mem = (FUNPOW Next (THE (I' (4,SUC m')) - 1) a).MEM` by fs [] >>
-      `THE (I' (1,SUC m')) > THE (I' (4,SUC m')) /\ THE (I' (1,SUC m')) < THE (I' (4,SUC m')) + 4`
-        by METIS_TAC [IF_instr_index_with_MEM_instr] >>
-      `THE (I' (1,SUC m')) < THE (I' (4,SUC m')) + 5` by gs [] >> rw [instr_def] >>
-      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>
-    Cases_on `I' (3,SUC m') <> NONE` >> fs [] >-
-     (`(fext (SUC m')).mem = (FUNPOW Next ((THE (I' (3,SUC m'))) - 1) a).MEM`
-        by METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_EX_not_NONE] >>
-      `(fext 0).mem = (FUNPOW Next ((THE (I' (3,SUC m'))) - 1) a).MEM` by fs [] >>
-      `THE (I' (1,SUC m')) > THE (I' (3,SUC m')) /\ THE (I' (1,SUC m')) < THE (I' (3,SUC m')) + 3`
-        by METIS_TAC [IF_instr_index_with_EX_instr] >>
-      `THE (I' (1,SUC m')) < THE (I' (3,SUC m')) + 5` by gs [] >> rw [instr_def] >>
-      METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>
-    Cases_on `I' (2,SUC m') <> NONE` >> fs [] >-
-     (`(fext (SUC m')).mem = (FUNPOW Next ((THE (I' (2,SUC m'))) - 1) a).MEM`
-        by METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_ID_not_NONE] >>
-      `(fext 0).mem = (FUNPOW Next ((THE (I' (2,SUC m'))) - 1) a).MEM` by fs [] >>
-      `THE (I' (1,SUC m')) > THE (I' (2,SUC m')) /\ THE (I' (1,SUC m')) < THE (I' (2,SUC m')) + 2`
-        by METIS_TAC [IF_instr_index_with_ID_instr] >>
-      `THE (I' (1,SUC m')) < THE (I' (2,SUC m')) + 5` by gs [] >> rw [instr_def] >>
-       METIS_TAC [SC_self_mod_isa_not_affect_fetched_instr_extra]) >>
-    `(fext (SUC m')).mem = (FUNPOW Next ((THE (I' (1,SUC m'))) - 1) a).MEM`
-      by METIS_TAC [agp32_Rel_ag32_fext_MEM_correct_IF_not_NONE] >>
-    `(fext 0).mem = (FUNPOW Next ((THE (I' (1,SUC m'))) - 1) a).MEM` by fs [] >> rw [instr_def]) >>
+      `0 = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >> fs []) >> fs [Init_def]) >>
 
   (** not fetching in the beginning **)
   Q.ABBREV_TAC `i = SUC n` >> `i <> 0` by fs [Abbr `i`] >>
@@ -771,6 +714,7 @@ Theorem agp32_Rel_ag32_IF_disable_instr_correct:
     SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (1,SUC t) <> NONE ==>
     (fext (SUC t)).ready ==>
@@ -960,6 +904,7 @@ Theorem agp32_Rel_ag32_IF_instr_Rel_correct:
     SC_self_mod_isa a ==>
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_sch I (agp32 fext fbits) a ==>
+    Init (fext 0) (agp32 fext fbits 0) a ==>
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (1,SUC t) <> NONE ==>
     (fext (SUC t)).ready ==>
@@ -975,7 +920,7 @@ QED
 (** IF_PC_input when jump **)
 Theorem agp32_Rel_ag32_IF_PC_input_jump_correct:
   !fext fbits a t I.
-    is_sch I (agp32 fext fbits) a ==>
+    is_sch I (agp32 fext fbits) a ==>   
     Rel I (fext t) (agp32 fext fbits (t-1)) (agp32 fext fbits t) a t ==>
     I (3,SUC t) <> NONE ==>
     (agp32 fext fbits (SUC t)).EX.EX_jump_sel ==>

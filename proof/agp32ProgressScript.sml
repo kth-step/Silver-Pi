@@ -59,19 +59,12 @@ QED
 Theorem fext_not_ready_imply_future_ready[local]:
   !fext fbits t.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
+    (fext 0).ready ==>
     ~(fext t).ready ==>
     ?n. (fext (SUC (t + n))).ready /\
         (!p. p < n ==> ~(fext (SUC (t + p))).ready)
 Proof
-  rw [] >> Induct_on `t` >> rw [] >-
-   (last_assum (assume_tac o is_mem_def_mem_no_errors) >>
-    `(agp32 fext fbits (SUC 0)).command = 1w \/ (agp32 fext fbits (SUC 0)).command = 0w`
-      by METIS_TAC [agp32_command_cycle_1] >-                                  
-     (last_assum (mp_tac o is_mem_inst_read `SUC 0`) >> simp [] >> strip_tac >>
-      Q.EXISTS_TAC `m` >> fs [ADD1]) >>
-    last_assum (mp_tac o is_mem_do_nothing_spec `SUC 0`) >> simp [] >> strip_tac >>
-    `(!p. p < m + n' ==> ~(fext (p + 1)).ready)` by METIS_TAC [not_ready_m_plus_n] >>
-    Q.EXISTS_TAC `m + n'` >> fs [ADD1]) >>
+  rw [] >> Induct_on `t` >> rw [] >>
   Cases_on `(fext t).ready` >> fs [] >-
    (last_assum (assume_tac o is_mem_def_mem_no_errors) >>
     Cases_on_word_value `(agp32 fext fbits (SUC t)).command` >>
@@ -176,6 +169,7 @@ Theorem agp32_hw_work_when_state_0w_fext_not_ready:
   !fext fbits t.
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     (agp32 fext fbits t).state = 0w ==>
+    (fext 0).ready ==>
     ~(fext t).ready ==>
     ?n. hw_work (agp32 fext fbits (SUC (t + n)))
 Proof    
@@ -311,6 +305,7 @@ Theorem agp32_hw_work_when_state_4w:
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_interrupt_interface fext_accessor_circuit (agp32 fext fbits) fext ==>
     (agp32 fext fbits t).state = 4w ==>
+    (fext 0).ready ==>
     ?n. hw_work (agp32 fext fbits (SUC (t + n)))
 Proof
   rw [] >> qpat_assum `is_interrupt_interface _ _ _`
@@ -390,6 +385,7 @@ Theorem agp32_hw_work_when_state_1w:
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_interrupt_interface fext_accessor_circuit (agp32 fext fbits) fext ==>
     (agp32 fext fbits t).state = 1w ==>
+    (fext 0).ready ==>
     ?n. hw_work (agp32 fext fbits (SUC (t + n)))
 Proof
   rw [] >> Cases_on `(fext t).ready` >-
@@ -534,6 +530,7 @@ Theorem agp32_hw_work_when_state_3w:
     is_mem_start_interface fext ==>
     is_interrupt_interface fext_accessor_circuit (agp32 fext fbits) fext ==>
     (agp32 fext fbits t).state = 3w ==>
+    (fext 0).ready ==>
     ?n. hw_work (agp32 fext fbits (SUC (t + n)))
 Proof
   rw [is_mem_start_interface_def] >>
@@ -578,6 +575,7 @@ Theorem agp32_hw_work_when_state_2w:
     is_mem fext_accessor_circuit (agp32 fext fbits) fext ==>
     is_interrupt_interface fext_accessor_circuit (agp32 fext fbits) fext ==>
     (agp32 fext fbits t).state = 2w ==>
+    (fext 0).ready ==>
     ?n. hw_work (agp32 fext fbits (SUC (t + n)))
 Proof
   rw [] >> Q.ABBREV_TAC `s = agp32 fext fbits t` >>
@@ -716,6 +714,7 @@ Theorem agp32_hw_work_exists:
     is_interrupt_interface fext_accessor_circuit s fext ==>
     is_sch I s a ==>
     ~hw_work (s t) ==>
+    (fext 0).ready ==>
     ?n. hw_work (s (SUC (t + n)))
 Proof
   rw [] >> Cases_on_word_value `(agp32 fext fbits t).state` >>
@@ -741,6 +740,7 @@ Theorem agp32_progress_partical:
     is_interrupt_interface fext_accessor_circuit s fext ==>
     is_sch I s a ==>
     ~hw_work (s t) ==>
+    (fext 0).ready ==>
     ?n k. k >= 1 ==> k <= 5 ==>
           I (k,SUC (SUC (t + n))) = I (k - 1,SUC (t + n))
 Proof

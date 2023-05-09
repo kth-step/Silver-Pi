@@ -731,6 +731,7 @@ Proof
     `(agp32 fext fbits (SUC 0)).command = 1w \/ (agp32 fext fbits (SUC 0)).command = 0w`
       by METIS_TAC [agp32_command_cycle_1] >-
      (last_assum (mp_tac o is_mem_inst_read `SUC 0`) >> simp [] >> strip_tac >>
+      `(fext 0).ready` by fs [Init_def] >> fs [] >>
       Cases_on `~(fext (SUC t)).ready` >-
        METIS_TAC [same_mem_t_SUC_t_under_MAX_SET_0] >> fs [ADD1] >>
       `m = t` by METIS_TAC [same_t_and_m_under_MAX_SET_0] >> rw [] >>
